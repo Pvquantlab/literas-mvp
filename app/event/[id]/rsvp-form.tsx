@@ -1,105 +1,105 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase'
 
-export default function RSVPForm({ eventId }: { eventId: string }) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+export default function RsvpForm({
+  eventId,
+  userId,
+  userHasRsvp,
+  isFull,
+}: {
+  eventId: string
+  userId: string
+  userHasRsvp: boolean
+  isFull: boolean
+}) {
+  const router = useRouter()
+  const supabase = createClient()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  async function handleRsvp() {
+    setLoading(true)
+    setError('')
 
-    // Aynı e-posta ile daha önce kayıt yapılmış mı?
-    const { data: existing } = await supabase
+    const { error } = await supabase
       .from('rsvps')
-      .select('id')
-      .eq('event_id', eventId)
-      .eq('email', email)
-      .maybeSingle();
+      .insert({ event_id: eventId, user_id: userId })
 
-    if (existing) {
-      setError('Bu e-posta ile zaten kayıt yapılmış.');
-      setLoading(false);
-      return;
+    if (error) {
+      setError('Katılım kaydedilemedi: ' + error.message)
+      setLoading(false)
+    } else {
+      router.refresh()
     }
-
-    const { error: dbError } = await supabase.from('rsvps').insert({
-      event_id: eventId,
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-    });
-
-    if (dbError) {
-      setError(dbError.message);
-      setLoading(false);
-      return;
-    }
-
-    setSuccess(true);
-    setLoading(false);
-    // Sayfayı yenile ki RSVP listesi güncellensin
-    router.refresh();
   }
 
-  if (success) {
+  async function handleCancel() {
+    setLoading(true)
+    setError('')
+
+    const { error } = await supabase
+      .from('rsvps')
+      .delete()
+      .eq('event_id', eventId)
+      .eq('user_id', userId)
+
+    if (error) {
+      setError('İptal başarısız: ' + error.message)
+      setLoading(false)
+    } else {
+      router.refresh()
+    }
+  }
+
+  if (userHasRsvp) {
     return (
-      <div className="alert alert-success">
-        <div className="quote">"Yerin ayrıldı — orada görüşürüz."</div>
-        <div style={{ marginTop: 8, fontSize: 13, color: 'var(--muted)' }}>
-          Etkinlik öncesi e-postayla bir hatırlatma gönderilecek.
-        </div>
+      <div style={{
+        background: 'white',
+        padding: '1.25rem',
+        borderRadius: '8px',
+        border: '1px solid var(--border)',
+      }}>
+        <p style={{
+          fontFamily: 'Newsreader, serif',
+          fontStyle: 'italic',
+          color: 'var(--ink)',
+          marginBottom: '1rem',
+        }}>
+          Katılıyorsun. Görüşmek üzere.
+        </p>
+        <button onClick={handleCancel} disabled={loading} className="btn-secondary" style={{ fontSize: '0.9rem' }}>
+          {loading ? 'İptal ediliyor...' : 'Katılımı iptal et'}
+        </button>
+        {error && <p style={{ color: 'var(--seal)', fontSize: '0.9rem', marginTop: '0.75rem' }}>{error}</p>}
       </div>
-    );
+    )
+  }
+
+  if (isFull) {
+    return (
+      <p style={{
+        background: 'white',
+        padding: '1.25rem',
+        borderRadius: '8px',
+        border: '1px solid var(--border)',
+        fontFamily: 'Newsreader, serif',
+        fontStyle: 'italic',
+        opacity: 0.7,
+      }}>
+        Maalesef etkinlik dolu.
+      </p>
+    )
   }
 
   return (
-    <div style={{ background: 'var(--paper-light)', border: '0.5px solid rgba(31,42,36,0.18)', borderRadius: 8, padding: 24, margin: '24px 0' }}>
-      <h3 className="h-serif" style={{ fontSize: 18, marginBottom: 16 }}>
-        Yerini ayır
-      </h3>
-
-      {error && (
-        <div className="alert alert-error" style={{ marginBottom: 16 }}>
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <div className="field">
-          <label>Adın</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Etkinlikte nasıl çağırılmak istersin"
-            required
-          />
-        </div>
-
-        <div className="field">
-          <label>E-posta</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="hatırlatma için"
-            required
-          />
-          <span className="hint">Sadece etkinlik hatırlatması için kullanılır.</span>
-        </div>
-
-        <button type="submit" className="btn" disabled={loading} style={{ width: '100%' }}>
-          {loading ? 'Ayrılıyor...' : 'Yerimi ayır'}
-        </button>
-      </form>
+    <div>
+      <button onClick={handleRsvp} disabled={loading} className="btn-primary">
+        {loading ? 'Kaydediliyor...' : 'Katılıyorum'}
+      </button>
+      {error && <p style={{ color: 'var(--seal)', fontSize: '0.9rem', marginTop: '0.75rem' }}>{error}</p>}
     </div>
-  );
+  )
 }

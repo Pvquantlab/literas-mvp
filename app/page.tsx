@@ -1,109 +1,127 @@
-import Link from 'next/link';
-import { supabase, type Event } from '@/lib/supabase';
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase-server'
 
-// Bu sayfa her istekte güncel veriyi çeker
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  // Veritabanından tüm etkinlikleri çek (en yeniler önce)
-  const { data: events, error } = await supabase
+  const supabase = await createClient()
+  const { data: events } = await supabase
     .from('events')
-    .select('*')
-    .order('date', { ascending: true });
-
-  if (error) {
-    return (
-      <div>
-        <div className="alert alert-error">
-          Veritabanına bağlanırken bir hata oldu. Supabase ayarlarını kontrol et.
-        </div>
-        <pre style={{ fontSize: 12, color: '#4A5C53' }}>{error.message}</pre>
-      </div>
-    );
-  }
-
-  const upcomingEvents = (events as Event[]).filter(
-    (e) => new Date(e.date) >= new Date()
-  );
+    .select(`
+      id,
+      title,
+      description,
+      location,
+      event_date,
+      organizer:profiles!organizer_id(name)
+    `)
+    .order('event_date', { ascending: true })
 
   return (
-    <div>
-      <div className="eyebrow">— Yaklaşan</div>
-      <h1 className="h-serif">Etkinlikler</h1>
-      <p className="lede">
-        İnsanlar topluluklarında bir araya geliyor. Bir etkinliğe katılmak ya da
-        kendininkini açmak için aşağıdan başla.
-      </p>
+    <main className="container">
+      <section style={{ padding: '3rem 0 2rem', textAlign: 'center' }}>
+        <p className="catalog-number" style={{ marginBottom: '1rem' }}>No. 0001</p>
+        <h1 className="serif" style={{
+          fontSize: '2.5rem',
+          fontWeight: 500,
+          color: 'var(--ink)',
+          marginBottom: '1rem',
+          lineHeight: 1.2,
+        }}>
+          İnsanların kendi topluluklarını kurduğu bir yer
+        </h1>
+        <p style={{
+          color: 'var(--night)',
+          opacity: 0.75,
+          fontSize: '1.1rem',
+          maxWidth: '480px',
+          margin: '0 auto',
+        }}>
+          Kitap kulübü, yürüyüş, dil pratiği. Bir araya gelmek için bir bahane yeter.
+        </p>
+      </section>
 
-      {upcomingEvents.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
-          <div style={{ fontFamily: 'var(--serif)', fontSize: 20, fontStyle: 'italic', color: 'var(--muted)', marginBottom: 16 }}>
-            Henüz hiçbir etkinlik yok.
+      <section style={{ marginTop: '2rem' }}>
+        <h2 className="serif" style={{
+          fontSize: '1.5rem',
+          color: 'var(--ink)',
+          marginBottom: '1.5rem',
+          fontWeight: 500,
+        }}>
+          Yaklaşan etkinlikler
+        </h2>
+
+        {!events || events.length === 0 ? (
+          <div style={{
+            background: 'white',
+            padding: '3rem 2rem',
+            borderRadius: '8px',
+            textAlign: 'center',
+            border: '1px solid var(--border)',
+          }}>
+            <p style={{ color: 'var(--night)', opacity: 0.6, marginBottom: '1rem' }}>
+              Henüz hiç etkinlik yok.
+            </p>
+            <Link href="/event/new" className="btn-primary">
+              İlk etkinliği sen oluştur
+            </Link>
           </div>
-          <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 24 }}>
-            İlk etkinliği sen açabilirsin.
-          </p>
-          <Link href="/event/new" className="btn">
-            İlk etkinliği aç
-          </Link>
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gap: 12 }}>
-          {upcomingEvents.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {events.map((event: any, i: number) => {
+              const date = new Date(event.event_date)
+              const dateStr = date.toLocaleDateString('tr-TR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })
+              const timeStr = date.toLocaleTimeString('tr-TR', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+              const num = String(i + 1).padStart(4, '0')
 
-function EventCard({ event }: { event: Event }) {
-  const date = new Date(event.date);
-  const day = date.getDate();
-  const monthNames = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
-  const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
-  const month = monthNames[date.getMonth()];
-  const dayName = dayNames[date.getDay()];
-  const time = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-
-  return (
-    <Link
-      href={`/event/${event.id}`}
-      style={{
-        background: 'var(--paper-light)',
-        border: '0.5px solid rgba(31,42,36,0.15)',
-        padding: '16px 20px',
-        borderRadius: 8,
-        display: 'grid',
-        gridTemplateColumns: '60px 1fr auto',
-        gap: 20,
-        alignItems: 'center',
-        transition: 'transform 0.15s, box-shadow 0.15s',
-      }}
-    >
-      <div style={{ textAlign: 'center', borderRight: '0.5px solid rgba(31,42,36,0.15)', paddingRight: 16 }}>
-        <div style={{ fontSize: 10, letterSpacing: 1.5, color: 'var(--seal)', textTransform: 'uppercase' }}>
-          {dayName}
-        </div>
-        <div style={{ fontFamily: 'var(--serif)', fontSize: 24, lineHeight: 1, margin: '4px 0 2px' }}>
-          {day}
-        </div>
-        <div style={{ fontSize: 9, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1 }}>
-          {month}
-        </div>
-      </div>
-      <div>
-        <div style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 4 }}>
-          {event.title}
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-          {time} · {event.location} · {event.organizer_name}
-        </div>
-      </div>
-      <div style={{ textAlign: 'right', fontSize: 12, color: 'var(--muted)' }}>
-        Detay →
-      </div>
-    </Link>
-  );
+              return (
+                <Link key={event.id} href={`/event/${event.id}`} style={{
+                  display: 'block',
+                  background: 'white',
+                  padding: '1.5rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  transition: 'border-color 0.2s',
+                }}>
+                  <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
+                    No. {num}
+                  </p>
+                  <h3 className="serif" style={{
+                    fontSize: '1.4rem',
+                    color: 'var(--ink)',
+                    marginBottom: '0.5rem',
+                    fontWeight: 500,
+                  }}>
+                    {event.title}
+                  </h3>
+                  <p style={{ color: 'var(--night)', opacity: 0.75, fontSize: '0.95rem' }}>
+                    {dateStr} · {timeStr} · {event.location}
+                  </p>
+                  {event.organizer?.name && (
+                    <p style={{
+                      fontFamily: 'Newsreader, serif',
+                      fontStyle: 'italic',
+                      color: 'var(--night)',
+                      opacity: 0.6,
+                      fontSize: '0.9rem',
+                      marginTop: '0.5rem',
+                    }}>
+                      {event.organizer.name} düzenliyor
+                    </p>
+                  )}
+                </Link>
+              )
+            })}
+          </div>
+        )}
+      </section>
+    </main>
+  )
 }

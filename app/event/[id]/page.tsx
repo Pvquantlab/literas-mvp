@@ -1,147 +1,189 @@
-import { supabase, type Event, type RSVP } from '@/lib/supabase';
-import { notFound } from 'next/navigation';
-import RSVPForm from './rsvp-form';
-import ShareBox from './share-box';
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase-server'
+import RsvpForm from './rsvp-form'
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
 
 export default async function EventPage({
   params,
-  searchParams,
 }: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ created?: string }>;
+  params: Promise<{ id: string }>
 }) {
-  const { id } = await params;
-  const { created } = await searchParams;
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Etkinliği getir
-  const { data: event, error } = await supabase
+  const { data: event } = await supabase
     .from('events')
-    .select('*')
+    .select(`
+      *,
+      organizer:profiles!organizer_id(id, name)
+    `)
     .eq('id', id)
-    .single();
+    .single()
 
-  if (error || !event) {
-    notFound();
+  if (!event) {
+    notFound()
   }
 
-  // RSVP'leri getir
   const { data: rsvps } = await supabase
     .from('rsvps')
-    .select('*')
+    .select(`
+      id,
+      user:profiles!user_id(id, name)
+    `)
     .eq('event_id', id)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: true })
 
-  const rsvpList = (rsvps as RSVP[]) || [];
-  const date = new Date(event.date);
-  const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-  const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
-  const formattedDate = `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-  const formattedDay = dayNames[date.getDay()];
-  const formattedTime = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  const userHasRsvp = user
+    ? rsvps?.some((r: any) => r.user?.id === user.id)
+    : false
 
-  const spotsLeft = event.capacity - rsvpList.length;
-  const isFull = spotsLeft <= 0;
+  const isOrganizer = user?.id === event.organizer_id
+
+  const date = new Date(event.event_date)
+  const dateStr = date.toLocaleDateString('tr-TR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+  const timeStr = date.toLocaleTimeString('tr-TR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
   return (
-    <div className="narrow">
-      {created && (
-        <div className="alert alert-success">
-          <div className="quote">"Etkinliğin yayında — paylaşmaya hazır."</div>
-          <div style={{ marginTop: 8, fontSize: 13, color: 'var(--muted)' }}>
-            Aşağıdaki linki kopyalayıp üyelerine gönderebilirsin.
+    <main className="container" style={{ maxWidth: '640px' }}>
+      <Link href="/" style={{ fontSize: '0.9rem', opacity: 0.7 }}>
+        ← Tüm etkinlikler
+      </Link>
+
+      <section style={{ padding: '1.5rem 0 2rem' }}>
+        <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
+          No. {String(event.id).slice(0, 4).toUpperCase()}
+        </p>
+        <h1 className="serif" style={{
+          fontSize: '2.25rem',
+          color: 'var(--ink)',
+          fontWeight: 500,
+          lineHeight: 1.2,
+          marginBottom: '1rem',
+        }}>
+          {event.title}
+        </h1>
+
+        <div style={{
+          background: 'var(--old-paper)',
+          padding: '1.25rem 1.5rem',
+          borderRadius: '8px',
+          marginTop: '1rem',
+        }}>
+          <p style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+            <strong>Tarih:</strong> {dateStr}
+          </p>
+          <p style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+            <strong>Saat:</strong> {timeStr}
+          </p>
+          <p style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+            <strong>Konum:</strong> {event.location}
+          </p>
+          {event.organizer?.name && (
+            <p style={{ fontSize: '0.95rem' }}>
+              <strong>Düzenleyen:</strong>{' '}
+              <span style={{ fontFamily: 'Newsreader, serif', fontStyle: 'italic' }}>
+                {event.organizer.name}
+              </span>
+            </p>
+          )}
+        </div>
+
+        {event.description && (
+          <div style={{
+            marginTop: '1.5rem',
+            fontFamily: 'Newsreader, serif',
+            fontSize: '1.1rem',
+            lineHeight: 1.7,
+            color: 'var(--night)',
+            whiteSpace: 'pre-wrap',
+          }}>
+            {event.description}
           </div>
-        </div>
-      )}
-
-      {created && <ShareBox eventId={id} />}
-
-      <div className="eyebrow">— Etkinlik No. {id.slice(0, 4).toUpperCase()}</div>
-      <h1 className="h-serif">{event.title}</h1>
-      {event.subtitle && (
-        <div style={{ fontFamily: 'var(--serif)', fontSize: 18, color: 'var(--muted)', fontStyle: 'italic', marginTop: -10, marginBottom: 20 }}>
-          — {event.subtitle}
-        </div>
-      )}
-
-      <div className="event-meta">
-        <div>
-          <div className="field-label">Ne zaman</div>
-          <div className="field-value">
-            {formattedDate}<br />
-            {formattedDay}, {formattedTime}
-          </div>
-        </div>
-        <div>
-          <div className="field-label">Nerede</div>
-          <div className="field-value">{event.location}</div>
-        </div>
-        <div>
-          <div className="field-label">Kapasite</div>
-          <div className="field-value">
-            {rsvpList.length} / {event.capacity}
-            {!isFull && (
-              <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4, fontFamily: 'var(--sans)' }}>
-                {spotsLeft} yer kaldı
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div style={{ margin: '32px 0' }}>
-        <h3 className="h-serif" style={{ fontSize: 18, marginBottom: 12 }}>Ne yapacağız?</h3>
-        <div style={{ fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-          {event.description}
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 0', borderTop: '0.5px solid rgba(31,42,36,0.1)', borderBottom: '0.5px solid rgba(31,42,36,0.1)', margin: '24px 0' }}>
-        <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--ink)', color: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: 14 }}>
-          {event.organizer_name.charAt(0).toUpperCase()}
-        </div>
-        <div>
-          <div style={{ fontSize: 11, letterSpacing: 1.5, color: 'var(--seal)', textTransform: 'uppercase', marginBottom: 2 }}>
-            Düzenleyen
-          </div>
-          <div style={{ fontFamily: 'var(--serif)', fontSize: 15 }}>{event.organizer_name}</div>
-        </div>
-      </div>
-
-      {/* RSVP formu */}
-      {!isFull ? (
-        <RSVPForm eventId={id} />
-      ) : (
-        <div className="alert" style={{ background: 'var(--oldpaper)', textAlign: 'center', padding: 24 }}>
-          <div style={{ fontFamily: 'var(--serif)', fontSize: 18, fontStyle: 'italic', marginBottom: 8 }}>
-            Tüm yerler doldu.
-          </div>
-          <div style={{ fontSize: 13, color: 'var(--muted)' }}>
-            Bir sonraki etkinliği takip et.
-          </div>
-        </div>
-      )}
-
-      {/* Kim gidiyor */}
-      <div className="rsvp-list">
-        <h3 className="h-serif" style={{ fontSize: 18 }}>
-          Kim gidiyor
-          <span className="count">{rsvpList.length} kişi</span>
-        </h3>
-        {rsvpList.length === 0 ? (
-          <div className="empty">İlk gelen sen ol.</div>
-        ) : (
-          rsvpList.map((rsvp) => (
-            <div key={rsvp.id} className="person">
-              <div className="avatar">{rsvp.name.charAt(0).toUpperCase()}</div>
-              <span>{rsvp.name}</span>
-            </div>
-          ))
         )}
-      </div>
+      </section>
 
-      {!created && <ShareBox eventId={id} />}
-    </div>
-  );
+      <section style={{ marginTop: '1rem' }}>
+        <h2 className="serif" style={{
+          fontSize: '1.3rem',
+          color: 'var(--ink)',
+          marginBottom: '1rem',
+          fontWeight: 500,
+        }}>
+          Katılım
+        </h2>
+
+        {!user ? (
+          <div style={{
+            background: 'white',
+            padding: '1.5rem',
+            borderRadius: '8px',
+            border: '1px solid var(--border)',
+            textAlign: 'center',
+          }}>
+            <p style={{ marginBottom: '1rem', opacity: 0.75 }}>
+              Katılmak için önce giriş yapmalısın.
+            </p>
+            <Link href="/login" className="btn-primary">
+              Giriş yap
+            </Link>
+          </div>
+        ) : isOrganizer ? (
+          <p style={{
+            fontFamily: 'Newsreader, serif',
+            fontStyle: 'italic',
+            opacity: 0.7,
+          }}>
+            Bu etkinliği sen düzenliyorsun.
+          </p>
+        ) : (
+          <RsvpForm
+            eventId={event.id}
+            userId={user.id}
+            userHasRsvp={userHasRsvp || false}
+            isFull={event.max_attendees ? (rsvps?.length || 0) >= event.max_attendees : false}
+          />
+        )}
+
+        <div style={{ marginTop: '1.5rem' }}>
+          <p style={{ fontSize: '0.95rem', opacity: 0.7, marginBottom: '0.75rem' }}>
+            {rsvps?.length || 0} kişi katılıyor
+            {event.max_attendees && ` / ${event.max_attendees} kişilik`}
+          </p>
+          {rsvps && rsvps.length > 0 && (
+            <ul style={{
+              listStyle: 'none',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+            }}>
+              {rsvps.map((r: any) => (
+                <li key={r.id} style={{
+                  background: 'white',
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: '20px',
+                  border: '1px solid var(--border)',
+                  fontSize: '0.9rem',
+                  fontFamily: 'Newsreader, serif',
+                  fontStyle: 'italic',
+                }}>
+                  {r.user?.name || 'Anonim'}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+    </main>
+  )
 }
