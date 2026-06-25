@@ -18,8 +18,7 @@ export default async function EventPage({
     .from('events')
     .select(`
       *,
-      organizer:profiles!organizer_id(id, name),
-      community:communities!community_id(id, name)
+      organizer:profiles!organizer_id(id, name)
     `)
     .eq('id', id)
     .single()
@@ -36,19 +35,6 @@ export default async function EventPage({
     `)
     .eq('event_id', id)
     .order('created_at', { ascending: true })
-
-  // Kullanıcı bu etkinliğin topluluğunun onaylı üyesi mi?
-  let isApprovedMember = false
-  if (user && event.community_id) {
-    const { data: membership } = await supabase
-      .from('community_members')
-      .select('id')
-      .eq('community_id', event.community_id)
-      .eq('user_id', user.id)
-      .eq('status', 'approved')
-      .maybeSingle()
-    isApprovedMember = !!membership
-  }
 
   const userHasRsvp = user
     ? rsvps?.some((r: any) => r.user?.id === user.id)
@@ -73,6 +59,7 @@ export default async function EventPage({
       <Link href="/" style={{ fontSize: '0.9rem', opacity: 0.7 }}>
         ← Tüm etkinlikler
       </Link>
+
       <section style={{ padding: '1.5rem 0 2rem' }}>
         <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
           No. {String(event.id).slice(0, 4).toUpperCase()}
@@ -86,19 +73,6 @@ export default async function EventPage({
         }}>
           {event.title}
         </h1>
-
-        {event.community && (
-          <p style={{ marginBottom: '1rem', opacity: 0.75 }}>
-            <Link href={`/community/${event.community.id}`} style={{
-              fontFamily: 'Newsreader, serif',
-              fontStyle: 'italic',
-              color: 'var(--ink)',
-            }}>
-              {event.community.name}
-            </Link>
-            <span style={{ marginLeft: '0.5rem' }}>topluluğunun bir buluşması</span>
-          </p>
-        )}
 
         <div style={{
           background: 'var(--old-paper)',
@@ -172,25 +146,6 @@ export default async function EventPage({
           }}>
             Bu etkinliği sen düzenliyorsun.
           </p>
-        ) : !isApprovedMember && event.community ? (
-          <div style={{
-            background: 'white',
-            padding: '1.5rem',
-            borderRadius: '8px',
-            border: '1px solid var(--border)',
-            textAlign: 'center',
-          }}>
-            <p style={{ marginBottom: '1rem', opacity: 0.75, lineHeight: 1.6 }}>
-              Bu etkinliğe katılmak için önce{' '}
-              <span style={{ fontFamily: 'Newsreader, serif', fontStyle: 'italic' }}>
-                {event.community.name}
-              </span>{' '}
-              topluluğunun üyesi olmalısın.
-            </p>
-            <Link href={`/community/${event.community.id}`} className="btn-primary">
-              Topluluğa git
-            </Link>
-          </div>
         ) : (
           <RsvpForm
             eventId={event.id}
