@@ -52,6 +52,9 @@ export default async function RootLayout({
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
               {user ? (
                 <>
+                <Link href="/community/new" className="btn-secondary" style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}>
+                Topluluk kur
+                </Link>
                   <Link href="/event/new" className="btn-secondary" style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}>
                     Etkinlik oluştur
                   </Link>

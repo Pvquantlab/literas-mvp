@@ -5,17 +5,22 @@ export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   const supabase = await createClient()
-  const { data: events } = await supabase
-    .from('events')
+
+  // Toplulukları çek, kurucu adı ve onaylı üye sayısı ile birlikte
+  const { data: communities } = await supabase
+    .from('communities')
     .select(`
       id,
-      title,
+      name,
       description,
-      location,
-      event_date,
-      organizer:profiles!organizer_id(name)
+      city,
+      cover_image_url,
+      created_at,
+      founder:profiles!founder_id(name),
+      community_members(count)
     `)
-    .order('event_date', { ascending: true })
+    .eq('community_members.status', 'approved')
+    .order('created_at', { ascending: false })
 
   return (
     <main className="container">
@@ -48,48 +53,44 @@ export default async function HomePage() {
           marginBottom: '1.5rem',
           fontWeight: 500,
         }}>
-          Yaklaşan etkinlikler
+          Topluluklar
         </h2>
 
-        {!events || events.length === 0 ? (
+        {!communities || communities.length === 0 ? (
           <div style={{
             background: 'white',
-            padding: '3rem 2rem',
+            padding: '2rem',
             borderRadius: '8px',
             textAlign: 'center',
             border: '1px solid var(--border)',
           }}>
             <p style={{ color: 'var(--night)', opacity: 0.6, marginBottom: '1rem' }}>
-              Henüz hiç etkinlik yok.
+              Henüz hiç topluluk kurulmadı.
             </p>
-            <Link href="/event/new" className="btn-primary">
-              İlk etkinliği sen oluştur
+            <Link href="/community/new" className="btn-primary">
+              İlk topluluğu sen kur
             </Link>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {events.map((event: any, i: number) => {
-              const date = new Date(event.event_date)
-              const dateStr = date.toLocaleDateString('tr-TR', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })
-              const timeStr = date.toLocaleTimeString('tr-TR', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })
+            {communities.map((community: any, i: number) => {
+              const memberCount = community.community_members?.[0]?.count ?? 0
               const num = String(i + 1).padStart(4, '0')
+              const founderName = community.founder?.name ?? 'biri'
 
               return (
-                <Link key={event.id} href={`/event/${event.id}`} style={{
-                  display: 'block',
-                  background: 'white',
-                  padding: '1.5rem',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border)',
-                  transition: 'border-color 0.2s',
-                }}>
+                <Link
+                  key={community.id}
+                  href={`/community/${community.id}`}
+                  style={{
+                    display: 'block',
+                    background: 'white',
+                    padding: '1.5rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    transition: 'border-color 0.2s',
+                  }}
+                >
                   <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
                     No. {num}
                   </p>
@@ -99,23 +100,36 @@ export default async function HomePage() {
                     marginBottom: '0.5rem',
                     fontWeight: 500,
                   }}>
-                    {event.title}
+                    {community.name}
                   </h3>
-                  <p style={{ color: 'var(--night)', opacity: 0.75, fontSize: '0.95rem' }}>
-                    {dateStr} · {timeStr} · {event.location}
+                  <p style={{
+                    color: 'var(--night)',
+                    opacity: 0.75,
+                    fontSize: '0.95rem',
+                    marginBottom: '0.5rem',
+                  }}>
+                    {community.city} · {memberCount} üye
                   </p>
-                  {event.organizer?.name && (
+                  {community.description && (
                     <p style={{
-                      fontFamily: 'Newsreader, serif',
-                      fontStyle: 'italic',
                       color: 'var(--night)',
-                      opacity: 0.6,
-                      fontSize: '0.9rem',
-                      marginTop: '0.5rem',
+                      opacity: 0.7,
+                      fontSize: '0.95rem',
+                      marginBottom: '0.5rem',
                     }}>
-                      {event.organizer.name} düzenliyor
+                      {community.description}
                     </p>
                   )}
+                  <p style={{
+                    fontFamily: 'Newsreader, serif',
+                    fontStyle: 'italic',
+                    color: 'var(--night)',
+                    opacity: 0.6,
+                    fontSize: '0.9rem',
+                    marginTop: '0.5rem',
+                  }}>
+                    {founderName} kurdu
+                  </p>
                 </Link>
               )
             })}

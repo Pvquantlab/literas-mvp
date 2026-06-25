@@ -4,9 +4,19 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
-export default function NewEventForm({ userId }: { userId: string }) {
+type Community = { id: string; name: string }
+
+export default function NewEventForm({
+  userId,
+  communities,
+}: {
+  userId: string
+  communities: Community[]
+}) {
   const router = useRouter()
   const supabase = createClient()
+
+  const [communityId, setCommunityId] = useState(communities[0]?.id ?? '')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
@@ -28,6 +38,7 @@ export default function NewEventForm({ userId }: { userId: string }) {
         location,
         event_date: new Date(eventDate).toISOString(),
         organizer_id: userId,
+        community_id: communityId,
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
       })
       .select()
@@ -44,6 +55,31 @@ export default function NewEventForm({ userId }: { userId: string }) {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+          Topluluk
+        </label>
+        <select
+          value={communityId}
+          onChange={(e) => setCommunityId(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            border: '1px solid var(--border)',
+            borderRadius: '6px',
+            background: 'white',
+            fontSize: '1rem',
+            fontFamily: 'inherit',
+            color: 'var(--ink)',
+          }}
+        >
+          {communities.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+
       <div>
         <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
           Başlık
@@ -112,7 +148,7 @@ export default function NewEventForm({ userId }: { userId: string }) {
       )}
 
       <button type="submit" disabled={loading} className="btn-primary">
-        {loading ? 'Oluşturuluyor...' : 'Etkinliği oluştur'}
+        {loading ? 'Oluşturuluyor…' : 'Etkinliği oluştur'}
       </button>
     </form>
   )
