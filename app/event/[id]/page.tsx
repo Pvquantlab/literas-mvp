@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import RsvpForm from './rsvp-form'
+import EventActions from './event-actions'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,17 +38,20 @@ export default async function EventPage({
     .eq('event_id', id)
     .order('created_at', { ascending: true })
 
-  // Kullanıcı bu etkinliğin topluluğunun onaylı üyesi mi?
+  // Kullanıcının topluluk üyelik durumu
   let isApprovedMember = false
+  let isCommunityModerator = false
   if (user && event.community_id) {
     const { data: membership } = await supabase
       .from('community_members')
-      .select('id')
+      .select('role, status')
       .eq('community_id', event.community_id)
       .eq('user_id', user.id)
-      .eq('status', 'approved')
       .maybeSingle()
-    isApprovedMember = !!membership
+    isApprovedMember = membership?.status === 'approved'
+    isCommunityModerator =
+      membership?.status === 'approved' &&
+      (membership.role === 'founder' || membership.role === 'admin')
   }
 
   const userHasRsvp = user
@@ -55,6 +59,7 @@ export default async function EventPage({
     : false
 
   const isOrganizer = user?.id === event.organizer_id
+  const canManage = isOrganizer || isCommunityModerator
 
   const date = new Date(event.event_date)
   const dateStr = date.toLocaleDateString('tr-TR', {
@@ -137,6 +142,8 @@ export default async function EventPage({
             {event.description}
           </div>
         )}
+
+        {canManage && <EventActions eventId={event.id} />}
       </section>
 
       <section style={{ marginTop: '1rem' }}>
