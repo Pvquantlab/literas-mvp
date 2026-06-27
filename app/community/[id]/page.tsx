@@ -141,7 +141,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                   alignItems: 'center',
                   flexWrap: 'wrap',
                 }}>
-                  <span>{m.user?.name}</span>
+                  <Link href={`/profile/${m.user_id}`} style={{ color: 'var(--ink)', textDecoration: 'underline' }}>{m.user?.name}</Link>
                   <MemberActions memberId={m.id} action="approve" />
                   <MemberActions memberId={m.id} action="reject" />
                 </p>
@@ -169,7 +169,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                 alignItems: 'center',
                 flexWrap: 'wrap',
               }}>
-                <span>{m.user?.name}</span>
+                <Link href={`/profile/${m.user_id}`} style={{ color: 'var(--ink)', textDecoration: 'underline' }}>{m.user?.name}</Link>
                 {m.role === 'founder' && (
                   <span style={{
                     fontFamily: 'Newsreader, serif',

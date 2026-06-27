@@ -123,9 +123,14 @@ export default async function EventPage({
           {event.organizer?.name && (
             <p style={{ fontSize: '0.95rem' }}>
               <strong>Düzenleyen:</strong>{' '}
-              <span style={{ fontFamily: 'Newsreader, serif', fontStyle: 'italic' }}>
+              <Link href={`/profile/${event.organizer.id}`} style={{
+                fontFamily: 'Newsreader, serif',
+                fontStyle: 'italic',
+                color: 'var(--ink)',
+                textDecoration: 'underline',
+              }}>
                 {event.organizer.name}
-              </span>
+              </Link>
             </p>
           )}
         </div>
@@ -220,16 +225,36 @@ export default async function EventPage({
               gap: '0.5rem',
             }}>
               {rsvps.map((r: any) => (
-                <li key={r.id} style={{
-                  background: 'white',
-                  padding: '0.4rem 0.85rem',
-                  borderRadius: '20px',
-                  border: '1px solid var(--border)',
-                  fontSize: '0.9rem',
-                  fontFamily: 'Newsreader, serif',
-                  fontStyle: 'italic',
-                }}>
-                  {r.user?.name || 'Anonim'}
+                <li key={r.id}>
+                  {r.user?.id ? (
+                    <Link href={`/profile/${r.user.id}`} style={{
+                      display: 'inline-block',
+                      background: 'white',
+                      padding: '0.4rem 0.85rem',
+                      borderRadius: '20px',
+                      border: '1px solid var(--border)',
+                      fontSize: '0.9rem',
+                      fontFamily: 'Newsreader, serif',
+                      fontStyle: 'italic',
+                      color: 'var(--ink)',
+                      textDecoration: 'none',
+                    }}>
+                      {r.user.name}
+                    </Link>
+                  ) : (
+                    <span style={{
+                      display: 'inline-block',
+                      background: 'white',
+                      padding: '0.4rem 0.85rem',
+                      borderRadius: '20px',
+                      border: '1px solid var(--border)',
+                      fontSize: '0.9rem',
+                      fontFamily: 'Newsreader, serif',
+                      fontStyle: 'italic',
+                    }}>
+                      Anonim
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
