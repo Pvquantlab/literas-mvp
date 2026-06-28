@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
@@ -7,11 +6,10 @@ import { createClient } from '@/lib/supabase'
 export default function NewCommunityForm() {
   const router = useRouter()
   const supabase = createClient()
-
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [city, setCity] = useState('')
-  const [coverImageUrl, setCoverImageUrl] = useState('')
+  const [category, setCategory] = useState('kitap')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -20,7 +18,6 @@ export default function NewCommunityForm() {
     setLoading(true)
     setError(null)
 
-    // 1. Kullanıcıyı al
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       setError('Önce giriş yapmalısın.')
@@ -28,14 +25,13 @@ export default function NewCommunityForm() {
       return
     }
 
-    // 2. Topluluğu oluştur
     const { data: community, error: communityError } = await supabase
       .from('communities')
       .insert({
         name: name.trim(),
         description: description.trim() || null,
         city: city.trim(),
-        cover_image_url: coverImageUrl.trim() || null,
+        category,
         founder_id: user.id,
       })
       .select()
@@ -48,7 +44,6 @@ export default function NewCommunityForm() {
       return
     }
 
-    // 3. Kuran kişiyi founder + approved olarak üye yap
     const { error: memberError } = await supabase
       .from('community_members')
       .insert({
@@ -65,7 +60,6 @@ export default function NewCommunityForm() {
       return
     }
 
-    // 4. Yeni topluluğun sayfasına yönlendir (henüz yok, şimdilik ana sayfa)
     router.push('/')
     router.refresh()
   }
@@ -82,6 +76,24 @@ export default function NewCommunityForm() {
           required
           placeholder="Kadıköy Kitap Kulübü"
         />
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="category">Tür</label>
+        <select
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          required
+        >
+          <option value="kitap">kitap</option>
+          <option value="yürüyüş">yürüyüş</option>
+          <option value="yoga">yoga</option>
+          <option value="dil">dil</option>
+          <option value="sanat">sanat</option>
+          <option value="sohbet">sohbet</option>
+          <option value="sinema">sinema</option>
+        </select>
       </div>
 
       <div className="form-group">
@@ -105,18 +117,6 @@ export default function NewCommunityForm() {
           rows={4}
           placeholder="Topluluğun ne yapıyor, kimleri arıyor, nasıl bir his?"
         />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="cover">Kapak görseli (URL)</label>
-        <input
-          id="cover"
-          type="url"
-          value={coverImageUrl}
-          onChange={(e) => setCoverImageUrl(e.target.value)}
-          placeholder="https://..."
-        />
-        <p className="form-hint">Bir görselin internetteki linki. İstersen şimdilik boş bırakabilirsin.</p>
       </div>
 
       {error && <p className="form-error">{error}</p>}

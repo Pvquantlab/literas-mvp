@@ -58,7 +58,7 @@ export default async function RootLayout({
                   <Link href="/event/new" className="btn-secondary" style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}>
                     Etkinlik oluştur
                   </Link>
-                  <Link href="/profile" style={{
+                  <Link href={`/profile/${user.id}`} style={{
                     fontFamily: 'Newsreader, serif',
                     fontStyle: 'italic',
                     color: 'var(--ink)',

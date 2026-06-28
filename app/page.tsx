@@ -1,19 +1,37 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
+import CityFilter from './city-filter'
+import SearchBox from './search-box'
 
 export const dynamic = 'force-dynamic'
 
-export default async function HomePage() {
+const CATEGORIES = ['kitap', 'yürüyüş', 'yoga', 'dil', 'sanat', 'sohbet', 'sinema']
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; city?: string; q?: string }>
+}) {
+  const { category: activeCategory, city: activeCity, q: activeQuery } = await searchParams
   const supabase = await createClient()
 
-  // Toplulukları çek, kurucu adı ve onaylı üye sayısı ile birlikte
-  const { data: communities } = await supabase
+  const { data: cityRows } = await supabase
+    .from('communities')
+    .select('city')
+    .order('city', { ascending: true })
+
+  const cities = Array.from(
+    new Set((cityRows ?? []).map((r: any) => r.city).filter(Boolean))
+  ) as string[]
+
+  let query = supabase
     .from('communities')
     .select(`
       id,
       name,
       description,
       city,
+      category,
       cover_image_url,
       created_at,
       founder:profiles!founder_id(name),
@@ -21,6 +39,21 @@ export default async function HomePage() {
     `)
     .eq('community_members.status', 'approved')
     .order('created_at', { ascending: false })
+
+  if (activeCategory) query = query.eq('category', activeCategory)
+  if (activeCity) query = query.eq('city', activeCity)
+  if (activeQuery) query = query.ilike('name', `%${activeQuery}%`)
+
+  const { data: communities } = await query
+
+  const buildCategoryHref = (cat: string | null) => {
+    const params = new URLSearchParams()
+    if (cat) params.set('category', cat)
+    if (activeCity) params.set('city', activeCity)
+    if (activeQuery) params.set('q', activeQuery)
+    const qs = params.toString()
+    return qs ? `/?${qs}` : '/'
+  }
 
   return (
     <main className="container">
@@ -50,11 +83,38 @@ export default async function HomePage() {
         <h2 className="serif" style={{
           fontSize: '1.5rem',
           color: 'var(--ink)',
-          marginBottom: '1.5rem',
+          marginBottom: '1rem',
           fontWeight: 500,
         }}>
           Topluluklar
         </h2>
+
+        <SearchBox initialQuery={activeQuery ?? ''} />
+        <CityFilter cities={cities} activeCity={activeCity ?? ''} />
+
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '0.75rem 1.25rem',
+          marginBottom: '1.5rem',
+          fontSize: '1rem',
+        }}>
+          <Link
+            href={buildCategoryHref(null)}
+            className={`filter-link${!activeCategory ? ' active' : ''}`}
+          >
+            hepsi
+          </Link>
+          {CATEGORIES.map((cat) => (
+            <Link
+              key={cat}
+              href={buildCategoryHref(cat)}
+              className={`filter-link${activeCategory === cat ? ' active' : ''}`}
+            >
+              {cat}
+            </Link>
+          ))}
+        </div>
 
         {!communities || communities.length === 0 ? (
           <div style={{
@@ -65,7 +125,9 @@ export default async function HomePage() {
             border: '1px solid var(--border)',
           }}>
             <p style={{ color: 'var(--night)', opacity: 0.6, marginBottom: '1rem' }}>
-              Henüz hiç topluluk kurulmadı.
+              {activeCategory || activeCity || activeQuery
+                ? 'Bu filtreyle eşleşen topluluk yok.'
+                : 'Henüz hiç topluluk kurulmadı.'}
             </p>
             <Link href="/community/new" className="btn-primary">
               İlk topluluğu sen kur
@@ -82,14 +144,7 @@ export default async function HomePage() {
                 <Link
                   key={community.id}
                   href={`/community/${community.id}`}
-                  style={{
-                    display: 'block',
-                    background: 'white',
-                    padding: '1.5rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border)',
-                    transition: 'border-color 0.2s',
-                  }}
+                  className="card"
                 >
                   <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
                     No. {num}
@@ -107,8 +162,17 @@ export default async function HomePage() {
                     opacity: 0.75,
                     fontSize: '0.95rem',
                     marginBottom: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    flexWrap: 'wrap',
                   }}>
-                    {community.city} · {memberCount} üye
+                    <span>{community.city} · {memberCount} üye</span>
+                    {community.category && (
+                      <span className={`cat-badge ${community.category}`}>
+                        {community.category}
+                      </span>
+                    )}
                   </p>
                   {community.description && (
                     <p style={{
