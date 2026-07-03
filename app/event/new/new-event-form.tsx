@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
 
 type Community = { id: string; name: string }
 
@@ -14,7 +13,6 @@ export default function NewEventForm({
   communities: Community[]
 }) {
   const router = useRouter()
-  const supabase = createClient()
 
   const [communityId, setCommunityId] = useState(communities[0]?.id ?? '')
   const [title, setTitle] = useState('')
@@ -30,27 +28,29 @@ export default function NewEventForm({
     setLoading(true)
     setError('')
 
-    const { data, error } = await supabase
-      .from('events')
-      .insert({
+    const res = await fetch('/api/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        community_id: communityId,
         title,
         description: description || null,
         location,
         event_date: new Date(eventDate).toISOString(),
-        organizer_id: userId,
-        community_id: communityId,
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
-      })
-      .select()
-      .single()
+      }),
+    })
 
-    if (error) {
-      setError('Etkinlik oluşturulamadı: ' + error.message)
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setError(data.error ?? 'Etkinlik oluşturulamadı.')
       setLoading(false)
-    } else {
-      router.push(`/event/${data.id}`)
-      router.refresh()
+      return
     }
+
+    const { event } = await res.json()
+    router.push(`/event/${event.id}`)
+    router.refresh()
   }
 
   return (

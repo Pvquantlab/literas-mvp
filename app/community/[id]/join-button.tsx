@@ -1,18 +1,14 @@
 'use client'
-
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
 
 export default function JoinButton({
   communityId,
-  userId,
 }: {
   communityId: string
-  userId: string
+  userId?: string  // artık kullanılmıyor ama eski çağrıları kırmayalım
 }) {
   const router = useRouter()
-  const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -20,18 +16,13 @@ export default function JoinButton({
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase
-      .from('community_members')
-      .insert({
-        community_id: communityId,
-        user_id: userId,
-        role: 'member',
-        status: 'pending',
-      })
+    const res = await fetch(`/api/community/${communityId}/join`, {
+      method: 'POST',
+    })
 
-    if (error) {
-      setError('İstek gönderilemedi.')
-      console.error(error)
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setError(data.error ?? 'İstek gönderilemedi.')
       setLoading(false)
       return
     }
