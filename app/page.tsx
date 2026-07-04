@@ -145,55 +145,77 @@ export default async function HomePage({
                   key={community.id}
                   href={`/community/${community.id}`}
                   className="card"
+                  style={{ padding: 0, overflow: 'hidden' }}
                 >
-                  <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
-                    No. {num}
-                  </p>
-                  <h3 className="serif" style={{
-                    fontSize: '1.4rem',
-                    color: 'var(--ink)',
-                    marginBottom: '0.5rem',
-                    fontWeight: 500,
-                  }}>
-                    {community.name}
-                  </h3>
-                  <p style={{
-                    color: 'var(--night)',
-                    opacity: 0.75,
-                    fontSize: '0.95rem',
-                    marginBottom: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    flexWrap: 'wrap',
-                  }}>
-                    <span>{community.city} · {memberCount} üye</span>
-                    {community.category && (
-                      <span className={`cat-badge ${community.category}`}>
-                        {community.category}
-                      </span>
-                    )}
-                  </p>
-                  {community.description && (
+                  {community.cover_image_url && (
+                    <div style={{
+                      width: '100%',
+                      aspectRatio: '16 / 9',
+                      overflow: 'hidden',
+                      background: 'var(--old-paper)',
+                    }}>
+                      <img
+                        src={community.cover_image_url}
+                        alt=""
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          display: 'block',
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div style={{ padding: '1.5rem' }}>
+                    <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
+                      No. {num}
+                    </p>
+                    <h3 className="serif" style={{
+                      fontSize: '1.4rem',
+                      color: 'var(--ink)',
+                      marginBottom: '0.5rem',
+                      fontWeight: 500,
+                    }}>
+                      {community.name}
+                    </h3>
                     <p style={{
                       color: 'var(--night)',
-                      opacity: 0.7,
+                      opacity: 0.75,
                       fontSize: '0.95rem',
                       marginBottom: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      flexWrap: 'wrap',
                     }}>
-                      {community.description}
+                      <span>{community.city} · {memberCount} üye</span>
+                      {community.category && (
+                        <span className={`cat-badge ${community.category}`}>
+                          {community.category}
+                        </span>
+                      )}
                     </p>
-                  )}
-                  <p style={{
-                    fontFamily: 'Newsreader, serif',
-                    fontStyle: 'italic',
-                    color: 'var(--night)',
-                    opacity: 0.6,
-                    fontSize: '0.9rem',
-                    marginTop: '0.5rem',
-                  }}>
-                    {founderName} kurdu
-                  </p>
+                    {community.description && (
+                      <p style={{
+                        color: 'var(--night)',
+                        opacity: 0.7,
+                        fontSize: '0.95rem',
+                        marginBottom: '0.5rem',
+                      }}>
+                        {community.description}
+                      </p>
+                    )}
+                    <p style={{
+                      fontFamily: 'Newsreader, serif',
+                      fontStyle: 'italic',
+                      color: 'var(--night)',
+                      opacity: 0.6,
+                      fontSize: '0.9rem',
+                      marginTop: '0.5rem',
+                    }}>
+                      {founderName} kurdu
+                    </p>
+                  </div>
                 </Link>
               )
             })}

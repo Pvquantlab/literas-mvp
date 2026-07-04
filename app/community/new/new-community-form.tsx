@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import ImageUpload from '@/components/image-upload'
 
 export default function NewCommunityForm() {
   const router = useRouter()
@@ -10,6 +11,7 @@ export default function NewCommunityForm() {
   const [description, setDescription] = useState('')
   const [city, setCity] = useState('')
   const [category, setCategory] = useState('kitap')
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -32,6 +34,7 @@ export default function NewCommunityForm() {
         description: description.trim() || null,
         city: city.trim(),
         category,
+        cover_image_url: coverImageUrl,
         founder_id: user.id,
       })
       .select()
@@ -116,6 +119,16 @@ export default function NewCommunityForm() {
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
           placeholder="Topluluğun ne yapıyor, kimleri arıyor, nasıl bir his?"
+        />
+      </div>
+
+      <div className="form-group">
+        <ImageUpload
+          bucket="community-covers"
+          value={coverImageUrl}
+          onChange={setCoverImageUrl}
+          label="Kapak görseli"
+          hint="Bir görsel seç. İstersen şimdilik boş bırakabilirsin. En fazla 5 MB, JPG/PNG/WEBP."
         />
       </div>
 

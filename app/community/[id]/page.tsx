@@ -30,7 +30,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Tüm üyelikler (pending + approved)
   const { data: allMemberships } = await supabase
     .from('community_members')
     .select('id, role, status, user_id, user:profiles!user_id(name)')
@@ -43,7 +42,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   const founderName = (community.founder as any)?.name ?? 'biri'
   const shortId = community.id.slice(0, 4).toUpperCase()
 
-  // Giriş yapan kullanıcının bu topluluğa olan ilişkisi
   const currentUserMembership = (allMemberships ?? []).find((m: any) => m.user_id === user?.id)
   const isFounder = currentUserMembership?.role === 'founder' && currentUserMembership?.status === 'approved'
   const isAdmin = currentUserMembership?.role === 'admin' && currentUserMembership?.status === 'approved'
@@ -63,6 +61,29 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         }}>
           ← Tüm topluluklar
         </Link>
+
+        {community.cover_image_url && (
+          <div style={{
+            width: '100%',
+            aspectRatio: '16 / 9',
+            overflow: 'hidden',
+            borderRadius: '8px',
+            border: '1px solid var(--border)',
+            background: 'var(--old-paper)',
+            marginBottom: '2rem',
+          }}>
+            <img
+              src={community.cover_image_url}
+              alt=""
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          </div>
+        )}
 
         <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
           No. {shortId}
@@ -99,7 +120,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           </p>
         )}
 
-        {/* Katılım durumu */}
         {user && !currentUserMembership && (
           <JoinButton communityId={community.id} userId={user.id} />
         )}
@@ -121,7 +141,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           </p>
         )}
 
-        {/* Bekleyen istekler — sadece founder ve admin görür */}
         {canModerate && pendingMembers.length > 0 && (
           <section style={{ marginTop: '2rem' }}>
             <h2 className="serif" style={{
@@ -150,7 +169,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           </section>
         )}
 
-        {/* Üyeler */}
         <section style={{ marginTop: '2.5rem' }}>
           <h2 className="serif" style={{
             fontSize: '1.3rem',
@@ -202,7 +220,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           </div>
         </section>
 
-        {/* Yaklaşan etkinlikler */}
         <section style={{ marginTop: '2.5rem' }}>
           <h2 className="serif" style={{
             fontSize: '1.3rem',
@@ -212,9 +229,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           }}>
             Yaklaşan etkinlikler
           </h2>
-          {(() => {
-            return null
-          })()}
           <EventsList communityId={id} />
         </section>
       </div>
