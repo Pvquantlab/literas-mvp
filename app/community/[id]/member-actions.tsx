@@ -1,8 +1,6 @@
 'use client'
-
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
+import { useRouter, useParams } from 'next/navigation'
 
 type Action = 'toggle-admin' | 'approve' | 'reject'
 
@@ -16,47 +14,26 @@ export default function MemberActions({
   currentRole?: 'member' | 'admin'
 }) {
   const router = useRouter()
-  const supabase = createClient()
+  const params = useParams<{ id: string }>()
   const [loading, setLoading] = useState(false)
 
   async function handleClick() {
     setLoading(true)
 
-    if (action === 'toggle-admin') {
-      const newRole = currentRole === 'admin' ? 'member' : 'admin'
-      const { error } = await supabase
-        .from('community_members')
-        .update({ role: newRole })
-        .eq('id', memberId)
-      if (error) {
-        console.error(error)
-        setLoading(false)
-        return
+    const res = await fetch(
+      `/api/community/${params.id}/member/${memberId}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, currentRole }),
       }
-    }
+    )
 
-    if (action === 'approve') {
-      const { error } = await supabase
-        .from('community_members')
-        .update({ status: 'approved' })
-        .eq('id', memberId)
-      if (error) {
-        console.error(error)
-        setLoading(false)
-        return
-      }
-    }
-
-    if (action === 'reject') {
-      const { error } = await supabase
-        .from('community_members')
-        .delete()
-        .eq('id', memberId)
-      if (error) {
-        console.error(error)
-        setLoading(false)
-        return
-      }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      console.error('[member-actions] hata:', data.error)
+      setLoading(false)
+      return
     }
 
     router.refresh()
