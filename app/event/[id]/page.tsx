@@ -78,6 +78,29 @@ export default async function EventPage({
       <Link href="/" style={{ fontSize: '0.9rem', opacity: 0.7 }}>
         ← Tüm etkinlikler
       </Link>
+      {event.cover_image_url && (
+        <div style={{
+          width: '100%',
+          aspectRatio: '16 / 9',
+          overflow: 'hidden',
+          borderRadius: '8px',
+          border: '1px solid var(--border)',
+          background: 'var(--old-paper)',
+          marginTop: '1.5rem',
+          marginBottom: '0.5rem',
+        }}>
+          <img
+            src={event.cover_image_url}
+            alt=""
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+            }}
+          />
+        </div>
+      )}
       <section style={{ padding: '1.5rem 0 2rem' }}>
         <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
           No. {String(event.id).slice(0, 4).toUpperCase()}

@@ -11,17 +11,16 @@ export async function POST(req: Request) {
     location,
     event_date,
     max_attendees,
+    cover_image_url,
   } = body
 
   const supabase = await createClient()
 
-  // Kim istiyor?
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
   }
 
-  // Etkinliği oluştur
   const { data: event, error: insertError } = await supabase
     .from('events')
     .insert({
@@ -32,6 +31,7 @@ export async function POST(req: Request) {
       organizer_id: user.id,
       community_id,
       max_attendees: max_attendees ?? null,
+      cover_image_url: cover_image_url ?? null,
     })
     .select()
     .single()
@@ -41,7 +41,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Etkinlik oluşturulamadı' }, { status: 500 })
   }
 
-  // Topluluk adını ve organizatörün adını al
   const { data: community } = await supabase
     .from('communities')
     .select('name')
@@ -54,7 +53,6 @@ export async function POST(req: Request) {
     .eq('id', user.id)
     .single()
 
-  // Onaylı üyelerin email listesini al (organizatör hariç — kendine mail atma)
   const { data: members } = await supabase
     .from('community_members')
     .select('user:profiles!user_id(email, name)')
@@ -66,7 +64,6 @@ export async function POST(req: Request) {
     .map((m: any) => m.user?.email)
     .filter(Boolean) as string[]
 
-  // Email at (arka planda, cevabı bekletme)
   if (emails.length > 0 && community && organizer) {
     const eventDateStr = new Date(event.event_date).toLocaleDateString('tr-TR', {
       day: 'numeric',

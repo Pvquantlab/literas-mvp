@@ -16,7 +16,7 @@ export default async function ProfilePage({
   // Profil bilgisi
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, name, email, bio, created_at')
+    .select('id, name, email, bio, avatar_url, created_at')
     .eq('id', id)
     .single()
 
@@ -74,6 +74,28 @@ export default async function ProfilePage({
     <main style={{ maxWidth: '720px', margin: '0 auto', padding: '2rem 1.5rem' }}>
       {/* Başlık */}
       <section style={{ marginBottom: '3rem', borderBottom: '1px solid var(--border)', paddingBottom: '2rem' }}>
+        {profile.avatar_url && (
+          <div style={{
+            width: '96px',
+            height: '96px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            border: '1px solid var(--border)',
+            background: 'var(--old-paper)',
+            marginBottom: '1rem',
+          }}>
+            <img
+              src={profile.avatar_url}
+              alt=""
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          </div>
+        )}
         <p style={{ fontSize: '0.75rem', letterSpacing: '0.1em', color: 'var(--seal)', marginBottom: '0.5rem' }}>
           No. {profile.id.slice(0, 4).toUpperCase()}
         </p>

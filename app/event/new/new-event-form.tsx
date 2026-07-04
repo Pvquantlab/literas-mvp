@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import ImageUpload from '@/components/image-upload'
 
 type Community = { id: string; name: string }
 
@@ -20,6 +21,7 @@ export default function NewEventForm({
   const [location, setLocation] = useState('')
   const [eventDate, setEventDate] = useState('')
   const [maxAttendees, setMaxAttendees] = useState('')
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -38,6 +40,7 @@ export default function NewEventForm({
         location,
         event_date: new Date(eventDate).toISOString(),
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
+        cover_image_url: coverImageUrl,
       }),
     })
 
@@ -63,16 +66,6 @@ export default function NewEventForm({
           value={communityId}
           onChange={(e) => setCommunityId(e.target.value)}
           required
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            border: '1px solid var(--border)',
-            borderRadius: '6px',
-            background: 'white',
-            fontSize: '1rem',
-            fontFamily: 'inherit',
-            color: 'var(--ink)',
-          }}
         >
           {communities.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
@@ -140,6 +133,16 @@ export default function NewEventForm({
           onChange={(e) => setMaxAttendees(e.target.value)}
           min="1"
           placeholder="Boş bırakırsan sınır yok"
+        />
+      </div>
+
+      <div>
+        <ImageUpload
+          bucket="event-covers"
+          value={coverImageUrl}
+          onChange={setCoverImageUrl}
+          label="Kapak görseli"
+          hint="Bir görsel seç. İstersen şimdilik boş bırakabilirsin. En fazla 5 MB, JPG/PNG/WEBP."
         />
       </div>
 

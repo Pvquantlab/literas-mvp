@@ -10,21 +10,18 @@ export default async function EditProfilePage({
 }) {
   const { id } = await params
   const supabase = await createClient()
-
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) {
     redirect('/login')
   }
 
-  // Sadece kendi profilini düzenleyebilir
   if (user.id !== id) {
     redirect(`/profile/${id}`)
   }
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, name, bio')
+    .select('id, name, bio, avatar_url')
     .eq('id', id)
     .single()
 
@@ -40,7 +37,6 @@ export default async function EditProfilePage({
       >
         ← Profile dön
       </Link>
-
       <h1 style={{
         fontFamily: 'Newsreader, serif',
         fontStyle: 'italic',
@@ -53,10 +49,10 @@ export default async function EditProfilePage({
       <p style={{ color: 'var(--seal)', fontSize: '0.95rem', marginBottom: '2rem' }}>
         Birkaç cümle yeter. Neyi seversin, neyi merak edersin?
       </p>
-
       <EditProfileForm
         userId={profile.id}
         initialBio={profile.bio ?? ''}
+        initialAvatarUrl={profile.avatar_url ?? null}
       />
     </main>
   )

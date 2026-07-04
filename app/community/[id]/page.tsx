@@ -32,7 +32,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
 
   const { data: allMemberships } = await supabase
     .from('community_members')
-    .select('id, role, status, user_id, user:profiles!user_id(name)')
+    .select('id, role, status, user_id, user:profiles!user_id(name, avatar_url)')
     .eq('community_id', id)
 
   const approvedMembers = (allMemberships ?? []).filter((m: any) => m.status === 'approved')
@@ -160,6 +160,20 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                   alignItems: 'center',
                   flexWrap: 'wrap',
                 }}>
+                  {m.user?.avatar_url && (
+                    <img
+                      src={m.user.avatar_url}
+                      alt=""
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        marginRight: '0.5rem',
+                        border: '1px solid var(--border)',
+                      }}
+                    />
+                  )}
                   <Link href={`/profile/${m.user_id}`} style={{ color: 'var(--ink)', textDecoration: 'underline' }}>{m.user?.name}</Link>
                   <MemberActions memberId={m.id} action="approve" />
                   <MemberActions memberId={m.id} action="reject" />
@@ -187,6 +201,20 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                 alignItems: 'center',
                 flexWrap: 'wrap',
               }}>
+                {m.user?.avatar_url && (
+                  <img
+                    src={m.user.avatar_url}
+                    alt=""
+                    style={{
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      marginRight: '0.5rem',
+                      border: '1px solid var(--border)',
+                    }}
+                  />
+                )}
                 <Link href={`/profile/${m.user_id}`} style={{ color: 'var(--ink)', textDecoration: 'underline' }}>{m.user?.name}</Link>
                 {m.role === 'founder' && (
                   <span style={{
@@ -240,7 +268,7 @@ async function EventsList({ communityId }: { communityId: string }) {
   const supabase = await createClient()
   const { data: events } = await supabase
     .from('events')
-    .select('id, title, location, event_date')
+    .select('id, title, location, event_date, cover_image_url')
     .eq('community_id', communityId)
     .order('event_date', { ascending: true })
 
@@ -275,28 +303,53 @@ async function EventsList({ communityId }: { communityId: string }) {
             key={event.id}
             href={`/event/${event.id}`}
             style={{
-              display: 'block',
+              display: 'flex',
+              gap: '1rem',
               background: 'white',
               padding: '1rem 1.25rem',
               borderRadius: '6px',
               border: '1px solid var(--border)',
+              alignItems: 'center',
             }}
           >
-            <h3 className="serif" style={{
-              fontSize: '1.1rem',
-              color: 'var(--ink)',
-              marginBottom: '0.25rem',
-              fontWeight: 500,
-            }}>
-              {event.title}
-            </h3>
-            <p style={{
-              color: 'var(--night)',
-              opacity: 0.7,
-              fontSize: '0.9rem',
-            }}>
-              {dateStr} · {timeStr} · {event.location}
-            </p>
+            {event.cover_image_url && (
+              <div style={{
+                flexShrink: 0,
+                width: '72px',
+                height: '72px',
+                borderRadius: '6px',
+                overflow: 'hidden',
+                background: 'var(--old-paper)',
+              }}>
+                <img
+                  src={event.cover_image_url}
+                  alt=""
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                  }}
+                />
+              </div>
+            )}
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <h3 className="serif" style={{
+                fontSize: '1.1rem',
+                color: 'var(--ink)',
+                marginBottom: '0.25rem',
+                fontWeight: 500,
+              }}>
+                {event.title}
+              </h3>
+              <p style={{
+                color: 'var(--night)',
+                opacity: 0.7,
+                fontSize: '0.9rem',
+              }}>
+                {dateStr} · {timeStr} · {event.location}
+              </p>
+            </div>
           </Link>
         )
       })}
