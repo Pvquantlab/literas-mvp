@@ -40,226 +40,192 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
 
   const memberCount = approvedMembers.length
   const founderName = (community.founder as any)?.name ?? 'biri'
-  const shortId = community.id.slice(0, 4).toUpperCase()
 
   const currentUserMembership = (allMemberships ?? []).find((m: any) => m.user_id === user?.id)
   const isFounder = currentUserMembership?.role === 'founder' && currentUserMembership?.status === 'approved'
   const isAdmin = currentUserMembership?.role === 'admin' && currentUserMembership?.status === 'approved'
-  const isApprovedMember = currentUserMembership?.status === 'approved'
   const isPending = currentUserMembership?.status === 'pending'
   const canModerate = isFounder || isAdmin
 
   return (
-    <main className="container">
-      <div style={{ padding: '2rem 0' }}>
-        <Link href="/" style={{
-          color: 'var(--night)',
-          opacity: 0.6,
-          fontSize: '0.9rem',
-          marginBottom: '1.5rem',
-          display: 'inline-block',
+    <main style={{
+      maxWidth: '900px',
+      margin: '0 auto',
+      padding: '32px 24px 64px',
+    }}>
+      <Link href="/" style={{
+        color: 'var(--muted)',
+        fontSize: '14px',
+        fontWeight: 600,
+        marginBottom: '20px',
+        display: 'inline-block',
+        textDecoration: 'none',
+      }}>
+        ← Tüm topluluklar
+      </Link>
+
+      {/* Kapak resmi */}
+      {community.cover_image_url && (
+        <div style={{
+          width: '100%',
+          aspectRatio: '16 / 9',
+          overflow: 'hidden',
+          borderRadius: '16px',
+          border: '1px solid var(--border-soft)',
+          background: 'var(--paper-soft)',
+          marginBottom: '28px',
         }}>
-          ← Tüm topluluklar
-        </Link>
+          <img
+            src={community.cover_image_url}
+            alt=""
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+            }}
+          />
+        </div>
+      )}
 
-        {community.cover_image_url && (
-          <div style={{
-            width: '100%',
-            aspectRatio: '16 / 9',
-            overflow: 'hidden',
-            borderRadius: '8px',
-            border: '1px solid var(--border)',
-            background: 'var(--old-paper)',
-            marginBottom: '2rem',
-          }}>
-            <img
-              src={community.cover_image_url}
-              alt=""
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-              }}
-            />
-          </div>
-        )}
+      {/* Başlık */}
+      <h1 style={{
+        fontSize: '42px',
+        fontWeight: 800,
+        letterSpacing: '-1.2px',
+        lineHeight: 1.1,
+        color: 'var(--night)',
+        margin: '0 0 10px',
+      }}>
+        {community.name}
+      </h1>
 
-        <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
-          No. {shortId}
-        </p>
+      <p style={{
+        color: 'var(--muted)',
+        fontSize: '15px',
+        fontWeight: 600,
+        marginBottom: '20px',
+      }}>
+        {community.city} · {memberCount} üye · {founderName} kurdu
+      </p>
 
-        <h1 className="serif" style={{
-          fontSize: '2.2rem',
-          color: 'var(--ink)',
-          marginBottom: '0.5rem',
-          fontWeight: 500,
-          lineHeight: 1.2,
-        }}>
-          {community.name}
-        </h1>
-
+      {community.description && (
         <p style={{
           color: 'var(--night)',
-          opacity: 0.75,
-          fontSize: '1rem',
-          marginBottom: '1.5rem',
+          fontSize: '16.5px',
+          lineHeight: 1.6,
+          marginBottom: '28px',
         }}>
-          {community.city} · {memberCount} üye · <em>{founderName} kurdu</em>
+          {community.description}
         </p>
+      )}
 
-        {community.description && (
-          <p style={{
-            color: 'var(--night)',
-            opacity: 0.85,
-            fontSize: '1.05rem',
-            marginBottom: '2rem',
-            lineHeight: 1.6,
-          }}>
-            {community.description}
-          </p>
-        )}
-
-        {user && !currentUserMembership && (
+      {/* Katıl butonu / bekleyen istek */}
+      {user && !currentUserMembership && (
+        <div style={{ marginBottom: '32px' }}>
           <JoinButton communityId={community.id} userId={user.id} />
-        )}
-        {isPending && (
-          <p style={{
-            background: 'white',
-            border: '1px solid var(--border)',
-            borderRadius: '6px',
-            padding: '0.75rem 1rem',
-            fontFamily: 'Newsreader, serif',
-            fontStyle: 'italic',
-            color: 'var(--night)',
-            opacity: 0.75,
-            fontSize: '0.95rem',
-            marginBottom: '1rem',
-            display: 'inline-block',
-          }}>
-            İsteğin bekliyor — kurucu onaylayınca haberin olur.
-          </p>
-        )}
+        </div>
+      )}
+      {isPending && (
+        <div style={{
+          background: 'var(--seal-soft)',
+          border: '1px solid rgba(196, 98, 45, 0.25)',
+          borderRadius: '12px',
+          padding: '14px 18px',
+          color: 'var(--seal-deep)',
+          fontSize: '14.5px',
+          fontWeight: 600,
+          marginBottom: '32px',
+          display: 'inline-block',
+        }}>
+          İsteğin bekliyor — kurucu onaylayınca haberin olur.
+        </div>
+      )}
 
-        {canModerate && pendingMembers.length > 0 && (
-          <section style={{ marginTop: '2rem' }}>
-            <h2 className="serif" style={{
-              fontSize: '1.3rem',
-              color: 'var(--ink)',
-              marginBottom: '1rem',
-              fontWeight: 500,
-            }}>
-              Bekleyen istekler
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {pendingMembers.map((m: any) => (
-                <p key={m.id} style={{
-                  color: 'var(--night)',
-                  fontSize: '0.95rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                }}>
-                  {m.user?.avatar_url && (
+      {/* Bekleyen istekler (kurucu/admin görür) */}
+      {canModerate && pendingMembers.length > 0 && (
+        <section style={{ marginTop: '32px', marginBottom: '32px' }}>
+          <h2 style={sectionTitleStyle}>Bekleyen istekler</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {pendingMembers.map((m: any) => (
+              <div key={m.id} style={memberRowStyle}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                  {m.user?.avatar_url ? (
                     <img
                       src={m.user.avatar_url}
                       alt=""
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                        marginRight: '0.5rem',
-                        border: '1px solid var(--border)',
-                      }}
+                      style={avatarStyle}
                     />
+                  ) : (
+                    <div style={avatarPlaceholderStyle}>
+                      {m.user?.name?.[0]?.toUpperCase() ?? '?'}
+                    </div>
                   )}
-                  <Link href={`/profile/${m.user_id}`} style={{ color: 'var(--ink)', textDecoration: 'underline' }}>{m.user?.name}</Link>
+                  <Link
+                    href={`/profile/${m.user_id}`}
+                    style={{ color: 'var(--night)', fontWeight: 700, textDecoration: 'none' }}
+                  >
+                    {m.user?.name}
+                  </Link>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   <MemberActions memberId={m.id} action="approve" />
                   <MemberActions memberId={m.id} action="reject" />
-                </p>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section style={{ marginTop: '2.5rem' }}>
-          <h2 className="serif" style={{
-            fontSize: '1.3rem',
-            color: 'var(--ink)',
-            marginBottom: '1rem',
-            fontWeight: 500,
-          }}>
-            Üyeler
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {approvedMembers.map((m: any) => (
-              <p key={m.id} style={{
-                color: 'var(--night)',
-                fontSize: '0.95rem',
-                display: 'flex',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-              }}>
-                {m.user?.avatar_url && (
-                  <img
-                    src={m.user.avatar_url}
-                    alt=""
-                    style={{
-                      width: '28px',
-                      height: '28px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      marginRight: '0.5rem',
-                      border: '1px solid var(--border)',
-                    }}
-                  />
-                )}
-                <Link href={`/profile/${m.user_id}`} style={{ color: 'var(--ink)', textDecoration: 'underline' }}>{m.user?.name}</Link>
-                {m.role === 'founder' && (
-                  <span style={{
-                    fontFamily: 'Newsreader, serif',
-                    fontStyle: 'italic',
-                    opacity: 0.6,
-                    marginLeft: '0.5rem',
-                  }}>
-                    · kurucu
-                  </span>
-                )}
-                {m.role === 'admin' && (
-                  <span style={{
-                    fontFamily: 'Newsreader, serif',
-                    fontStyle: 'italic',
-                    opacity: 0.6,
-                    marginLeft: '0.5rem',
-                  }}>
-                    · yönetici
-                  </span>
-                )}
-                {isFounder && m.role !== 'founder' && (
-                  <MemberActions
-                    memberId={m.id}
-                    action="toggle-admin"
-                    currentRole={m.role as 'member' | 'admin'}
-                  />
-                )}
-              </p>
+                </div>
+              </div>
             ))}
           </div>
         </section>
+      )}
 
-        <section style={{ marginTop: '2.5rem' }}>
-          <h2 className="serif" style={{
-            fontSize: '1.3rem',
-            color: 'var(--ink)',
-            marginBottom: '1rem',
-            fontWeight: 500,
-          }}>
-            Yaklaşan etkinlikler
-          </h2>
-          <EventsList communityId={id} />
-        </section>
-      </div>
+      {/* Üyeler */}
+      <section style={{ marginTop: '40px' }}>
+        <h2 style={sectionTitleStyle}>Üyeler</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {approvedMembers.map((m: any) => (
+            <div key={m.id} style={memberRowStyle}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                {m.user?.avatar_url ? (
+                  <img
+                    src={m.user.avatar_url}
+                    alt=""
+                    style={avatarStyle}
+                  />
+                ) : (
+                  <div style={avatarPlaceholderStyle}>
+                    {m.user?.name?.[0]?.toUpperCase() ?? '?'}
+                  </div>
+                )}
+                <Link
+                  href={`/profile/${m.user_id}`}
+                  style={{ color: 'var(--night)', fontWeight: 700, textDecoration: 'none' }}
+                >
+                  {m.user?.name}
+                </Link>
+                {m.role === 'founder' && (
+                  <span style={roleBadgeStyle}>kurucu</span>
+                )}
+                {m.role === 'admin' && (
+                  <span style={roleBadgeStyle}>yönetici</span>
+                )}
+              </div>
+              {isFounder && m.role !== 'founder' && (
+                <MemberActions
+                  memberId={m.id}
+                  action="toggle-admin"
+                  currentRole={m.role as 'member' | 'admin'}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Yaklaşan etkinlikler */}
+      <section style={{ marginTop: '40px' }}>
+        <h2 style={sectionTitleStyle}>Yaklaşan etkinlikler</h2>
+        <EventsList communityId={id} />
+      </section>
     </main>
   )
 }
@@ -275,10 +241,9 @@ async function EventsList({ communityId }: { communityId: string }) {
   if (!events || events.length === 0) {
     return (
       <p style={{
-        color: 'var(--night)',
-        opacity: 0.6,
-        fontStyle: 'italic',
-        fontFamily: 'Newsreader, serif',
+        color: 'var(--muted)',
+        fontSize: '15px',
+        fontWeight: 500,
       }}>
         Henüz planlanmış bir buluşma yok.
       </p>
@@ -286,7 +251,7 @@ async function EventsList({ communityId }: { communityId: string }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {events.map((event: any) => {
         const date = new Date(event.event_date)
         const dateStr = date.toLocaleDateString('tr-TR', {
@@ -304,22 +269,24 @@ async function EventsList({ communityId }: { communityId: string }) {
             href={`/event/${event.id}`}
             style={{
               display: 'flex',
-              gap: '1rem',
-              background: 'white',
-              padding: '1rem 1.25rem',
-              borderRadius: '6px',
-              border: '1px solid var(--border)',
+              gap: '16px',
+              background: '#ffffff',
+              padding: '14px 18px',
+              borderRadius: '12px',
+              border: '1px solid var(--border-soft)',
               alignItems: 'center',
+              textDecoration: 'none',
+              transition: 'box-shadow 0.15s ease, transform 0.15s ease',
             }}
           >
-            {event.cover_image_url && (
+            {event.cover_image_url ? (
               <div style={{
                 flexShrink: 0,
                 width: '72px',
                 height: '72px',
-                borderRadius: '6px',
+                borderRadius: '10px',
                 overflow: 'hidden',
-                background: 'var(--old-paper)',
+                background: 'var(--paper-soft)',
               }}>
                 <img
                   src={event.cover_image_url}
@@ -332,20 +299,29 @@ async function EventsList({ communityId }: { communityId: string }) {
                   }}
                 />
               </div>
+            ) : (
+              <div style={{
+                flexShrink: 0,
+                width: '72px',
+                height: '72px',
+                borderRadius: '10px',
+                background: 'var(--paper-soft)',
+              }} />
             )}
             <div style={{ minWidth: 0, flex: 1 }}>
-              <h3 className="serif" style={{
-                fontSize: '1.1rem',
-                color: 'var(--ink)',
-                marginBottom: '0.25rem',
-                fontWeight: 500,
+              <h3 style={{
+                fontSize: '16.5px',
+                fontWeight: 800,
+                color: 'var(--night)',
+                marginBottom: '4px',
+                letterSpacing: '-0.3px',
               }}>
                 {event.title}
               </h3>
               <p style={{
-                color: 'var(--night)',
-                opacity: 0.7,
-                fontSize: '0.9rem',
+                color: 'var(--muted)',
+                fontSize: '14px',
+                fontWeight: 600,
               }}>
                 {dateStr} · {timeStr} · {event.location}
               </p>
@@ -355,4 +331,57 @@ async function EventsList({ communityId }: { communityId: string }) {
       })}
     </div>
   )
+}
+
+const sectionTitleStyle = {
+  fontSize: '22px',
+  fontWeight: 800,
+  letterSpacing: '-0.5px',
+  color: 'var(--night)',
+  marginBottom: '18px',
+}
+
+const memberRowStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: '12px',
+  padding: '12px 16px',
+  background: '#ffffff',
+  border: '1px solid var(--border-soft)',
+  borderRadius: '12px',
+  flexWrap: 'wrap' as const,
+}
+
+const avatarStyle = {
+  width: '36px',
+  height: '36px',
+  borderRadius: '50%',
+  objectFit: 'cover' as const,
+  border: '1px solid var(--border-soft)',
+  flexShrink: 0,
+}
+
+const avatarPlaceholderStyle = {
+  width: '36px',
+  height: '36px',
+  borderRadius: '50%',
+  background: 'var(--paper-soft)',
+  color: 'var(--muted)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '14px',
+  fontWeight: 800,
+  flexShrink: 0,
+}
+
+const roleBadgeStyle = {
+  background: 'var(--paper-soft)',
+  color: 'var(--muted)',
+  fontSize: '12px',
+  fontWeight: 700,
+  padding: '3px 10px',
+  borderRadius: '999px',
+  letterSpacing: '0.02em',
 }
