@@ -46,28 +46,32 @@ export default function MemberActions({
         ? 'yöneticilikten al'
         : 'yönetici yap'
       : action === 'approve'
-      ? 'onayla'
-      : 'reddet'
+      ? 'Onayla'
+      : 'Reddet'
+
+  const isDestructive = action === 'reject'
+  const isNeutral = action === 'toggle-admin'
+
+  const buttonStyle = {
+    background: isDestructive ? '#ffffff' : isNeutral ? '#ffffff' : 'var(--ink)',
+    color: isDestructive ? 'var(--seal-deep)' : isNeutral ? 'var(--muted)' : '#ffffff',
+    border: isDestructive
+      ? '1px solid rgba(196, 98, 45, 0.35)'
+      : isNeutral
+      ? '1px solid var(--border-soft)'
+      : 'none',
+    borderRadius: '999px',
+    padding: '6px 14px',
+    fontFamily: 'inherit',
+    fontSize: '13px',
+    fontWeight: 700,
+    cursor: loading ? 'wait' : 'pointer',
+    opacity: loading ? 0.5 : 1,
+    transition: 'opacity 0.15s ease',
+  }
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={loading}
-      style={{
-        background: 'none',
-        border: 'none',
-        padding: 0,
-        marginLeft: '0.75rem',
-        fontFamily: 'Newsreader, serif',
-        fontStyle: 'italic',
-        fontSize: '0.85rem',
-        color: action === 'reject' ? 'var(--seal)' : 'var(--ink)',
-        opacity: loading ? 0.4 : 0.65,
-        cursor: loading ? 'wait' : 'pointer',
-        textDecoration: 'underline',
-        textDecorationStyle: 'dotted',
-      }}
-    >
+    <button onClick={handleClick} disabled={loading} style={buttonStyle}>
       {loading ? '...' : label}
     </button>
   )

@@ -41,7 +41,7 @@ export default function EditProfileForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
         <ImageUpload
           bucket="avatars"
@@ -52,8 +52,14 @@ export default function EditProfileForm({
         />
       </div>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <span style={{ fontSize: '0.9rem', color: 'var(--seal)' }}>Hakkımda</span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <label style={{
+          fontSize: '14px',
+          fontWeight: 600,
+          color: 'var(--night)',
+        }}>
+          Hakkımda
+        </label>
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
@@ -61,26 +67,43 @@ export default function EditProfileForm({
           rows={5}
           placeholder="Kitap, yürüyüş, bir film... seni anlatan birkaç cümle."
           style={{
-            padding: '0.75rem',
-            border: '1px solid var(--border)',
-            borderRadius: '6px',
+            padding: '12px 14px',
+            border: '2px solid var(--border)',
+            borderRadius: '12px',
             fontFamily: 'inherit',
-            fontSize: '1rem',
-            lineHeight: 1.5,
+            fontSize: '15px',
+            lineHeight: 1.55,
             resize: 'vertical',
             background: 'white',
-            color: 'var(--ink)',
+            color: 'var(--night)',
+            fontWeight: 500,
           }}
         />
-        <span style={{ fontSize: '0.8rem', color: 'var(--seal)', textAlign: 'right' }}>
+        <span style={{
+          fontSize: '13px',
+          color: 'var(--muted)',
+          textAlign: 'right',
+          fontWeight: 500,
+        }}>
           {bio.length} / 280
         </span>
-      </label>
+      </div>
+
       {error && (
-        <p style={{ color: 'var(--seal)', fontSize: '0.9rem' }}>
+        <div style={{
+          background: 'var(--seal-soft)',
+          border: '1px solid rgba(196, 98, 45, 0.25)',
+          borderRadius: '12px',
+          padding: '12px 16px',
+          color: 'var(--seal-deep)',
+          fontSize: '14px',
+          fontWeight: 600,
+          textAlign: 'center',
+        }}>
           Bir şeyler ters gitti: {error}
-        </p>
+        </div>
       )}
+
       <button
         type="submit"
         disabled={saving}

@@ -57,40 +57,46 @@ export default function RsvpForm({
   if (userHasRsvp) {
     return (
       <div style={{
-        background: 'white',
-        padding: '1.25rem',
-        borderRadius: '8px',
-        border: '1px solid var(--border)',
+        background: '#ffffff',
+        padding: '20px 22px',
+        borderRadius: '16px',
+        border: '1px solid var(--border-soft)',
       }}>
         <p style={{
-          fontFamily: 'Newsreader, serif',
-          fontStyle: 'italic',
-          color: 'var(--ink)',
-          marginBottom: '1rem',
+          color: 'var(--night)',
+          fontSize: '15.5px',
+          fontWeight: 700,
+          marginBottom: '16px',
         }}>
-          Katılıyorsun. Görüşmek üzere.
+          ✓ Katılıyorsun. Görüşmek üzere.
         </p>
-        <button onClick={handleCancel} disabled={loading} className="btn-secondary" style={{ fontSize: '0.9rem' }}>
+        <button
+          onClick={handleCancel}
+          disabled={loading}
+          className="btn-secondary"
+          style={{ fontSize: '14px', padding: '0.6rem 1.25rem' }}
+        >
           {loading ? 'İptal ediliyor...' : 'Katılımı iptal et'}
         </button>
-        {error && <p style={{ color: 'var(--seal)', fontSize: '0.9rem', marginTop: '0.75rem' }}>{error}</p>}
+        {error && (
+          <div style={errorStyle}>{error}</div>
+        )}
       </div>
     )
   }
 
   if (isFull) {
     return (
-      <p style={{
-        background: 'white',
-        padding: '1.25rem',
-        borderRadius: '8px',
-        border: '1px solid var(--border)',
-        fontFamily: 'Newsreader, serif',
-        fontStyle: 'italic',
-        opacity: 0.7,
+      <div style={{
+        background: 'var(--paper-soft)',
+        padding: '18px 22px',
+        borderRadius: '16px',
+        color: 'var(--muted)',
+        fontSize: '15px',
+        fontWeight: 600,
       }}>
         Maalesef etkinlik dolu.
-      </p>
+      </div>
     )
   }
 
@@ -99,7 +105,20 @@ export default function RsvpForm({
       <button onClick={handleRsvp} disabled={loading} className="btn-primary">
         {loading ? 'Kaydediliyor...' : 'Katılıyorum'}
       </button>
-      {error && <p style={{ color: 'var(--seal)', fontSize: '0.9rem', marginTop: '0.75rem' }}>{error}</p>}
+      {error && (
+        <div style={errorStyle}>{error}</div>
+      )}
     </div>
   )
+}
+
+const errorStyle = {
+  marginTop: '12px',
+  background: 'var(--seal-soft)',
+  border: '1px solid rgba(196, 98, 45, 0.25)',
+  borderRadius: '12px',
+  padding: '10px 14px',
+  color: 'var(--seal-deep)',
+  fontSize: '13.5px',
+  fontWeight: 600,
 }

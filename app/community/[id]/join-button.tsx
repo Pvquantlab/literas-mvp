@@ -6,7 +6,7 @@ export default function JoinButton({
   communityId,
 }: {
   communityId: string
-  userId?: string  // artık kullanılmıyor ama eski çağrıları kırmayalım
+  userId?: string
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -32,7 +32,7 @@ export default function JoinButton({
   }
 
   return (
-    <div style={{ marginBottom: '1.5rem' }}>
+    <div>
       <button
         onClick={handleJoin}
         disabled={loading}
@@ -41,13 +41,18 @@ export default function JoinButton({
         {loading ? 'Gönderiliyor…' : 'Topluluğa katıl'}
       </button>
       {error && (
-        <p style={{
-          color: 'var(--seal)',
-          fontSize: '0.9rem',
-          marginTop: '0.5rem',
+        <div style={{
+          marginTop: '12px',
+          background: 'var(--seal-soft)',
+          border: '1px solid rgba(196, 98, 45, 0.25)',
+          borderRadius: '12px',
+          padding: '10px 14px',
+          color: 'var(--seal-deep)',
+          fontSize: '13.5px',
+          fontWeight: 600,
         }}>
           {error}
-        </p>
+        </div>
       )}
     </div>
   )

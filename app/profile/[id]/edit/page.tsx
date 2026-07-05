@@ -30,23 +30,40 @@ export default async function EditProfilePage({
   }
 
   return (
-    <main style={{ maxWidth: '640px', margin: '0 auto', padding: '2rem 1.5rem' }}>
+    <main style={{
+      maxWidth: '560px',
+      margin: '0 auto',
+      padding: '32px 24px 64px',
+    }}>
       <Link
         href={`/profile/${id}`}
-        style={{ fontSize: '0.9rem', opacity: 0.7, color: 'var(--ink)' }}
+        style={{
+          color: 'var(--muted)',
+          fontSize: '14px',
+          fontWeight: 600,
+          textDecoration: 'none',
+          display: 'inline-block',
+          marginBottom: '20px',
+        }}
       >
         ← Profile dön
       </Link>
       <h1 style={{
-        fontFamily: 'Newsreader, serif',
-        fontStyle: 'italic',
-        fontSize: '2rem',
-        marginTop: '1.5rem',
-        marginBottom: '0.5rem',
+        fontSize: '32px',
+        fontWeight: 800,
+        letterSpacing: '-0.8px',
+        color: 'var(--night)',
+        margin: '0 0 8px',
       }}>
         Kendinden bahset
       </h1>
-      <p style={{ color: 'var(--seal)', fontSize: '0.95rem', marginBottom: '2rem' }}>
+      <p style={{
+        color: 'var(--muted)',
+        fontSize: '15px',
+        fontWeight: 500,
+        lineHeight: 1.55,
+        marginBottom: '32px',
+      }}>
         Birkaç cümle yeter. Neyi seversin, neyi merak edersin?
       </p>
       <EditProfileForm
