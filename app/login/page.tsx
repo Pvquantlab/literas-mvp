@@ -47,19 +47,36 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="container" style={{ maxWidth: '420px', paddingTop: '3rem' }}>
-      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>No. ↩</p>
-        <h1 className="serif" style={{
-          fontSize: '2rem',
-          color: 'var(--ink)',
-          fontWeight: 500,
+    <main style={{
+      maxWidth: '440px',
+      margin: '0 auto',
+      padding: '56px 24px 64px',
+    }}>
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <h1 style={{
+          fontSize: '32px',
+          fontWeight: 800,
+          letterSpacing: '-0.8px',
+          color: 'var(--night)',
+          margin: '0 0 8px',
         }}>
           Tekrar hoş geldin
         </h1>
+        <p style={{
+          color: 'var(--muted)',
+          fontSize: '15px',
+          fontWeight: 500,
+        }}>
+          Devam etmek için giriş yap.
+        </p>
       </div>
 
-      <button onClick={handleGoogleLogin} disabled={loading} className="btn-google">
+      <button
+        onClick={handleGoogleLogin}
+        disabled={loading}
+        className="btn-google"
+        style={{ marginBottom: '20px' }}
+      >
         <svg width="18" height="18" viewBox="0 0 18 18">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
           <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
@@ -71,11 +88,9 @@ export default function LoginPage() {
 
       <div className="divider">veya</div>
 
-      <form onSubmit={handleEmailLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form onSubmit={handleEmailLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-            E-posta
-          </label>
+          <label style={labelStyle}>E-posta</label>
           <input
             type="email"
             value={email}
@@ -85,9 +100,7 @@ export default function LoginPage() {
           />
         </div>
         <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-            Parola
-          </label>
+          <label style={labelStyle}>Parola</label>
           <input
             type="password"
             value={password}
@@ -98,22 +111,54 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <p style={{ color: 'var(--seal)', fontSize: '0.9rem', textAlign: 'center' }}>
+          <div style={{
+            background: 'var(--seal-soft)',
+            border: '1px solid rgba(196, 98, 45, 0.25)',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            color: 'var(--seal-deep)',
+            fontSize: '14px',
+            fontWeight: 600,
+            textAlign: 'center',
+          }}>
             {error}
-          </p>
+          </div>
         )}
 
-        <button type="submit" disabled={loading} className="btn-primary">
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary"
+          style={{ width: '100%', marginTop: '4px' }}
+        >
           {loading ? 'Giriş yapılıyor...' : 'Giriş yap'}
         </button>
       </form>
 
-      <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.95rem', opacity: 0.75 }}>
+      <p style={{
+        textAlign: 'center',
+        marginTop: '24px',
+        fontSize: '15px',
+        color: 'var(--muted)',
+        fontWeight: 500,
+      }}>
         Hesabın yok mu?{' '}
-        <Link href="/signup" style={{ fontWeight: 500 }}>
+        <Link href="/signup" style={{
+          color: 'var(--ink)',
+          fontWeight: 700,
+          textDecoration: 'underline',
+        }}>
           Katıl
         </Link>
       </p>
     </main>
   )
+}
+
+const labelStyle = {
+  display: 'block',
+  marginBottom: '6px',
+  fontSize: '14px',
+  fontWeight: 600,
+  color: 'var(--night)',
 }
