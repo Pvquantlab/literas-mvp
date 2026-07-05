@@ -2,8 +2,8 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Resend'in test domain'i. İleride kendi domain'in (literas.co) olunca değişecek.
-const FROM = 'literas <onboarding@resend.dev>'
+// literaslab.com üzerinden gönderim yapıyoruz.
+const FROM = 'literas <bildirimler@literaslab.com>'
 
 type SendEmailArgs = {
   to: string | string[]
