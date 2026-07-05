@@ -17,28 +17,30 @@ export default function CityFilter({ cities, activeCity }: { cities: string[]; a
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-      marginBottom: '1rem',
-      fontFamily: 'Newsreader, serif',
-      fontStyle: 'italic',
-    }}>
-      <label htmlFor="city" style={{ color: 'var(--ink)', opacity: 0.7 }}>
-        şehir:
-      </label>
-      <select
-        id="city"
-        value={activeCity}
-        onChange={handleChange}
-        style={{ width: 'auto', minWidth: '180px' }}
-      >
-        <option value="">tümü</option>
-        {cities.map((c) => (
-          <option key={c} value={c}>{c}</option>
-        ))}
-      </select>
-    </div>
+    <select
+      id="city"
+      value={activeCity}
+      onChange={handleChange}
+      style={{
+        appearance: 'none',
+        WebkitAppearance: 'none',
+        background: `var(--paper-soft) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%23212121' stroke-width='2' fill='none' stroke-linecap='round'/></svg>") no-repeat right 20px center`,
+        border: 'none',
+        borderRadius: '999px',
+        padding: '0 48px 0 24px',
+        height: '58px',
+        fontFamily: 'inherit',
+        fontSize: '16px',
+        fontWeight: 700,
+        color: 'var(--night)',
+        cursor: 'pointer',
+        width: '100%',
+      }}
+    >
+      <option value="">Tüm şehirler</option>
+      {cities.map((c) => (
+        <option key={c} value={c}>{c}</option>
+      ))}
+    </select>
   )
 }
