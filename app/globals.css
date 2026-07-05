@@ -1,17 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
   --ink: #1E4D2B;
   --ink-hover: #173F22;
-  --paper: #F5F0E6;
+  --ink-deep: #173F22;
   --seal: #C4622D;
   --seal-soft: #F9EDE4;
   --seal-deep: #A84E1F;
-  --old-paper: #EFE7D5;
-  --night: #1F2A24;
-  --border: rgba(30, 77, 43, 0.15);
-  --shadow-soft: 0 1px 2px rgba(31, 42, 36, 0.04), 0 2px 8px rgba(31, 42, 36, 0.04);
-  --shadow-hover: 0 2px 4px rgba(31, 42, 36, 0.06), 0 8px 20px rgba(31, 42, 36, 0.08);
+  --paper: #ffffff;
+  --paper-soft: #F1F2EF;
+  --night: #212121;
+  --muted: #5B6660;
+  --border: #DDE2DD;
+  --border-soft: #E7EAE6;
+  --shadow-soft: 0 2px 8px rgba(33, 33, 33, 0.06);
+  --shadow-hover: 0 10px 28px rgba(33, 33, 33, 0.14);
 }
 
 * {
@@ -23,9 +26,10 @@
 html, body {
   background: var(--paper);
   color: var(--night);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
 
@@ -35,7 +39,7 @@ a {
   transition: color 0.15s ease;
 }
 a:hover {
-  color: var(--seal);
+  color: var(--ink-hover);
 }
 
 button {
@@ -48,50 +52,53 @@ button {
 input, textarea, select {
   font-family: inherit;
   font-size: 1rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
   background: white;
   width: 100%;
   color: var(--night);
+  font-weight: 500;
   transition: border-color 0.15s ease;
 }
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--ink);
 }
+input::placeholder {
+  color: #8A938D;
+  font-weight: 500;
+}
 
 .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.container-narrow {
   max-width: 760px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
 }
 
-.serif {
-  font-family: 'Newsreader', Georgia, serif;
-}
-
-.wordmark {
-  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-}
-
+/* --- Butonlar --- */
 .btn-primary {
   display: inline-block;
   background: var(--ink);
-  color: var(--paper);
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-weight: 500;
+  color: #ffffff;
+  padding: 0.85rem 1.75rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 1rem;
   border: none;
   cursor: pointer;
-  font-size: 1rem;
   transition: background 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 4px 12px rgba(30, 77, 43, 0.2);
 }
 .btn-primary:hover {
   background: var(--ink-hover);
-  color: var(--paper);
+  color: #ffffff;
 }
 .btn-primary:active {
   transform: translateY(1px);
@@ -99,19 +106,32 @@ input:focus, textarea:focus, select:focus {
 
 .btn-secondary {
   display: inline-block;
-  background: white;
+  background: #ffffff;
   color: var(--ink);
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-weight: 500;
-  border: 1px solid var(--border);
-  cursor: pointer;
+  padding: 0.85rem 1.75rem;
+  border-radius: 999px;
+  font-weight: 700;
   font-size: 1rem;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease;
 }
 .btn-secondary:hover {
-  border-color: var(--ink);
-  color: var(--seal);
+  background: #F0F4F0;
+}
+
+.btn-ghost {
+  display: inline-block;
+  background: transparent;
+  color: var(--night);
+  padding: 0.6rem 1rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+}
+.btn-ghost:hover {
+  color: var(--ink);
 }
 
 .btn-google {
@@ -122,12 +142,12 @@ input:focus, textarea:focus, select:focus {
   width: 100%;
   background: white;
   color: var(--night);
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-weight: 500;
-  border: 1px solid var(--border);
-  cursor: pointer;
+  padding: 0.85rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
   font-size: 1rem;
+  border: 2px solid var(--border);
+  cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 .btn-google:hover {
@@ -135,19 +155,70 @@ input:focus, textarea:focus, select:focus {
   background: #fafafa;
 }
 
-.catalog-number {
-  font-family: 'Newsreader', Georgia, serif;
-  font-style: italic;
-  color: var(--seal);
-  font-size: 0.9rem;
+/* --- Kart (topluluk/etkinlik) --- */
+.card {
+  display: block;
+  background: #ffffff;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  color: inherit;
+}
+.card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-3px);
+  color: inherit;
+}
+
+/* --- Kategori badge (pill üstte) --- */
+.cat-badge {
+  display: inline-block;
+  background: var(--seal-soft);
+  color: var(--seal-deep);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  text-transform: capitalize;
   letter-spacing: 0.02em;
 }
 
+/* --- Filtre chip'leri --- */
+.filter-chip {
+  display: inline-block;
+  background: var(--paper-soft);
+  color: var(--night);
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.25rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  text-transform: capitalize;
+  transition: opacity 0.15s ease;
+}
+.filter-chip:hover {
+  opacity: 0.85;
+  color: var(--night);
+}
+.filter-chip.active {
+  background: var(--ink);
+  color: #ffffff;
+}
+.filter-chip.active:hover {
+  color: #ffffff;
+}
+
+/* --- Divider --- */
 .divider {
   text-align: center;
   margin: 1.5rem 0;
   position: relative;
-  color: rgba(31, 42, 36, 0.5);
+  color: rgba(33, 33, 33, 0.5);
   font-size: 0.875rem;
 }
 .divider::before, .divider::after {
@@ -161,61 +232,7 @@ input:focus, textarea:focus, select:focus {
 .divider::before { left: 0; }
 .divider::after { right: 0; }
 
-/* --- Kart (topluluk/etkinlik) --- */
-.card {
-  display: block;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-}
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
-  border-color: rgba(30, 77, 43, 0.35);
-}
-
-/* --- Kategori badge --- */
-.cat-badge {
-  display: inline-block;
-  font-family: 'Newsreader', Georgia, serif;
-  font-style: italic;
-  font-size: 0.85rem;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  background: var(--old-paper);
-  border: 1px solid var(--border);
-  color: var(--ink);
-  vertical-align: middle;
-  line-height: 1.4;
-}
-.cat-badge.kitap    { background: #F1E6D2; color: #6E4A1F; border-color: rgba(110, 74, 31, 0.25); }
-.cat-badge.yürüyüş  { background: #E2EBDF; color: #2E5A3C; border-color: rgba(46, 90, 60, 0.25); }
-.cat-badge.yoga     { background: #EBE2EF; color: #5B3F73; border-color: rgba(91, 63, 115, 0.25); }
-.cat-badge.dil      { background: #DDE5EE; color: #2E4A6E; border-color: rgba(46, 74, 110, 0.25); }
-.cat-badge.sanat    { background: #F2DCC9; color: #8A3F12; border-color: rgba(138, 63, 18, 0.25); }
-.cat-badge.sohbet   { background: #F1ECCC; color: #6B5A1E; border-color: rgba(107, 90, 30, 0.25); }
-.cat-badge.sinema   { background: #E2E0DD; color: #3A3A3A; border-color: rgba(58, 58, 58, 0.25); }
-
-/* --- Filtre linkleri --- */
-.filter-link {
-  font-family: 'Newsreader', Georgia, serif;
-  font-style: italic;
-  color: var(--ink);
-  opacity: 0.55;
-  transition: opacity 0.15s ease, color 0.15s ease;
-  text-decoration: none;
-  padding-bottom: 2px;
-  border-bottom: 1.5px solid transparent;
-}
-.filter-link:hover {
-  opacity: 1;
-  color: var(--seal);
-}
-.filter-link.active {
-  opacity: 1;
-  color: var(--ink);
-  border-bottom-color: var(--seal);
+/* Eski sınıflar — geçiş için tutuluyor, sonra temizlenecek */
+.serif, .catalog-number, .filter-link {
+  /* eski dilden kalan sınıflar — kullanılmıyor artık */
 }
