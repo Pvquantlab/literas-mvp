@@ -68,9 +68,13 @@ export default function NewCommunityForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="form">
-      <div className="form-group">
-        <label htmlFor="name">İsim</label>
+    <form onSubmit={handleSubmit} style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
+    }}>
+      <div style={groupStyle}>
+        <label htmlFor="name" style={labelStyle}>İsim</label>
         <input
           id="name"
           type="text"
@@ -81,8 +85,8 @@ export default function NewCommunityForm() {
         />
       </div>
 
-      <div className="form-group">
-        <label htmlFor="category">Tür</label>
+      <div style={groupStyle}>
+        <label htmlFor="category" style={labelStyle}>Tür</label>
         <select
           id="category"
           value={category}
@@ -99,8 +103,8 @@ export default function NewCommunityForm() {
         </select>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="city">Şehir</label>
+      <div style={groupStyle}>
+        <label htmlFor="city" style={labelStyle}>Şehir</label>
         <input
           id="city"
           type="text"
@@ -111,8 +115,8 @@ export default function NewCommunityForm() {
         />
       </div>
 
-      <div className="form-group">
-        <label htmlFor="description">Açıklama</label>
+      <div style={groupStyle}>
+        <label htmlFor="description" style={labelStyle}>Açıklama</label>
         <textarea
           id="description"
           value={description}
@@ -122,7 +126,7 @@ export default function NewCommunityForm() {
         />
       </div>
 
-      <div className="form-group">
+      <div style={groupStyle}>
         <ImageUpload
           bucket="community-covers"
           value={coverImageUrl}
@@ -132,11 +136,36 @@ export default function NewCommunityForm() {
         />
       </div>
 
-      {error && <p className="form-error">{error}</p>}
+      {error && (
+        <div style={{
+          background: 'var(--seal-soft)',
+          border: '1px solid rgba(196, 98, 45, 0.25)',
+          borderRadius: '12px',
+          padding: '12px 16px',
+          color: 'var(--seal-deep)',
+          fontSize: '14px',
+          fontWeight: 600,
+          textAlign: 'center',
+        }}>
+          {error}
+        </div>
+      )}
 
-      <button type="submit" className="btn-primary" disabled={loading}>
+      <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', marginTop: '4px' }}>
         {loading ? 'Kuruluyor…' : 'Topluluğu kur'}
       </button>
     </form>
   )
+}
+
+const groupStyle = {
+  display: 'flex',
+  flexDirection: 'column' as const,
+  gap: '6px',
+}
+
+const labelStyle = {
+  fontSize: '14px',
+  fontWeight: 600,
+  color: 'var(--night)',
 }

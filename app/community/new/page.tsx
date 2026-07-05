@@ -11,17 +11,32 @@ export default async function NewCommunityPage() {
   }
 
   return (
-    <main className="container">
-      <div className="form-page">
-        <p className="catalog-number">No. yeni</p>
-        <h1 className="form-title">Bir topluluk kur</h1>
-        <p className="form-subtitle">
-          Bir araya gelmek için bir bahane yeter. Topluluğunu kur,
-          insanlar etrafında toplansın.
-        </p>
+    <main style={{
+      maxWidth: '560px',
+      margin: '0 auto',
+      padding: '48px 24px 64px',
+    }}>
+      <h1 style={{
+        fontSize: '32px',
+        fontWeight: 800,
+        letterSpacing: '-0.8px',
+        color: 'var(--night)',
+        margin: '0 0 10px',
+      }}>
+        Bir topluluk kur
+      </h1>
+      <p style={{
+        color: 'var(--muted)',
+        fontSize: '15px',
+        fontWeight: 500,
+        lineHeight: 1.55,
+        marginBottom: '32px',
+      }}>
+        Bir araya gelmek için bir bahane yeter. Topluluğunu kur,
+        insanlar etrafında toplansın.
+      </p>
 
-        <NewCommunityForm />
-      </div>
+      <NewCommunityForm />
     </main>
   )
 }

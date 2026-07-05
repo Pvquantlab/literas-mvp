@@ -11,7 +11,6 @@ export default async function NewEventPage() {
     redirect('/login')
   }
 
-  // Kullanıcının founder veya admin olduğu, onaylı üyelikleri çek
   const { data: memberships } = await supabase
     .from('community_members')
     .select('community:communities(id, name)')
@@ -24,32 +23,45 @@ export default async function NewEventPage() {
     .filter(Boolean)
 
   return (
-    <main className="container" style={{ maxWidth: '560px' }}>
-      <section style={{ padding: '2.5rem 0 1.5rem' }}>
-        <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
-          Yeni katalog girişi
-        </p>
-        <h1 className="serif" style={{
-          fontSize: '2rem',
-          color: 'var(--ink)',
-          fontWeight: 500,
-        }}>
-          Etkinlik oluştur
-        </h1>
-        <p style={{ opacity: 0.7, marginTop: '0.5rem' }}>
-          Topluluğunla ne yapacaksın? Birkaç satır yeter.
-        </p>
-      </section>
+    <main style={{
+      maxWidth: '560px',
+      margin: '0 auto',
+      padding: '48px 24px 64px',
+    }}>
+      <h1 style={{
+        fontSize: '32px',
+        fontWeight: 800,
+        letterSpacing: '-0.8px',
+        color: 'var(--night)',
+        margin: '0 0 10px',
+      }}>
+        Etkinlik oluştur
+      </h1>
+      <p style={{
+        color: 'var(--muted)',
+        fontSize: '15px',
+        fontWeight: 500,
+        lineHeight: 1.55,
+        marginBottom: '32px',
+      }}>
+        Topluluğunla ne yapacaksın? Birkaç satır yeter.
+      </p>
 
       {communities.length === 0 ? (
         <div style={{
-          background: 'white',
-          padding: '2rem',
-          borderRadius: '8px',
+          background: '#ffffff',
+          padding: '32px 24px',
+          borderRadius: '16px',
           textAlign: 'center',
-          border: '1px solid var(--border)',
+          border: '1px solid var(--border-soft)',
         }}>
-          <p style={{ color: 'var(--night)', opacity: 0.75, marginBottom: '1rem', lineHeight: 1.6 }}>
+          <p style={{
+            color: 'var(--night)',
+            fontSize: '15.5px',
+            fontWeight: 500,
+            lineHeight: 1.6,
+            marginBottom: '20px',
+          }}>
             Etkinlik düzenlemek için önce bir topluluğun olmalı.
             <br />
             Bir bahane bulup başla.

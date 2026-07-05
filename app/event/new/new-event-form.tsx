@@ -57,11 +57,13 @@ export default function NewEventForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      <div>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-          Topluluk
-        </label>
+    <form onSubmit={handleSubmit} style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
+    }}>
+      <div style={groupStyle}>
+        <label style={labelStyle}>Topluluk</label>
         <select
           value={communityId}
           onChange={(e) => setCommunityId(e.target.value)}
@@ -73,10 +75,8 @@ export default function NewEventForm({
         </select>
       </div>
 
-      <div>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-          Başlık
-        </label>
+      <div style={groupStyle}>
+        <label style={labelStyle}>Başlık</label>
         <input
           type="text"
           value={title}
@@ -86,9 +86,9 @@ export default function NewEventForm({
         />
       </div>
 
-      <div>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-          Açıklama <span style={{ opacity: 0.5 }}>(isteğe bağlı)</span>
+      <div style={groupStyle}>
+        <label style={labelStyle}>
+          Açıklama <span style={optionalStyle}>(isteğe bağlı)</span>
         </label>
         <textarea
           value={description}
@@ -98,10 +98,8 @@ export default function NewEventForm({
         />
       </div>
 
-      <div>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-          Konum
-        </label>
+      <div style={groupStyle}>
+        <label style={labelStyle}>Konum</label>
         <input
           type="text"
           value={location}
@@ -111,10 +109,8 @@ export default function NewEventForm({
         />
       </div>
 
-      <div>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-          Tarih ve saat
-        </label>
+      <div style={groupStyle}>
+        <label style={labelStyle}>Tarih ve saat</label>
         <input
           type="datetime-local"
           value={eventDate}
@@ -123,9 +119,9 @@ export default function NewEventForm({
         />
       </div>
 
-      <div>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-          Maksimum katılımcı <span style={{ opacity: 0.5 }}>(isteğe bağlı)</span>
+      <div style={groupStyle}>
+        <label style={labelStyle}>
+          Maksimum katılımcı <span style={optionalStyle}>(isteğe bağlı)</span>
         </label>
         <input
           type="number"
@@ -136,7 +132,7 @@ export default function NewEventForm({
         />
       </div>
 
-      <div>
+      <div style={groupStyle}>
         <ImageUpload
           bucket="event-covers"
           value={coverImageUrl}
@@ -147,12 +143,40 @@ export default function NewEventForm({
       </div>
 
       {error && (
-        <p style={{ color: 'var(--seal)', fontSize: '0.9rem' }}>{error}</p>
+        <div style={{
+          background: 'var(--seal-soft)',
+          border: '1px solid rgba(196, 98, 45, 0.25)',
+          borderRadius: '12px',
+          padding: '12px 16px',
+          color: 'var(--seal-deep)',
+          fontSize: '14px',
+          fontWeight: 600,
+          textAlign: 'center',
+        }}>
+          {error}
+        </div>
       )}
 
-      <button type="submit" disabled={loading} className="btn-primary">
+      <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', marginTop: '4px' }}>
         {loading ? 'Oluşturuluyor…' : 'Etkinliği oluştur'}
       </button>
     </form>
   )
+}
+
+const groupStyle = {
+  display: 'flex',
+  flexDirection: 'column' as const,
+  gap: '6px',
+}
+
+const labelStyle = {
+  fontSize: '14px',
+  fontWeight: 600,
+  color: 'var(--night)',
+}
+
+const optionalStyle = {
+  color: 'var(--muted)',
+  fontWeight: 500,
 }
