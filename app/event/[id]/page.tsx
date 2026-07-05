@@ -38,7 +38,6 @@ export default async function EventPage({
     .eq('event_id', id)
     .order('created_at', { ascending: true })
 
-  // Kullanıcının topluluk üyelik durumu
   let isApprovedMember = false
   let isCommunityModerator = false
   if (user && event.community_id) {
@@ -74,20 +73,31 @@ export default async function EventPage({
   })
 
   return (
-    <main className="container" style={{ maxWidth: '640px' }}>
-      <Link href="/" style={{ fontSize: '0.9rem', opacity: 0.7 }}>
+    <main style={{
+      maxWidth: '760px',
+      margin: '0 auto',
+      padding: '32px 24px 64px',
+    }}>
+      <Link href="/" style={{
+        color: 'var(--muted)',
+        fontSize: '14px',
+        fontWeight: 600,
+        textDecoration: 'none',
+        display: 'inline-block',
+        marginBottom: '20px',
+      }}>
         ← Tüm etkinlikler
       </Link>
+
       {event.cover_image_url && (
         <div style={{
           width: '100%',
           aspectRatio: '16 / 9',
           overflow: 'hidden',
-          borderRadius: '8px',
-          border: '1px solid var(--border)',
-          background: 'var(--old-paper)',
-          marginTop: '1.5rem',
-          marginBottom: '0.5rem',
+          borderRadius: '16px',
+          border: '1px solid var(--border-soft)',
+          background: 'var(--paper-soft)',
+          marginBottom: '28px',
         }}>
           <img
             src={event.cover_image_url}
@@ -101,125 +111,110 @@ export default async function EventPage({
           />
         </div>
       )}
-      <section style={{ padding: '1.5rem 0 2rem' }}>
-        <p className="catalog-number" style={{ marginBottom: '0.5rem' }}>
-          No. {String(event.id).slice(0, 4).toUpperCase()}
-        </p>
-        <h1 className="serif" style={{
-          fontSize: '2.25rem',
-          color: 'var(--ink)',
-          fontWeight: 500,
-          lineHeight: 1.2,
-          marginBottom: '1rem',
+
+      {/* Başlık */}
+      <h1 style={{
+        fontSize: '38px',
+        fontWeight: 800,
+        letterSpacing: '-1px',
+        lineHeight: 1.15,
+        color: 'var(--night)',
+        margin: '0 0 12px',
+      }}>
+        {event.title}
+      </h1>
+
+      {event.community && (
+        <p style={{
+          color: 'var(--muted)',
+          fontSize: '15px',
+          fontWeight: 600,
+          marginBottom: '24px',
         }}>
-          {event.title}
-        </h1>
-
-        {event.community && (
-          <p style={{ marginBottom: '1rem', opacity: 0.75 }}>
-            <Link href={`/community/${event.community.id}`} style={{
-              fontFamily: 'Newsreader, serif',
-              fontStyle: 'italic',
-              color: 'var(--ink)',
-            }}>
-              {event.community.name}
-            </Link>
-            <span style={{ marginLeft: '0.5rem' }}>topluluğunun bir buluşması</span>
-          </p>
-        )}
-
-        <div style={{
-          background: 'var(--old-paper)',
-          padding: '1.25rem 1.5rem',
-          borderRadius: '8px',
-          marginTop: '1rem',
-        }}>
-          <p style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>
-            <strong>Tarih:</strong> {dateStr}
-          </p>
-          <p style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>
-            <strong>Saat:</strong> {timeStr}
-          </p>
-          <p style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>
-            <strong>Konum:</strong> {event.location}
-          </p>
-          {event.organizer?.name && (
-            <p style={{ fontSize: '0.95rem' }}>
-              <strong>Düzenleyen:</strong>{' '}
-              <Link href={`/profile/${event.organizer.id}`} style={{
-                fontFamily: 'Newsreader, serif',
-                fontStyle: 'italic',
-                color: 'var(--ink)',
-                textDecoration: 'underline',
-              }}>
-                {event.organizer.name}
-              </Link>
-            </p>
-          )}
-        </div>
-
-        {event.description && (
-          <div style={{
-            marginTop: '1.5rem',
-            fontFamily: 'Newsreader, serif',
-            fontSize: '1.1rem',
-            lineHeight: 1.7,
-            color: 'var(--night)',
-            whiteSpace: 'pre-wrap',
+          <Link href={`/community/${event.community.id}`} style={{
+            color: 'var(--ink)',
+            fontWeight: 700,
+            textDecoration: 'none',
           }}>
-            {event.description}
-          </div>
+            {event.community.name}
+          </Link>
+          <span> topluluğunun bir buluşması</span>
+        </p>
+      )}
+
+      {/* Detay kutusu */}
+      <div style={{
+        background: 'var(--paper-soft)',
+        padding: '20px 24px',
+        borderRadius: '16px',
+        marginBottom: '24px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+      }}>
+        <DetailRow label="Tarih" value={dateStr} />
+        <DetailRow label="Saat" value={timeStr} />
+        <DetailRow label="Konum" value={event.location} />
+        {event.organizer?.name && (
+          <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--night)' }}>
+            <span style={{ color: 'var(--muted)', marginRight: '6px' }}>Düzenleyen:</span>
+            <Link href={`/profile/${event.organizer.id}`} style={{
+              color: 'var(--ink)',
+              fontWeight: 700,
+              textDecoration: 'none',
+            }}>
+              {event.organizer.name}
+            </Link>
+          </p>
         )}
+      </div>
 
-        {canManage && <EventActions eventId={event.id} />}
-      </section>
+      {event.description && (
+        <div style={{
+          fontSize: '16.5px',
+          lineHeight: 1.65,
+          color: 'var(--night)',
+          whiteSpace: 'pre-wrap',
+          marginBottom: '24px',
+        }}>
+          {event.description}
+        </div>
+      )}
 
-      <section style={{ marginTop: '1rem' }}>
-        <h2 className="serif" style={{
-          fontSize: '1.3rem',
-          color: 'var(--ink)',
-          marginBottom: '1rem',
-          fontWeight: 500,
+      {canManage && <EventActions eventId={event.id} />}
+
+      {/* Katılım */}
+      <section style={{ marginTop: '40px' }}>
+        <h2 style={{
+          fontSize: '22px',
+          fontWeight: 800,
+          letterSpacing: '-0.5px',
+          color: 'var(--night)',
+          marginBottom: '18px',
         }}>
           Katılım
         </h2>
 
         {!user ? (
-          <div style={{
-            background: 'white',
-            padding: '1.5rem',
-            borderRadius: '8px',
-            border: '1px solid var(--border)',
-            textAlign: 'center',
-          }}>
-            <p style={{ marginBottom: '1rem', opacity: 0.75 }}>
+          <div style={joinBoxStyle}>
+            <p style={{ marginBottom: '16px', color: 'var(--muted)', fontSize: '15px', fontWeight: 500 }}>
               Katılmak için önce giriş yapmalısın.
             </p>
-            <Link href="/login" className="btn-primary">
-              Giriş yap
-            </Link>
+            <Link href="/login" className="btn-primary">Giriş yap</Link>
           </div>
         ) : isOrganizer ? (
           <p style={{
-            fontFamily: 'Newsreader, serif',
-            fontStyle: 'italic',
-            opacity: 0.7,
+            color: 'var(--muted)',
+            fontSize: '15px',
+            fontWeight: 600,
           }}>
             Bu etkinliği sen düzenliyorsun.
           </p>
         ) : !isApprovedMember && event.community ? (
-          <div style={{
-            background: 'white',
-            padding: '1.5rem',
-            borderRadius: '8px',
-            border: '1px solid var(--border)',
-            textAlign: 'center',
-          }}>
-            <p style={{ marginBottom: '1rem', opacity: 0.75, lineHeight: 1.6 }}>
+          <div style={joinBoxStyle}>
+            <p style={{ marginBottom: '16px', color: 'var(--night)', fontSize: '15px', lineHeight: 1.55 }}>
               Bu etkinliğe katılmak için önce{' '}
-              <span style={{ fontFamily: 'Newsreader, serif', fontStyle: 'italic' }}>
-                {event.community.name}
-              </span>{' '}
+              <strong>{event.community.name}</strong>{' '}
               topluluğunun üyesi olmalısın.
             </p>
             <Link href={`/community/${event.community.id}`} className="btn-primary">
@@ -235,8 +230,13 @@ export default async function EventPage({
           />
         )}
 
-        <div style={{ marginTop: '1.5rem' }}>
-          <p style={{ fontSize: '0.95rem', opacity: 0.7, marginBottom: '0.75rem' }}>
+        <div style={{ marginTop: '24px' }}>
+          <p style={{
+            fontSize: '14.5px',
+            fontWeight: 600,
+            color: 'var(--muted)',
+            marginBottom: '12px',
+          }}>
             {rsvps?.length || 0} kişi katılıyor
             {event.max_attendees && ` / ${event.max_attendees} kişilik`}
           </p>
@@ -245,38 +245,17 @@ export default async function EventPage({
               listStyle: 'none',
               display: 'flex',
               flexWrap: 'wrap',
-              gap: '0.5rem',
+              gap: '8px',
+              padding: 0,
             }}>
               {rsvps.map((r: any) => (
                 <li key={r.id}>
                   {r.user?.id ? (
-                    <Link href={`/profile/${r.user.id}`} style={{
-                      display: 'inline-block',
-                      background: 'white',
-                      padding: '0.4rem 0.85rem',
-                      borderRadius: '20px',
-                      border: '1px solid var(--border)',
-                      fontSize: '0.9rem',
-                      fontFamily: 'Newsreader, serif',
-                      fontStyle: 'italic',
-                      color: 'var(--ink)',
-                      textDecoration: 'none',
-                    }}>
+                    <Link href={`/profile/${r.user.id}`} style={rsvpChipStyle}>
                       {r.user.name}
                     </Link>
                   ) : (
-                    <span style={{
-                      display: 'inline-block',
-                      background: 'white',
-                      padding: '0.4rem 0.85rem',
-                      borderRadius: '20px',
-                      border: '1px solid var(--border)',
-                      fontSize: '0.9rem',
-                      fontFamily: 'Newsreader, serif',
-                      fontStyle: 'italic',
-                    }}>
-                      Anonim
-                    </span>
+                    <span style={rsvpChipStyle}>Anonim</span>
                   )}
                 </li>
               ))}
@@ -286,4 +265,33 @@ export default async function EventPage({
       </section>
     </main>
   )
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--night)' }}>
+      <span style={{ color: 'var(--muted)', marginRight: '6px' }}>{label}:</span>
+      {value}
+    </p>
+  )
+}
+
+const joinBoxStyle = {
+  background: '#ffffff',
+  padding: '24px',
+  borderRadius: '16px',
+  border: '1px solid var(--border-soft)',
+  textAlign: 'center' as const,
+}
+
+const rsvpChipStyle = {
+  display: 'inline-block',
+  background: '#ffffff',
+  padding: '8px 16px',
+  borderRadius: '999px',
+  border: '1px solid var(--border-soft)',
+  fontSize: '14px',
+  fontWeight: 700,
+  color: 'var(--night)',
+  textDecoration: 'none',
 }
