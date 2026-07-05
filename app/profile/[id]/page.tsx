@@ -157,6 +157,32 @@ export default async function ProfilePage({
               </li>
             ))}
           </ul>
+        ) : isOwnProfile ? (
+          <div style={{
+            padding: '1.5rem',
+            background: 'var(--old-paper)',
+            borderRadius: '8px',
+            border: '1px solid var(--border)',
+          }}>
+            <p style={{ marginBottom: '0.5rem', color: 'var(--ink)', lineHeight: '1.6' }}>
+              Düşündüklerini hayata geçirebileceğin ve büyüyebileceğin bir yerdesin.
+            </p>
+            <p style={{ color: 'var(--seal)', marginBottom: '1rem', lineHeight: '1.6' }}>
+              Sana uyan topluluğu bul, ya da kendin başlat.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <Link href="/" className="btn-primary">Toplulukları keşfet</Link>
+              <Link href="/community/new" style={{
+                padding: '0.75rem 1.25rem',
+                border: '1px solid var(--border)',
+                borderRadius: '6px',
+                color: 'var(--ink)',
+                textDecoration: 'none',
+                background: 'white',
+                display: 'inline-block',
+              }}>Topluluk kur</Link>
+            </div>
+          </div>
         ) : (
           <p style={{ color: 'var(--seal)', fontStyle: 'italic' }}>Henüz bir topluluğa katılmadı.</p>
         )}
@@ -184,6 +210,10 @@ export default async function ProfilePage({
               </li>
             ))}
           </ul>
+        ) : isOwnProfile ? (
+          <p style={{ color: 'var(--seal)', fontStyle: 'italic', lineHeight: '1.6' }}>
+            Henüz bir buluşma düzenlemedin. Kurduğun ya da yönettiğin bir topluluk varsa, oradan başlayabilirsin.
+          </p>
         ) : (
           <p style={{ color: 'var(--seal)', fontStyle: 'italic' }}>Henüz bir etkinlik düzenlemedi.</p>
         )}
@@ -211,6 +241,10 @@ export default async function ProfilePage({
               </li>
             ))}
           </ul>
+        ) : isOwnProfile ? (
+          <p style={{ color: 'var(--seal)', fontStyle: 'italic', lineHeight: '1.6' }}>
+            Henüz bir buluşmaya katılmadın. <Link href="/" style={{ color: 'var(--seal)', textDecoration: 'underline' }}>Yaklaşan buluşmalara göz at.</Link>
+          </p>
         ) : (
           <p style={{ color: 'var(--seal)', fontStyle: 'italic' }}>Henüz bir etkinliğe katılmadı.</p>
         )}
