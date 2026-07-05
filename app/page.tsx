@@ -46,6 +46,8 @@ export default async function HomePage({
 
   const { data: communities } = await query
 
+  const hasFilter = Boolean(activeCategory || activeCity || activeQuery)
+
   const buildCategoryHref = (cat: string | null) => {
     const params = new URLSearchParams()
     if (cat) params.set('category', cat)
@@ -118,20 +120,47 @@ export default async function HomePage({
 
         {!communities || communities.length === 0 ? (
           <div style={{
-            background: 'white',
-            padding: '2rem',
+            background: 'var(--old-paper)',
+            padding: '2.5rem 2rem',
             borderRadius: '8px',
             textAlign: 'center',
             border: '1px solid var(--border)',
           }}>
-            <p style={{ color: 'var(--night)', opacity: 0.6, marginBottom: '1rem' }}>
-              {activeCategory || activeCity || activeQuery
-                ? 'Bu filtreyle eşleşen topluluk yok.'
-                : 'Henüz hiç topluluk kurulmadı.'}
-            </p>
-            <Link href="/community/new" className="btn-primary">
-              İlk topluluğu sen kur
-            </Link>
+            {hasFilter ? (
+              <>
+                <p style={{ color: 'var(--ink)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+                  Bu filtreye uyan topluluk yok — ama sen kurabilirsin.
+                </p>
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <Link href="/" style={{
+                    padding: '0.75rem 1.25rem',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--ink)',
+                    textDecoration: 'none',
+                    background: 'white',
+                    display: 'inline-block',
+                  }}>
+                    Filtreleri temizle
+                  </Link>
+                  <Link href="/community/new" className="btn-primary">
+                    Topluluk kur
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <p style={{ color: 'var(--ink)', marginBottom: '0.5rem', lineHeight: '1.6' }}>
+                  Henüz kimse bir topluluk kurmadı.
+                </p>
+                <p style={{ color: 'var(--seal)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+                  İlki sen ol.
+                </p>
+                <Link href="/community/new" className="btn-primary">
+                  Topluluk kur
+                </Link>
+              </>
+            )}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
