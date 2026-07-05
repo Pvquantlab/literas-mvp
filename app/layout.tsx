@@ -1,6 +1,7 @@
 import './globals.css'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
+import Footer from '@/components/footer'
 
 export const metadata = {
   title: 'literas — kendi topluluğunu kur',
@@ -104,6 +105,7 @@ export default async function RootLayout({
           </div>
         </header>
         {children}
+        <Footer />
       </body>
     </html>
   )
