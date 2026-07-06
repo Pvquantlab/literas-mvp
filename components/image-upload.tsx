@@ -22,7 +22,6 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
     setUploading(true)
     setError(null)
 
-    // Dosya adı: benzersiz olsun, orijinal isim değil (güvenlik + çakışma önleme)
     const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
 
@@ -40,7 +39,6 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
       return
     }
 
-    // Public URL'i al
     const { data: { publicUrl } } = supabase.storage
       .from(bucket)
       .getPublicUrl(fileName)
@@ -56,17 +54,20 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
   return (
     <div>
       {label && (
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+        <label style={{
+          display: 'block',
+          marginBottom: '8px',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '13px',
+          fontWeight: 600,
+          color: 'var(--ink)',
+        }}>
           {label}
         </label>
       )}
 
       {value ? (
-        <div style={{
-          position: 'relative',
-          display: 'inline-block',
-          marginBottom: '0.5rem',
-        }}>
+        <div style={{ marginBottom: '8px' }}>
           <img
             src={value}
             alt="önizleme"
@@ -75,8 +76,8 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
               maxWidth: '400px',
               maxHeight: '240px',
               objectFit: 'cover',
-              borderRadius: '8px',
-              border: '1px solid var(--border)',
+              borderRadius: '14px',
+              border: '1.5px solid var(--border)',
               display: 'block',
             }}
           />
@@ -84,18 +85,16 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
             type="button"
             onClick={handleRemove}
             style={{
-              marginTop: '0.5rem',
+              marginTop: '10px',
               background: 'none',
               border: 'none',
               padding: 0,
-              fontFamily: 'Newsreader, serif',
-              fontStyle: 'italic',
-              fontSize: '0.85rem',
-              color: 'var(--seal)',
-              opacity: 0.7,
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: '13px',
+              color: 'var(--coral-deep)',
               cursor: 'pointer',
               textDecoration: 'underline',
-              textDecorationStyle: 'dotted',
+              textUnderlineOffset: '3px',
             }}
           >
             kaldır
@@ -109,15 +108,15 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
           width: '100%',
           maxWidth: '400px',
           height: '160px',
-          border: '1.5px dashed var(--border)',
-          borderRadius: '8px',
-          background: 'white',
+          border: '1.5px dashed var(--border-mid)',
+          borderRadius: '14px',
+          background: 'var(--paper-cream)',
           cursor: uploading ? 'wait' : 'pointer',
-          fontFamily: 'Newsreader, serif',
-          fontStyle: 'italic',
-          color: 'var(--ink)',
-          opacity: uploading ? 0.5 : 0.7,
-          transition: 'border-color 0.15s ease, opacity 0.15s ease',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '13.5px',
+          color: 'var(--muted)',
+          opacity: uploading ? 0.5 : 1,
+          transition: 'all 0.18s ease',
         }}>
           <input
             type="file"
@@ -126,16 +125,17 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
             disabled={uploading}
             style={{ display: 'none' }}
           />
-          {uploading ? 'yükleniyor…' : 'bir görsel seç'}
+          {uploading ? 'yükleniyor…' : '✿ bir görsel seç'}
         </label>
       )}
 
       {hint && (
         <p style={{
-          marginTop: '0.4rem',
-          fontSize: '0.85rem',
-          color: 'var(--night)',
-          opacity: 0.55,
+          marginTop: '8px',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '12px',
+          color: 'var(--muted)',
+          lineHeight: 1.5,
         }}>
           {hint}
         </p>
@@ -143,9 +143,10 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
 
       {error && (
         <p style={{
-          marginTop: '0.4rem',
-          fontSize: '0.85rem',
-          color: 'var(--seal)',
+          marginTop: '8px',
+          fontSize: '13px',
+          color: 'var(--coral-deep)',
+          fontWeight: 600,
         }}>
           {error}
         </p>
