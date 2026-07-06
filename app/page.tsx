@@ -34,7 +34,7 @@ function patternStyle(pt: string, ink: string) {
   return { backgroundImage: `linear-gradient(${b} 1.5px, transparent 1.5px), linear-gradient(90deg, ${b} 1.5px, transparent 1.5px)`, backgroundSize: '21px 21px' }
 }
 
-// Kategori ikonu — v2 line-art (stroke tabanlı)
+// Kategori ikonu — kartlar için (server component'te kullanılıyor)
 function CatIcon({ slug, size = 34 }: { slug: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
     kitap: <><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z" /><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z" /></>,
@@ -219,7 +219,6 @@ export default async function HomePage({
           cats={CATS}
           activeCategory={activeCategory}
           buildHref={buildCategoryHref}
-          renderIcon={(slug) => <CatIcon slug={slug} size={34} />}
         />
       </section>
 
