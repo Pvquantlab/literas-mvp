@@ -379,12 +379,14 @@ export default async function HomePage({
             <path d="M3 20C13 6 21 4 30 12s17 8 27-6" stroke="var(--lime)" strokeWidth="2" strokeLinecap="round" strokeDasharray="1 6" />
           </svg>
 
-          <h2 className="serif" style={{
+         <h2 className="serif" style={{
             fontSize: 'clamp(30px, 4.4vw, 52px)',
             color: 'var(--paper-soft)',
             margin: 0,
+            lineHeight: 1.15,
           }}>
-            Senin mahallende de <em>bir şeyler</em> olsun.
+            Bir <em>masa</em> aç.<br />
+            Gerisini birlikte kuralım.
           </h2>
           <div style={{
             fontFamily: "'IBM Plex Mono', monospace",
