@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
 import CityFilter from './city-filter'
 import SearchBox from './search-box'
+import CategoryStrip from './category-strip'
 
 export const dynamic = 'force-dynamic'
 
@@ -197,7 +198,7 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* --- KATEGORİ STRIP'İ (yeni line-art versiyon) --- */}
+      {/* --- KATEGORİ STRIP'İ (v2 line-art + oklar) --- */}
       <section id="kesfet" style={{
         maxWidth: '1240px',
         margin: '0 auto',
@@ -214,57 +215,12 @@ export default async function HomePage({
         }}>
           Ne ilgini çekiyor?
         </h2>
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: '18px',
-          marginTop: '22px',
-          overflowX: 'auto',
-          scrollSnapType: 'x proximity',
-          padding: '12px 28px 16px',
-          scrollbarWidth: 'none',
-        }}>
-          {CATS.map((c) => {
-            const isActive = activeCategory?.toLocaleLowerCase('tr') === c.slug
-            return (
-              <Link
-                key={c.slug}
-                href={buildCategoryHref(isActive ? null : c.slug)}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '12px',
-                  width: '128px',
-                  flex: 'none',
-                  scrollSnapAlign: 'start',
-                  padding: '6px 0',
-                  textDecoration: 'none',
-                }}
-              >
-                <span
-                  className={`cat-circle${isActive ? ' active' : ''}`}
-                  style={{
-                    background: isActive ? undefined : '#FFFFFF',
-                    borderColor: isActive ? undefined : c.ink + '40',
-                    color: isActive ? undefined : c.ink,
-                  }}
-                >
-                  <CatIcon slug={c.slug} size={34} />
-                </span>
-                <span style={{
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'var(--ink)',
-                  textAlign: 'center',
-                  lineHeight: 1.3,
-                }}>
-                  {c.n}
-                </span>
-              </Link>
-            )
-          })}
-        </div>
+        <CategoryStrip
+          cats={CATS}
+          activeCategory={activeCategory}
+          buildHref={buildCategoryHref}
+          renderIcon={(slug) => <CatIcon slug={slug} size={34} />}
+        />
       </section>
 
       {/* --- TOPLULUKLAR --- */}
