@@ -15,44 +15,38 @@ export default function EventActions({ eventId }: { eventId: string }) {
   async function handleCancel() {
     setLoading(true)
     setError(null)
-
-    const { error } = await supabase
-      .from('events')
-      .delete()
-      .eq('id', eventId)
-
+    const { error } = await supabase.from('events').delete().eq('id', eventId)
     if (error) {
       setError('İptal edilemedi: ' + error.message)
       setLoading(false)
       return
     }
-
     router.push('/')
     router.refresh()
   }
 
   return (
     <div style={{
-      marginTop: '1rem',
+      marginTop: '1.25rem',
       display: 'flex',
       gap: '0.75rem',
       flexWrap: 'wrap',
       alignItems: 'center',
+      fontFamily: "'IBM Plex Mono', monospace",
+      fontSize: '13px',
     }}>
       <Link
         href={`/event/${eventId}/edit`}
         style={{
-          fontFamily: 'Newsreader, serif',
-          fontStyle: 'italic',
-          fontSize: '0.95rem',
           color: 'var(--ink)',
-          opacity: 0.75,
           textDecoration: 'underline',
-          textDecorationStyle: 'dotted',
+          textUnderlineOffset: '3px',
         }}
       >
         düzenle
       </Link>
+
+      <span style={{ color: 'var(--muted)' }}>·</span>
 
       {!confirming ? (
         <button
@@ -61,41 +55,32 @@ export default function EventActions({ eventId }: { eventId: string }) {
             background: 'none',
             border: 'none',
             padding: 0,
-            fontFamily: 'Newsreader, serif',
-            fontStyle: 'italic',
-            fontSize: '0.95rem',
-            color: 'var(--seal)',
-            opacity: 0.75,
+            fontFamily: 'inherit',
+            fontSize: 'inherit',
+            color: 'var(--coral-deep)',
             cursor: 'pointer',
             textDecoration: 'underline',
-            textDecorationStyle: 'dotted',
+            textUnderlineOffset: '3px',
           }}
         >
-          iptal et
+          etkinliği iptal et
         </button>
       ) : (
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          fontFamily: 'Newsreader, serif',
-          fontStyle: 'italic',
-          fontSize: '0.95rem',
-        }}>
-          <span style={{ opacity: 0.75 }}>emin misin?</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ color: 'var(--muted)' }}>emin misin?</span>
           <button
             onClick={handleCancel}
             disabled={loading}
             style={{
-              background: 'none',
+              background: 'var(--coral-deep)',
+              color: 'var(--paper-soft)',
               border: 'none',
-              padding: 0,
+              padding: '5px 12px',
+              borderRadius: '999px',
               fontFamily: 'inherit',
-              fontStyle: 'inherit',
-              fontSize: 'inherit',
-              color: 'var(--seal)',
+              fontSize: '12.5px',
+              fontWeight: 600,
               cursor: loading ? 'wait' : 'pointer',
-              textDecoration: 'underline',
             }}
           >
             {loading ? 'siliniyor...' : 'evet, iptal et'}
@@ -108,13 +93,11 @@ export default function EventActions({ eventId }: { eventId: string }) {
               border: 'none',
               padding: 0,
               fontFamily: 'inherit',
-              fontStyle: 'inherit',
               fontSize: 'inherit',
-              color: 'var(--ink)',
-              opacity: 0.5,
+              color: 'var(--muted)',
               cursor: 'pointer',
               textDecoration: 'underline',
-              textDecorationStyle: 'dotted',
+              textUnderlineOffset: '3px',
             }}
           >
             vazgeç
@@ -123,7 +106,7 @@ export default function EventActions({ eventId }: { eventId: string }) {
       )}
 
       {error && (
-        <p style={{ color: 'var(--seal)', fontSize: '0.9rem' }}>{error}</p>
+        <p style={{ color: 'var(--coral-deep)', fontSize: '13px', width: '100%', marginTop: '8px' }}>{error}</p>
       )}
     </div>
   )

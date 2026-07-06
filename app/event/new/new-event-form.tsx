@@ -2,26 +2,23 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import ImageUpload from '@/components/image-upload'
-
-type Community = { id: string; name: string }
+import { createClient } from '@/lib/supabase'
 
 export default function NewEventForm({
   userId,
   communities,
 }: {
   userId: string
-  communities: Community[]
+  communities: { id: string; name: string }[]
 }) {
   const router = useRouter()
-
+  const supabase = createClient()
   const [communityId, setCommunityId] = useState(communities[0]?.id ?? '')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
   const [eventDate, setEventDate] = useState('')
   const [maxAttendees, setMaxAttendees] = useState('')
-  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -30,54 +27,51 @@ export default function NewEventForm({
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/event', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        community_id: communityId,
+    const { data, error } = await supabase
+      .from('events')
+      .insert({
         title,
         description: description || null,
         location,
         event_date: new Date(eventDate).toISOString(),
+        organizer_id: userId,
+        community_id: communityId || null,
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
-        cover_image_url: coverImageUrl,
-      }),
-    })
+      })
+      .select()
+      .single()
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      setError(data.error ?? 'Etkinlik oluşturulamadı.')
+    if (error) {
+      setError('Etkinlik oluşturulamadı: ' + error.message)
       setLoading(false)
-      return
+    } else {
+      router.push(`/event/${data.id}`)
+      router.refresh()
     }
-
-    const { event } = await res.json()
-    router.push(`/event/${event.id}`)
-    router.refresh()
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '20px',
-    }}>
-      <div style={groupStyle}>
-        <label style={labelStyle}>Topluluk</label>
-        <select
-          value={communityId}
-          onChange={(e) => setCommunityId(e.target.value)}
-          required
-        >
-          {communities.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-      </div>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      {communities.length > 1 && (
+        <div style={groupStyle}>
+          <label htmlFor="community" style={labelStyle}>Hangi topluluk için?</label>
+          <select
+            id="community"
+            value={communityId}
+            onChange={(e) => setCommunityId(e.target.value)}
+            required
+          >
+            {communities.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div style={groupStyle}>
-        <label style={labelStyle}>Başlık</label>
+        <label htmlFor="title" style={labelStyle}>Başlık</label>
         <input
+          id="title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -87,10 +81,11 @@ export default function NewEventForm({
       </div>
 
       <div style={groupStyle}>
-        <label style={labelStyle}>
-          Açıklama <span style={optionalStyle}>(isteğe bağlı)</span>
+        <label htmlFor="description" style={labelStyle}>
+          Açıklama <span style={{ opacity: 0.5 }}>(isteğe bağlı)</span>
         </label>
         <textarea
+          id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
@@ -99,8 +94,9 @@ export default function NewEventForm({
       </div>
 
       <div style={groupStyle}>
-        <label style={labelStyle}>Konum</label>
+        <label htmlFor="location" style={labelStyle}>Konum</label>
         <input
+          id="location"
           type="text"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
@@ -110,8 +106,9 @@ export default function NewEventForm({
       </div>
 
       <div style={groupStyle}>
-        <label style={labelStyle}>Tarih ve saat</label>
+        <label htmlFor="eventDate" style={labelStyle}>Tarih ve saat</label>
         <input
+          id="eventDate"
           type="datetime-local"
           value={eventDate}
           onChange={(e) => setEventDate(e.target.value)}
@@ -120,10 +117,11 @@ export default function NewEventForm({
       </div>
 
       <div style={groupStyle}>
-        <label style={labelStyle}>
-          Maksimum katılımcı <span style={optionalStyle}>(isteğe bağlı)</span>
+        <label htmlFor="maxAttendees" style={labelStyle}>
+          Maksimum katılımcı <span style={{ opacity: 0.5 }}>(isteğe bağlı)</span>
         </label>
         <input
+          id="maxAttendees"
           type="number"
           value={maxAttendees}
           onChange={(e) => setMaxAttendees(e.target.value)}
@@ -132,23 +130,13 @@ export default function NewEventForm({
         />
       </div>
 
-      <div style={groupStyle}>
-        <ImageUpload
-          bucket="event-covers"
-          value={coverImageUrl}
-          onChange={setCoverImageUrl}
-          label="Kapak görseli"
-          hint="Bir görsel seç. İstersen şimdilik boş bırakabilirsin. En fazla 5 MB, JPG/PNG/WEBP."
-        />
-      </div>
-
       {error && (
         <div style={{
-          background: 'var(--seal-soft)',
-          border: '1px solid rgba(196, 98, 45, 0.25)',
+          background: 'rgba(176, 67, 48, .1)',
+          border: '1.5px solid rgba(176, 67, 48, .3)',
           borderRadius: '12px',
           padding: '12px 16px',
-          color: 'var(--seal-deep)',
+          color: 'var(--coral-deep)',
           fontSize: '14px',
           fontWeight: 600,
           textAlign: 'center',
@@ -157,26 +145,27 @@ export default function NewEventForm({
         </div>
       )}
 
-      <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', marginTop: '4px' }}>
-        {loading ? 'Oluşturuluyor…' : 'Etkinliği oluştur'}
+      <button
+        type="submit"
+        disabled={loading}
+        className="btn-primary"
+        style={{ width: '100%', marginTop: '8px', textAlign: 'center' }}
+      >
+        {loading ? 'Oluşturuluyor...' : 'Etkinliği oluştur'}
       </button>
     </form>
   )
 }
 
-const groupStyle = {
+const groupStyle: React.CSSProperties = {
   display: 'flex',
-  flexDirection: 'column' as const,
+  flexDirection: 'column',
   gap: '6px',
 }
 
-const labelStyle = {
-  fontSize: '14px',
+const labelStyle: React.CSSProperties = {
+  fontFamily: "'IBM Plex Mono', monospace",
+  fontSize: '13px',
   fontWeight: 600,
-  color: 'var(--night)',
-}
-
-const optionalStyle = {
-  color: 'var(--muted)',
-  fontWeight: 500,
+  color: 'var(--ink)',
 }

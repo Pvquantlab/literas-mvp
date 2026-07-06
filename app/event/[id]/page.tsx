@@ -31,10 +31,7 @@ export default async function EventPage({
 
   const { data: rsvps } = await supabase
     .from('rsvps')
-    .select(`
-      id,
-      user:profiles!user_id(id, name)
-    `)
+    .select(`id, user:profiles!user_id(id, name)`)
     .eq('event_id', id)
     .order('created_at', { ascending: true })
 
@@ -62,31 +59,25 @@ export default async function EventPage({
 
   const date = new Date(event.event_date)
   const dateStr = date.toLocaleDateString('tr-TR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   })
-  const timeStr = date.toLocaleTimeString('tr-TR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <main style={{
-      maxWidth: '760px',
-      margin: '0 auto',
-      padding: '32px 24px 64px',
-    }}>
-      <Link href="/" style={{
-        color: 'var(--muted)',
-        fontSize: '14px',
-        fontWeight: 600,
-        textDecoration: 'none',
-        display: 'inline-block',
-        marginBottom: '20px',
-      }}>
-        ← Tüm etkinlikler
+    <main style={{ maxWidth: '760px', margin: '0 auto', padding: '32px 24px 64px' }}>
+      <Link
+        href="/"
+        style={{
+          color: 'var(--muted)',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '13px',
+          fontWeight: 500,
+          textDecoration: 'none',
+          display: 'inline-block',
+          marginBottom: '20px',
+        }}
+      >
+        ← tüm etkinlikler
       </Link>
 
       {event.cover_image_url && (
@@ -94,47 +85,41 @@ export default async function EventPage({
           width: '100%',
           aspectRatio: '16 / 9',
           overflow: 'hidden',
-          borderRadius: '16px',
-          border: '1px solid var(--border-soft)',
-          background: 'var(--paper-soft)',
+          borderRadius: '18px',
+          border: '1.5px solid var(--border)',
+          background: 'var(--paper-cream)',
           marginBottom: '28px',
         }}>
           <img
             src={event.cover_image_url}
             alt=""
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         </div>
       )}
 
-      {/* Başlık */}
-      <h1 style={{
-        fontSize: '38px',
-        fontWeight: 800,
-        letterSpacing: '-1px',
+      {/* Başlık — Playfair + sarı highlight */}
+      <h1 className="serif" style={{
+        fontSize: 'clamp(30px, 4vw, 42px)',
         lineHeight: 1.15,
-        color: 'var(--night)',
-        margin: '0 0 12px',
+        color: 'var(--ink)',
+        margin: '0 0 14px',
       }}>
-        {event.title}
+        <span className="highlight-yellow">{event.title}</span>
       </h1>
 
       {event.community && (
         <p style={{
+          fontFamily: "'IBM Plex Mono', monospace",
           color: 'var(--muted)',
-          fontSize: '15px',
-          fontWeight: 600,
+          fontSize: '13px',
           marginBottom: '24px',
         }}>
           <Link href={`/community/${event.community.id}`} style={{
             color: 'var(--ink)',
             fontWeight: 700,
-            textDecoration: 'none',
+            textDecoration: 'underline',
+            textUnderlineOffset: '3px',
           }}>
             {event.community.name}
           </Link>
@@ -144,19 +129,21 @@ export default async function EventPage({
 
       {/* Detay kutusu */}
       <div style={{
-        background: 'var(--paper-soft)',
+        background: 'var(--paper-cream)',
+        border: '1.5px solid var(--border)',
         padding: '20px 24px',
-        borderRadius: '16px',
+        borderRadius: '18px',
         marginBottom: '24px',
         display: 'flex',
         flexDirection: 'column',
         gap: '10px',
       }}>
-        <DetailRow label="Tarih" value={dateStr} />
-        <DetailRow label="Saat" value={timeStr} />
-        <DetailRow label="Konum" value={event.location} />
+        <DetailRow icon="📅" label="Tarih" value={dateStr} />
+        <DetailRow icon="🕒" label="Saat" value={timeStr} />
+        <DetailRow icon="📍" label="Konum" value={event.location} />
         {event.organizer?.name && (
-          <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--night)' }}>
+          <p style={detailRowStyle}>
+            <span style={{ marginRight: '6px' }}>👤</span>
             <span style={{ color: 'var(--muted)', marginRight: '6px' }}>Düzenleyen:</span>
             <Link href={`/profile/${event.organizer.id}`} style={{
               color: 'var(--ink)',
@@ -173,7 +160,7 @@ export default async function EventPage({
         <div style={{
           fontSize: '16.5px',
           lineHeight: 1.65,
-          color: 'var(--night)',
+          color: 'var(--ink)',
           whiteSpace: 'pre-wrap',
           marginBottom: '24px',
         }}>
@@ -185,11 +172,9 @@ export default async function EventPage({
 
       {/* Katılım */}
       <section style={{ marginTop: '40px' }}>
-        <h2 style={{
-          fontSize: '22px',
-          fontWeight: 800,
-          letterSpacing: '-0.5px',
-          color: 'var(--night)',
+        <h2 className="serif" style={{
+          fontSize: 'clamp(22px, 2.8vw, 28px)',
+          color: 'var(--ink)',
           marginBottom: '18px',
         }}>
           Katılım
@@ -197,22 +182,22 @@ export default async function EventPage({
 
         {!user ? (
           <div style={joinBoxStyle}>
-            <p style={{ marginBottom: '16px', color: 'var(--muted)', fontSize: '15px', fontWeight: 500 }}>
-              Katılmak için önce giriş yapmalısın.
+            <p style={{ marginBottom: '16px', color: 'var(--muted)', fontSize: '15px', fontFamily: "'IBM Plex Mono', monospace" }}>
+              katılmak için önce giriş yapmalısın
             </p>
             <Link href="/login" className="btn-primary">Giriş yap</Link>
           </div>
         ) : isOrganizer ? (
           <p style={{
+            fontFamily: "'IBM Plex Mono', monospace",
             color: 'var(--muted)',
-            fontSize: '15px',
-            fontWeight: 600,
+            fontSize: '13.5px',
           }}>
-            Bu etkinliği sen düzenliyorsun.
+            ✿ bu etkinliği sen düzenliyorsun
           </p>
         ) : !isApprovedMember && event.community ? (
           <div style={joinBoxStyle}>
-            <p style={{ marginBottom: '16px', color: 'var(--night)', fontSize: '15px', lineHeight: 1.55 }}>
+            <p style={{ marginBottom: '16px', color: 'var(--ink)', fontSize: '15px', lineHeight: 1.55 }}>
               Bu etkinliğe katılmak için önce{' '}
               <strong>{event.community.name}</strong>{' '}
               topluluğunun üyesi olmalısın.
@@ -232,12 +217,12 @@ export default async function EventPage({
 
         <div style={{ marginTop: '24px' }}>
           <p style={{
-            fontSize: '14.5px',
-            fontWeight: 600,
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: '13px',
             color: 'var(--muted)',
             marginBottom: '12px',
           }}>
-            {rsvps?.length || 0} kişi katılıyor
+            👥 {rsvps?.length || 0} kişi katılıyor
             {event.max_attendees && ` / ${event.max_attendees} kişilik`}
           </p>
           {rsvps && rsvps.length > 0 && (
@@ -267,31 +252,38 @@ export default async function EventPage({
   )
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+function DetailRow({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
-    <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--night)' }}>
+    <p style={detailRowStyle}>
+      <span style={{ marginRight: '6px' }}>{icon}</span>
       <span style={{ color: 'var(--muted)', marginRight: '6px' }}>{label}:</span>
       {value}
     </p>
   )
 }
 
-const joinBoxStyle = {
-  background: '#ffffff',
-  padding: '24px',
-  borderRadius: '16px',
-  border: '1px solid var(--border-soft)',
-  textAlign: 'center' as const,
+const detailRowStyle: React.CSSProperties = {
+  fontSize: '15px',
+  fontWeight: 600,
+  color: 'var(--ink)',
 }
 
-const rsvpChipStyle = {
+const joinBoxStyle: React.CSSProperties = {
+  background: 'var(--paper-cream)',
+  padding: '24px',
+  borderRadius: '18px',
+  border: '1.5px solid var(--border)',
+  textAlign: 'center',
+}
+
+const rsvpChipStyle: React.CSSProperties = {
   display: 'inline-block',
-  background: '#ffffff',
-  padding: '8px 16px',
+  background: 'var(--paper-cream)',
+  padding: '6px 14px',
   borderRadius: '999px',
-  border: '1px solid var(--border-soft)',
-  fontSize: '14px',
+  border: '1.5px solid var(--border-mid)',
+  fontSize: '13.5px',
   fontWeight: 700,
-  color: 'var(--night)',
+  color: 'var(--ink)',
   textDecoration: 'none',
 }

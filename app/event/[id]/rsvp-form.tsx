@@ -23,11 +23,9 @@ export default function RsvpForm({
   async function handleRsvp() {
     setLoading(true)
     setError('')
-
     const { error } = await supabase
       .from('rsvps')
       .insert({ event_id: eventId, user_id: userId })
-
     if (error) {
       setError('Katılım kaydedilemedi: ' + error.message)
       setLoading(false)
@@ -39,13 +37,11 @@ export default function RsvpForm({
   async function handleCancel() {
     setLoading(true)
     setError('')
-
     const { error } = await supabase
       .from('rsvps')
       .delete()
       .eq('event_id', eventId)
       .eq('user_id', userId)
-
     if (error) {
       setError('İptal başarısız: ' + error.message)
       setLoading(false)
@@ -57,30 +53,41 @@ export default function RsvpForm({
   if (userHasRsvp) {
     return (
       <div style={{
-        background: '#ffffff',
+        background: 'var(--paper-cream)',
         padding: '20px 22px',
-        borderRadius: '16px',
-        border: '1px solid var(--border-soft)',
+        borderRadius: '18px',
+        border: '1.5px solid var(--border)',
       }}>
         <p style={{
-          color: 'var(--night)',
+          color: 'var(--ink)',
           fontSize: '15.5px',
           fontWeight: 700,
           marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
         }}>
-          ✓ Katılıyorsun. Görüşmek üzere.
+          <span style={{
+            width: '22px',
+            height: '22px',
+            borderRadius: '50%',
+            background: 'var(--lime)',
+            border: '1.5px solid var(--ink)',
+            display: 'inline-grid',
+            placeItems: 'center',
+            fontSize: '13px',
+          }}>✓</span>
+          Katılıyorsun. Görüşmek üzere.
         </p>
         <button
           onClick={handleCancel}
           disabled={loading}
           className="btn-secondary"
-          style={{ fontSize: '14px', padding: '0.6rem 1.25rem' }}
+          style={{ fontSize: '13.5px', padding: '8px 18px' }}
         >
           {loading ? 'İptal ediliyor...' : 'Katılımı iptal et'}
         </button>
-        {error && (
-          <div style={errorStyle}>{error}</div>
-        )}
+        {error && <div style={errorStyle}>{error}</div>}
       </div>
     )
   }
@@ -88,37 +95,41 @@ export default function RsvpForm({
   if (isFull) {
     return (
       <div style={{
-        background: 'var(--paper-soft)',
+        background: 'var(--paper-cream)',
+        border: '1.5px solid var(--border)',
         padding: '18px 22px',
-        borderRadius: '16px',
+        borderRadius: '18px',
+        fontFamily: "'IBM Plex Mono', monospace",
         color: 'var(--muted)',
-        fontSize: '15px',
-        fontWeight: 600,
+        fontSize: '13.5px',
       }}>
-        Maalesef etkinlik dolu.
+        ✿ maalesef etkinlik dolu
       </div>
     )
   }
 
   return (
     <div>
-      <button onClick={handleRsvp} disabled={loading} className="btn-primary">
+      <button
+        onClick={handleRsvp}
+        disabled={loading}
+        className="btn-primary"
+        style={{ fontSize: '16px', padding: '13px 28px' }}
+      >
         {loading ? 'Kaydediliyor...' : 'Katılıyorum'}
       </button>
-      {error && (
-        <div style={errorStyle}>{error}</div>
-      )}
+      {error && <div style={errorStyle}>{error}</div>}
     </div>
   )
 }
 
-const errorStyle = {
+const errorStyle: React.CSSProperties = {
   marginTop: '12px',
-  background: 'var(--seal-soft)',
-  border: '1px solid rgba(196, 98, 45, 0.25)',
+  background: 'rgba(176, 67, 48, .1)',
+  border: '1.5px solid rgba(176, 67, 48, .3)',
   borderRadius: '12px',
   padding: '10px 14px',
-  color: 'var(--seal-deep)',
+  color: 'var(--coral-deep)',
   fontSize: '13.5px',
   fontWeight: 600,
 }
