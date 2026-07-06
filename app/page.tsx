@@ -215,10 +215,11 @@ export default async function HomePage({
         }}>
           Ne ilgini çekiyor?
         </h2>
-        <CategoryStrip
+       <CategoryStrip
           cats={CATS}
           activeCategory={activeCategory}
-          buildHref={buildCategoryHref}
+          activeCity={activeCity}
+          activeQuery={activeQuery}
         />
       </section>
 

@@ -49,13 +49,24 @@ function CatIcon({ slug, size = 34 }: { slug: string; size?: number }) {
 export default function CategoryStrip({
   cats,
   activeCategory,
-  buildHref,
+  activeCity,
+  activeQuery,
 }: {
   cats: Cat[]
   activeCategory?: string
-  buildHref: (slug: string | null) => string
+  activeCity?: string
+  activeQuery?: string
 }) {
   const stripRef = useRef<HTMLDivElement>(null)
+
+  const buildHref = (cat: string | null) => {
+    const params = new URLSearchParams()
+    if (cat) params.set('category', cat)
+    if (activeCity) params.set('city', activeCity)
+    if (activeQuery) params.set('q', activeQuery)
+    const qs = params.toString()
+    return qs ? `/?${qs}` : '/'
+  }
 
   const scrollBack = () => {
     const el = stripRef.current
