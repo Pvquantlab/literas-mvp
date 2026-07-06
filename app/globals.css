@@ -269,26 +269,28 @@ textarea {
   margin-top: 28px;
 }
 
-/* --- Kategori dairesi --- */
+/* --- Kategori dairesi (v2 line-art versiyon) --- */
 .cat-circle {
-  width: 85px;
-  height: 85px;
+  width: 116px;
+  height: 116px;
   border-radius: 50%;
   display: grid;
   place-items: center;
   transition: all 0.18s ease;
   box-sizing: border-box;
   color: var(--ink);
-  border: 1.5px solid;
+  border: 1px solid;
+  background: #FFFFFF;
 }
 .cat-circle:hover {
   transform: translateY(-4px);
-  filter: brightness(.86) saturate(1.5);
+  box-shadow: 0 10px 24px rgba(30, 58, 43, .14);
 }
 .cat-circle.active {
   background: var(--ink) !important;
   color: var(--paper-soft) !important;
   border-color: var(--ink) !important;
+  border-width: 1.5px !important;
   transform: rotate(-5deg);
 }
 
@@ -310,6 +312,7 @@ textarea {
   .container { padding: 1.5rem 1rem; }
   .btn-primary, .btn-secondary { padding: 0.85rem 1.5rem; font-size: 0.95rem; }
 }
+
 /* --- Auth sayfa yardımcıları --- */
 .btn-google {
   display: inline-flex;
