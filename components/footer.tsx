@@ -2,147 +2,208 @@ import Link from 'next/link'
 
 export default function Footer() {
   return (
-    <footer style={{
-      maxWidth: '1360px',
-      margin: '0 auto 24px',
-      padding: '0 16px',
-    }}>
-      <div style={{
-        background: 'var(--ink-deep)',
-        borderRadius: '28px',
-        padding: '56px 48px 40px',
-        color: '#ffffff',
-      }}>
-        {/* Üst satır: logo + CTA */}
-        <div style={{
+    <footer style={{ background: 'var(--ink)', marginTop: '64px', padding: '0 24px' }}>
+      <div
+        style={{
+          maxWidth: '1240px',
+          margin: '0 auto',
+          padding: '56px 0 0',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '24px',
           flexWrap: 'wrap',
-          paddingBottom: '36px',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.18)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <svg width="30" height="30" viewBox="0 0 34 34" fill="none" aria-hidden="true">
-              <path d="M4 10 C4 5.6 7.6 2 12 2 L22 2 C26.4 2 30 5.6 30 10 L30 18 C30 22.4 26.4 26 22 26 L14 26 L7 32 C5.9 32.9 4 32.2 4 30.6 Z" fill="#ffffff" />
-              <rect x="13" y="8" width="4.4" height="13" rx="2.2" fill="#173F22" />
-              <circle cx="22.5" cy="18.8" r="2.6" fill="#C4622D" />
+          gap: '40px 56px',
+        }}
+      >
+        {/* Logo + tagline */}
+        <div style={{ flex: '1 1 220px', minWidth: '200px' }}>
+          <Link
+            href="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              textDecoration: 'none',
+            }}
+          >
+            <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path
+                d="M4 6a4 4 0 0 1 4-4h16a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-9l-6 5v-5H8a4 4 0 0 1-4-4z"
+                fill="var(--paper-soft)"
+              />
+              <text
+                x="10"
+                y="20"
+                fontFamily="system-ui, sans-serif"
+                fontSize="14"
+                fontWeight="800"
+                fill="var(--ink)"
+              >
+                l
+              </text>
+              <circle cx="22" cy="18" r="2.2" fill="var(--coral)" />
             </svg>
-            <span style={{
-              fontSize: '24px',
-              fontWeight: 800,
-              letterSpacing: '-0.7px',
-              color: '#ffffff',
-            }}>
-              literas
-            </span>
-          </div>
-          <Link href="/community/new" style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '12px',
-            fontSize: '20px',
-            fontWeight: 800,
-            letterSpacing: '-0.5px',
-            color: '#ffffff',
-            textDecoration: 'none',
-          }}>
-            Kendi topluluğunu kur — ücretsiz
-            <span style={{
-              background: 'var(--seal)',
-              borderRadius: '999px',
-              padding: '10px 22px',
-              fontSize: '15px',
-              fontWeight: 700,
-              color: '#ffffff',
-            }}>
-              Başlayın →
+            <span
+              style={{
+                fontFamily: 'system-ui, sans-serif',
+                fontWeight: 800,
+                fontSize: '23px',
+                color: 'var(--paper-soft)',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              literaslab
             </span>
           </Link>
+          <p
+            style={{
+              fontSize: '14px',
+              lineHeight: 1.6,
+              color: 'rgba(250, 244, 232, .6)',
+              margin: '14px 0 0',
+              maxWidth: '240px',
+            }}
+          >
+            İnsanların kendi topluluklarını kurduğu yer. Tamamen ücretsiz.
+          </p>
         </div>
 
-        {/* Link sütunları */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '32px',
-          padding: '40px 0',
-        }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <span style={{ fontSize: '15px', fontWeight: 800 }}>Keşfet</span>
-            <Link href="/" style={footerLinkStyle}>Topluluklar</Link>
-            <Link href="/" style={footerLinkStyle}>Etkinlikler</Link>
-            <Link href="/" style={footerLinkStyle}>Şehirler</Link>
-            <Link href="/" style={footerLinkStyle}>Kategoriler</Link>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <span style={{ fontSize: '15px', fontWeight: 800 }}>Literas</span>
-            <Link href="/hakkinda" style={footerLinkStyle}>Hakkında</Link>
-            <Link href="/blog" style={footerLinkStyle}>Blog</Link>
-            <Link href="/iletisim" style={footerLinkStyle}>İletişim</Link>
-            <Link href="/sss" style={footerLinkStyle}>SSS</Link>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <span style={{ fontSize: '15px', fontWeight: 800 }}>Destek</span>
-            <Link href="/yardim" style={footerLinkStyle}>Yardım merkezi</Link>
-            <Link href="/kurallar" style={footerLinkStyle}>Topluluk kuralları</Link>
-            <Link href="/gizlilik" style={footerLinkStyle}>Gizlilik</Link>
-            <Link href="/kullanim-sartlari" style={footerLinkStyle}>Kullanım şartları</Link>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <span style={{ fontSize: '15px', fontWeight: 800 }}>Bizi takip edin</span>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <a href="#" aria-label="Instagram" style={socialIconStyle}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="3" width="18" height="18" rx="5" />
-                  <circle cx="12" cy="12" r="4" />
-                  <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
-                </svg>
-              </a>
-              <a href="#" aria-label="X (Twitter)" style={socialIconStyle}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-              </a>
-              <a href="#" aria-label="YouTube" style={socialIconStyle}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                </svg>
-              </a>
-            </div>
-          </div>
-        </div>
+        {/* Keşfet */}
+        <FooterColumn title="Keşfet">
+          <FooterLink href="/">Topluluklar</FooterLink>
+          <FooterLink href="/">Etkinlikler</FooterLink>
+          <FooterLink href="/">Şehirler</FooterLink>
+          <FooterLink href="/#kesfet">Kategoriler</FooterLink>
+        </FooterColumn>
 
-        {/* Alt satır: telif */}
-        <div style={{
-          paddingTop: '24px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.18)',
-          fontSize: '13px',
-          color: 'rgba(255, 255, 255, 0.6)',
-        }}>
-          © {new Date().getFullYear()} literas. Topluluk kurmak herkes için ücretsizdir.
+        {/* Literaslab */}
+        <FooterColumn title="Literaslab">
+          <FooterLink href="/">Hakkında</FooterLink>
+          <FooterLink href="/">İletişim</FooterLink>
+          <FooterLink href="/">SSS</FooterLink>
+        </FooterColumn>
+
+        {/* Destek */}
+        <FooterColumn title="Destek">
+          <FooterLink href="/">Yardım merkezi</FooterLink>
+          <FooterLink href="/">Topluluk kuralları</FooterLink>
+          <FooterLink href="/">Gizlilik</FooterLink>
+          <FooterLink href="/">Kullanım şartları</FooterLink>
+        </FooterColumn>
+
+        {/* Sosyal medya */}
+        <div style={{ flex: '1 1 150px', minWidth: '140px' }}>
+          <div
+            style={{
+              fontSize: '14px',
+              fontWeight: 700,
+              color: 'var(--paper-soft)',
+              marginBottom: '14px',
+            }}
+          >
+            Bizi takip edin
+          </div>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <SocialIcon href="#" label="Instagram">
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" />
+            </SocialIcon>
+            <SocialIcon href="#" label="X">
+              <path
+                d="M4.5 4h4l4.1 5.7L17.4 4H20l-6.1 7.5L20.5 20h-4l-4.4-6.1L7 20H4.4l6.5-8z"
+                fill="currentColor"
+                stroke="none"
+              />
+            </SocialIcon>
+            <SocialIcon href="#" label="YouTube">
+              <rect x="2.5" y="6" width="19" height="13" rx="4" />
+              <path d="M10 9.7v5.6l5.2-2.8z" fill="currentColor" stroke="none" />
+            </SocialIcon>
+          </div>
         </div>
+      </div>
+
+      {/* Alt çizgi + copyright */}
+      <div
+        style={{
+          maxWidth: '1240px',
+          borderTop: '1px solid rgba(250, 244, 232, .18)',
+          margin: '44px auto 0',
+          padding: '20px 0 26px',
+          textAlign: 'center',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '12.5px',
+          color: 'rgba(250, 244, 232, .55)',
+        }}
+      >
+        © 2026 literaslab · çevrimiçi başlar, çevrimdışı buluşur ✿
       </div>
     </footer>
   )
 }
 
-const footerLinkStyle = {
-  fontSize: '14.5px',
-  fontWeight: 500,
-  color: 'rgba(255, 255, 255, 0.75)',
-  textDecoration: 'none',
+function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ flex: '1 1 140px', minWidth: '130px' }}>
+      <div
+        style={{
+          fontSize: '14px',
+          fontWeight: 700,
+          color: 'var(--paper-soft)',
+          marginBottom: '14px',
+        }}
+      >
+        {title}
+      </div>
+      {children}
+    </div>
+  )
 }
 
-const socialIconStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '38px',
-  height: '38px',
-  borderRadius: '50%',
-  background: 'rgba(255, 255, 255, 0.1)',
-  color: '#ffffff',
-  textDecoration: 'none',
+function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      style={{
+        display: 'block',
+        fontSize: '14px',
+        color: 'rgba(250, 244, 232, .65)',
+        textDecoration: 'none',
+        marginBottom: '10px',
+        transition: 'color 0.15s ease',
+      }}
+    >
+      {children}
+    </Link>
+  )
+}
+
+function SocialIcon({
+  href,
+  label,
+  children,
+}: {
+  href: string
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      style={{
+        width: '38px',
+        height: '38px',
+        borderRadius: '50%',
+        border: '1.5px solid rgba(250, 244, 232, .4)',
+        display: 'grid',
+        placeItems: 'center',
+        color: 'var(--paper-soft)',
+        transition: 'all 0.15s ease',
+      }}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        {children}
+      </svg>
+    </Link>
+  )
 }
