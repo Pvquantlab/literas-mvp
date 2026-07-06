@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import RsvpForm from './rsvp-form'
 import EventActions from './event-actions'
+import EventMap from './event-map'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,7 +21,7 @@ export default async function EventPage({
     .select(`
       *,
       organizer:profiles!organizer_id(id, name),
-      community:communities!community_id(id, name)
+      community:communities!community_id(id, name, city)
     `)
     .eq('id', id)
     .single()
@@ -156,12 +157,21 @@ export default async function EventPage({
         )}
       </div>
 
+      {/* --- HARİTA --- */}
+      {event.location && (
+        <EventMap
+          location={event.location}
+          city={(event.community as any)?.city}
+        />
+      )}
+
       {event.description && (
         <div style={{
           fontSize: '16.5px',
           lineHeight: 1.65,
           color: 'var(--ink)',
           whiteSpace: 'pre-wrap',
+          marginTop: '24px',
           marginBottom: '24px',
         }}>
           {event.description}
