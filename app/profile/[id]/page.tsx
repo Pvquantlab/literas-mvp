@@ -19,9 +19,7 @@ export default async function ProfilePage({
     .eq('id', id)
     .single()
 
-  if (!profile) {
-    notFound()
-  }
+  if (!profile) notFound()
 
   const { data: memberships } = await supabase
     .from('community_members')
@@ -42,80 +40,50 @@ export default async function ProfilePage({
     .eq('user_id', id)
     .order('created_at', { ascending: false })
 
-  // Üyelik süresi hesabı
   const joinedDate = new Date(profile.created_at)
   const now = new Date()
-  const diffMs = now.getTime() - joinedDate.getTime()
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const diffDays = Math.floor((now.getTime() - joinedDate.getTime()) / (1000 * 60 * 60 * 24))
   let membershipText = ''
-  if (diffDays < 1) {
-    membershipText = 'bugün katıldı'
-  } else if (diffDays < 30) {
-    membershipText = `${diffDays} gündür Literas'ta`
-  } else if (diffDays < 365) {
-    const months = Math.floor(diffDays / 30)
-    membershipText = `${months} aydır Literas'ta`
-  } else {
-    const years = Math.floor(diffDays / 365)
-    membershipText = `${years} yıldır Literas'ta`
-  }
+  if (diffDays < 1) membershipText = 'bugün katıldı'
+  else if (diffDays < 30) membershipText = `${diffDays} gündür literaslab'da`
+  else if (diffDays < 365) membershipText = `${Math.floor(diffDays / 30)} aydır literaslab'da`
+  else membershipText = `${Math.floor(diffDays / 365)} yıldır literaslab'da`
 
-  const roleLabel = (role: string) => {
-    if (role === 'founder') return 'kurucu'
-    if (role === 'admin') return 'yönetici'
-    return 'üye'
-  }
+  const roleLabel = (role: string) => role === 'founder' ? 'kurucu' : role === 'admin' ? 'yönetici' : 'üye'
 
   return (
-    <main style={{
-      maxWidth: '900px',
-      margin: '0 auto',
-      padding: '48px 24px',
-    }}>
+    <main style={{ maxWidth: '900px', margin: '0 auto', padding: '48px 24px' }}>
       {/* Başlık */}
       <section style={{
         marginBottom: '48px',
         paddingBottom: '32px',
-        borderBottom: '1px solid var(--border-soft)',
+        borderBottom: '1.5px solid var(--border)',
       }}>
-        <div style={{
-          display: 'flex',
-          gap: '24px',
-          alignItems: 'flex-start',
-          flexWrap: 'wrap',
-        }}>
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
           {profile.avatar_url ? (
             <div style={{
               width: '112px',
               height: '112px',
               borderRadius: '50%',
               overflow: 'hidden',
-              border: '2px solid var(--border-soft)',
+              border: '2px solid var(--ink)',
               flexShrink: 0,
             }}>
-              <img
-                src={profile.avatar_url}
-                alt=""
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block',
-                }}
-              />
+              <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
           ) : (
             <div style={{
               width: '112px',
               height: '112px',
               borderRadius: '50%',
-              background: 'var(--paper-soft)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '42px',
+              background: 'var(--lime)',
+              border: '2px solid var(--ink)',
+              display: 'grid',
+              placeItems: 'center',
+              fontSize: '46px',
               fontWeight: 800,
-              color: 'var(--muted)',
+              color: 'var(--ink)',
+              fontFamily: "'Playfair Display', serif",
               flexShrink: 0,
             }}>
               {profile.name?.[0]?.toUpperCase() ?? '?'}
@@ -123,30 +91,23 @@ export default async function ProfilePage({
           )}
 
           <div style={{ flex: 1, minWidth: '240px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'baseline',
-              gap: '14px',
-              flexWrap: 'wrap',
-              marginBottom: '6px',
-            }}>
-              <h1 style={{
-                fontSize: '38px',
-                fontWeight: 800,
-                letterSpacing: '-1px',
-                color: 'var(--night)',
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '14px', flexWrap: 'wrap', marginBottom: '6px' }}>
+              <h1 className="serif" style={{
+                fontSize: 'clamp(32px, 4.4vw, 46px)',
+                color: 'var(--ink)',
                 margin: 0,
               }}>
-                {profile.name}
+                <span className="highlight-yellow">{profile.name}</span>
               </h1>
               {isOwnProfile && (
                 <Link
                   href={`/profile/${profile.id}/edit`}
                   style={{
-                    fontSize: '14px',
-                    fontWeight: 600,
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: '13px',
                     color: 'var(--muted)',
                     textDecoration: 'underline',
+                    textUnderlineOffset: '3px',
                   }}
                 >
                   düzenle
@@ -154,19 +115,19 @@ export default async function ProfilePage({
               )}
             </div>
             <p style={{
+              fontFamily: "'IBM Plex Mono', monospace",
               color: 'var(--muted)',
-              fontSize: '14.5px',
-              fontWeight: 600,
+              fontSize: '13px',
               margin: 0,
             }}>
-              {membershipText}
+              ✿ {membershipText}
             </p>
             {profile.bio && (
               <p style={{
                 marginTop: '16px',
-                color: 'var(--night)',
-                fontSize: '16px',
-                lineHeight: 1.55,
+                color: 'var(--ink)',
+                fontSize: '16.5px',
+                lineHeight: 1.6,
               }}>
                 {profile.bio}
               </p>
@@ -192,7 +153,7 @@ export default async function ProfilePage({
 
       {/* Topluluklar */}
       <section style={{ marginBottom: '48px' }}>
-        <h2 style={sectionTitleStyle}>Toplulukları</h2>
+        <h2 className="serif" style={sectionTitleStyle}>Toplulukları</h2>
         {memberships && memberships.length > 0 ? (
           <div style={{
             display: 'grid',
@@ -200,72 +161,70 @@ export default async function ProfilePage({
             gap: '20px',
           }}>
             {memberships.map((m: any) => (
-              <Link
-                key={m.community.id}
-                href={`/community/${m.community.id}`}
-                className="card"
-              >
+              <Link key={m.community.id} href={`/community/${m.community.id}`} className="card">
                 {m.community.cover_image_url ? (
-                  <div style={{
-                    width: '100%',
-                    aspectRatio: '16 / 9',
-                    overflow: 'hidden',
-                    background: 'var(--paper-soft)',
-                  }}>
-                    <img
-                      src={m.community.cover_image_url}
-                      alt=""
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        display: 'block',
-                      }}
-                    />
+                  <div style={{ width: '100%', aspectRatio: '16 / 9', overflow: 'hidden', background: 'var(--paper-soft)' }}>
+                    <img src={m.community.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   </div>
                 ) : (
                   <div style={{
                     width: '100%',
                     aspectRatio: '16 / 9',
                     background: 'var(--paper-soft)',
-                  }} />
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: 'var(--muted)',
+                    fontSize: '32px',
+                  }}>
+                    ✿
+                  </div>
                 )}
-                <div style={{ padding: '16px 18px 18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ padding: '14px 16px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {m.community.category && (
-                    <span className="cat-badge" style={{ alignSelf: 'flex-start' }}>
+                    <span style={{
+                      alignSelf: 'flex-start',
+                      background: 'var(--lime-soft)',
+                      border: '1.5px solid var(--ink)',
+                      color: 'var(--ink)',
+                      fontSize: '11.5px',
+                      fontWeight: 700,
+                      padding: '2px 9px',
+                      borderRadius: '999px',
+                    }}>
                       {m.community.category}
                     </span>
                   )}
                   <h3 style={{
-                    fontSize: '17px',
+                    fontSize: '18px',
                     fontWeight: 800,
-                    color: 'var(--night)',
+                    color: 'var(--ink)',
                     margin: '2px 0 0',
                     lineHeight: 1.25,
                   }}>
                     {m.community.name}
                   </h3>
                   <p style={{
-                    fontSize: '14px',
-                    fontWeight: 600,
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: '12.5px',
                     color: 'var(--muted)',
                     margin: 0,
                   }}>
-                    {m.community.city} · {roleLabel(m.role)}
+                    📍 {m.community.city} · {roleLabel(m.role)}
                   </p>
                 </div>
               </Link>
             ))}
           </div>
         ) : isOwnProfile ? (
-          <div style={emptyBoxStyle}>
-            <p style={{ color: 'var(--night)', fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>
-              Düşündüklerini hayata geçirebileceğin ve büyüyebileceğin bir yerdesin.
-            </p>
-            <p style={{ color: 'var(--muted)', marginBottom: '20px' }}>
+          <div className="empty-state">
+            <div style={{ fontSize: '34px' }}>🌱</div>
+            <div className="serif" style={{ fontSize: '22px', color: 'var(--ink)', marginTop: '10px' }}>
+              Düşündüklerini hayata geçirebileceğin bir yerdesin.
+            </div>
+            <div style={{ fontSize: '15px', color: 'var(--muted)', marginTop: '6px' }}>
               Sana uyan topluluğu bul, ya da kendin başlat.
-            </p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '18px' }}>
               <Link href="/" className="btn-primary">Toplulukları keşfet</Link>
               <Link href="/community/new" className="btn-secondary">Topluluk kur</Link>
             </div>
@@ -277,16 +236,20 @@ export default async function ProfilePage({
 
       {/* Düzenlediği etkinlikler */}
       <section style={{ marginBottom: '48px' }}>
-        <h2 style={sectionTitleStyle}>Düzenlediği etkinlikler</h2>
+        <h2 className="serif" style={sectionTitleStyle}>Düzenlediği etkinlikler</h2>
         {organizedEvents && organizedEvents.length > 0 ? (
           <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {organizedEvents.map((e: any) => (
               <li key={e.id}>
                 <Link href={`/event/${e.id}`} style={eventRowStyle}>
-                  <span style={{ fontWeight: 700, color: 'var(--night)' }}>{e.title}</span>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--muted)' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{e.title}</span>
+                  <span style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: '12.5px',
+                    color: 'var(--muted)',
+                  }}>
                     {new Date(e.event_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    {e.location && ` · ${e.location}`}
+                    {e.location && ` · 📍 ${e.location}`}
                   </span>
                 </Link>
               </li>
@@ -303,16 +266,20 @@ export default async function ProfilePage({
 
       {/* Katıldığı etkinlikler */}
       <section>
-        <h2 style={sectionTitleStyle}>Katıldığı etkinlikler</h2>
+        <h2 className="serif" style={sectionTitleStyle}>Katıldığı etkinlikler</h2>
         {rsvps && rsvps.length > 0 ? (
           <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {rsvps.map((r: any) => (
               <li key={r.event.id}>
                 <Link href={`/event/${r.event.id}`} style={eventRowStyle}>
-                  <span style={{ fontWeight: 700, color: 'var(--night)' }}>{r.event.title}</span>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--muted)' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{r.event.title}</span>
+                  <span style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: '12.5px',
+                    color: 'var(--muted)',
+                  }}>
                     {new Date(r.event.event_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    {r.event.location && ` · ${r.event.location}`}
+                    {r.event.location && ` · 📍 ${r.event.location}`}
                   </span>
                 </Link>
               </li>
@@ -320,7 +287,10 @@ export default async function ProfilePage({
           </ul>
         ) : isOwnProfile ? (
           <p style={emptyLineStyle}>
-            Henüz bir buluşmaya katılmadın. <Link href="/" style={{ color: 'var(--ink)', textDecoration: 'underline', fontWeight: 600 }}>Yaklaşan buluşmalara göz at.</Link>
+            Henüz bir buluşmaya katılmadın.{' '}
+            <Link href="/" style={{ color: 'var(--ink)', textDecoration: 'underline', fontWeight: 600 }}>
+              Yaklaşan buluşmalara göz at.
+            </Link>
           </p>
         ) : (
           <p style={emptyLineStyle}>Henüz bir etkinliğe katılmadı.</p>
@@ -330,39 +300,28 @@ export default async function ProfilePage({
   )
 }
 
-const sectionTitleStyle = {
-  fontSize: '22px',
-  fontWeight: 800,
-  letterSpacing: '-0.5px',
-  color: 'var(--night)',
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: 'clamp(22px, 2.8vw, 28px)',
+  color: 'var(--ink)',
   marginBottom: '20px',
 }
 
-const emptyBoxStyle = {
-  background: '#ffffff',
-  padding: '32px 24px',
-  borderRadius: '16px',
-  border: '1px solid var(--border-soft)',
-  textAlign: 'center' as const,
-}
-
-const emptyLineStyle = {
+const emptyLineStyle: React.CSSProperties = {
   color: 'var(--muted)',
   fontSize: '15px',
-  fontWeight: 500,
   lineHeight: 1.55,
 }
 
-const eventRowStyle = {
+const eventRowStyle: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'baseline',
   gap: '12px',
-  flexWrap: 'wrap' as const,
-  padding: '16px 20px',
-  background: '#ffffff',
-  border: '1px solid var(--border-soft)',
-  borderRadius: '12px',
+  flexWrap: 'wrap',
+  padding: '14px 18px',
+  background: 'var(--paper-cream)',
+  border: '1.5px solid var(--border)',
+  borderRadius: '14px',
   textDecoration: 'none',
-  transition: 'border-color 0.15s ease',
+  transition: 'all 0.15s ease',
 }
