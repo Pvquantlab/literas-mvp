@@ -42,21 +42,20 @@ export default function EditProfileForm({
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div>
-        <ImageUpload
-          bucket="avatars"
-          value={avatarUrl}
-          onChange={setAvatarUrl}
-          label="Avatar"
-          hint="Kendine bir yüz seç. En fazla 2 MB, JPG/PNG/WEBP."
-        />
-      </div>
+      <ImageUpload
+        bucket="avatars"
+        value={avatarUrl}
+        onChange={setAvatarUrl}
+        label="Avatar"
+        hint="Kendine bir yüz seç. En fazla 2 MB, JPG/PNG/WEBP."
+      />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <label style={{
-          fontSize: '14px',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '13px',
           fontWeight: 600,
-          color: 'var(--night)',
+          color: 'var(--ink)',
         }}>
           Hakkımda
         </label>
@@ -66,24 +65,12 @@ export default function EditProfileForm({
           maxLength={280}
           rows={5}
           placeholder="Kitap, yürüyüş, bir film... seni anlatan birkaç cümle."
-          style={{
-            padding: '12px 14px',
-            border: '2px solid var(--border)',
-            borderRadius: '12px',
-            fontFamily: 'inherit',
-            fontSize: '15px',
-            lineHeight: 1.55,
-            resize: 'vertical',
-            background: 'white',
-            color: 'var(--night)',
-            fontWeight: 500,
-          }}
         />
         <span style={{
-          fontSize: '13px',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '12px',
           color: 'var(--muted)',
           textAlign: 'right',
-          fontWeight: 500,
         }}>
           {bio.length} / 280
         </span>
@@ -91,11 +78,11 @@ export default function EditProfileForm({
 
       {error && (
         <div style={{
-          background: 'var(--seal-soft)',
-          border: '1px solid rgba(196, 98, 45, 0.25)',
+          background: 'rgba(176, 67, 48, .1)',
+          border: '1.5px solid rgba(176, 67, 48, .3)',
           borderRadius: '12px',
           padding: '12px 16px',
-          color: 'var(--seal-deep)',
+          color: 'var(--coral-deep)',
           fontSize: '14px',
           fontWeight: 600,
           textAlign: 'center',
@@ -108,7 +95,7 @@ export default function EditProfileForm({
         type="submit"
         disabled={saving}
         className="btn-primary"
-        style={{ alignSelf: 'flex-start' }}
+        style={{ alignSelf: 'stretch', textAlign: 'center' }}
       >
         {saving ? 'Kaydediliyor...' : 'Kaydet'}
       </button>

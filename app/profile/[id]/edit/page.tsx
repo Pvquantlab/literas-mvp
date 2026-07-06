@@ -11,13 +11,8 @@ export default async function EditProfilePage({
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    redirect('/login')
-  }
-
-  if (user.id !== id) {
-    redirect(`/profile/${id}`)
-  }
+  if (!user) redirect('/login')
+  if (user.id !== id) redirect(`/profile/${id}`)
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -25,52 +20,54 @@ export default async function EditProfilePage({
     .eq('id', id)
     .single()
 
-  if (!profile) {
-    notFound()
-  }
+  if (!profile) notFound()
 
   return (
     <main style={{
       maxWidth: '560px',
       margin: '0 auto',
-      padding: '32px 24px 64px',
+      padding: '32px 24px 80px',
     }}>
       <Link
         href={`/profile/${id}`}
         style={{
           color: 'var(--muted)',
-          fontSize: '14px',
-          fontWeight: 600,
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '13px',
+          fontWeight: 500,
           textDecoration: 'none',
           display: 'inline-block',
           marginBottom: '20px',
         }}
       >
-        ← Profile dön
+        ← profile dön
       </Link>
-      <h1 style={{
-        fontSize: '32px',
-        fontWeight: 800,
-        letterSpacing: '-0.8px',
-        color: 'var(--night)',
-        margin: '0 0 8px',
-      }}>
-        Kendinden bahset
-      </h1>
-      <p style={{
-        color: 'var(--muted)',
-        fontSize: '15px',
-        fontWeight: 500,
-        lineHeight: 1.55,
-        marginBottom: '32px',
-      }}>
-        Birkaç cümle yeter. Neyi seversin, neyi merak edersin?
-      </p>
-      <EditProfileForm
-        userId={profile.id}
-        initialBio={profile.bio ?? ''}
-        initialAvatarUrl={profile.avatar_url ?? null}
-      />
+      <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+        <h1 className="serif" style={{
+          fontSize: 'clamp(30px, 4vw, 42px)',
+          color: 'var(--ink)',
+          margin: '0 0 12px',
+        }}>
+          Kendinden <span className="highlight-yellow">bahset</span>
+        </h1>
+        <p style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          color: 'var(--muted)',
+          fontSize: '13.5px',
+          lineHeight: 1.5,
+          maxWidth: '380px',
+          margin: '0 auto',
+        }}>
+          birkaç cümle yeter · neyi seversin, neyi merak edersin?
+        </p>
+      </div>
+      <div className="auth-card" style={{ marginTop: '32px' }}>
+        <EditProfileForm
+          userId={profile.id}
+          initialBio={profile.bio ?? ''}
+          initialAvatarUrl={profile.avatar_url ?? null}
+        />
+      </div>
     </main>
   )
 }
