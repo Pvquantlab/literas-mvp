@@ -1,20 +1,37 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800&family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --ink: #1E4D2B;
-  --ink-hover: #173F22;
-  --ink-deep: #173F22;
+  /* Ana renkler */
+  --ink: #1E3A2B;
+  --ink-hover: #152C1F;
+  --ink-deep: #152C1F;
+  --paper: #FFFFFF;
+  --paper-cream: #FFFDF6;
+  --paper-soft: #FAF4E8;
+  --night: #22301F;
+  --muted: rgba(34, 48, 31, .65);
+  --border: rgba(30, 58, 43, .16);
+  --border-mid: rgba(30, 58, 43, .35);
+
+  /* Vurgu renkleri */
+  --lime: #D6FF3F;
+  --lime-soft: #C9F52C;
+  --coral: #FF6D5A;
+  --coral-deep: #B04330;
+  --yellow-highlight: #FFD84D;
+
+  /* Sticky rozet renkleri */
+  --sticky-blue-bg: #D7E9FB;
+  --sticky-blue-ink: #2A5B8F;
+  --sticky-pink-bg: #FFCFC5;
+  --sticky-pink-ink: #B04330;
+  --sticky-green-bg: #E9F6AC;
+  --sticky-green-ink: #4B6B00;
+
+  /* Legacy — geriye dönük uyumluluk */
   --seal: #C4622D;
   --seal-soft: #F9EDE4;
   --seal-deep: #A84E1F;
-  --paper: #ffffff;
-  --paper-soft: #F1F2EF;
-  --night: #212121;
-  --muted: #5B6660;
-  --border: #DDE2DD;
-  --border-soft: #E7EAE6;
-  --shadow-soft: 0 2px 8px rgba(33, 33, 33, 0.06);
-  --shadow-hover: 0 10px 28px rgba(33, 33, 33, 0.14);
 }
 
 * {
@@ -26,11 +43,12 @@
 html, body {
   background: var(--paper);
   color: var(--night);
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Schibsted Grotesk', system-ui, -apple-system, sans-serif;
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 a {
@@ -49,29 +67,40 @@ button {
   background: none;
 }
 
+::selection {
+  background: var(--lime);
+  color: var(--ink);
+}
+
 input, textarea, select {
   font-family: inherit;
   font-size: 1rem;
-  padding: 0.85rem 1rem;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  background: white;
+  padding: 0.85rem 1.25rem;
+  border: 1.5px solid var(--border-mid);
+  border-radius: 999px;
+  background: var(--paper-cream);
   width: 100%;
-  color: var(--night);
+  color: var(--ink);
   font-weight: 500;
-  transition: border-color 0.15s ease;
+  transition: all 0.18s ease;
 }
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(214, 255, 63, .55);
 }
 input::placeholder {
-  color: #8A938D;
+  color: rgba(30, 58, 43, .5);
   font-weight: 500;
+}
+textarea {
+  border-radius: 20px;
+  min-height: 120px;
+  resize: vertical;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
 }
@@ -85,154 +114,199 @@ input::placeholder {
 /* --- Butonlar --- */
 .btn-primary {
   display: inline-block;
-  background: var(--ink);
-  color: #ffffff;
-  padding: 0.85rem 1.75rem;
+  background: var(--lime);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  padding: 0.95rem 2rem;
   border-radius: 999px;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1rem;
-  border: none;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
-  box-shadow: 0 4px 12px rgba(30, 77, 43, 0.2);
+  text-decoration: none;
+  box-shadow: 4px 5px 0 var(--ink);
+  transition: transform 0.18s ease;
 }
 .btn-primary:hover {
-  background: var(--ink-hover);
-  color: #ffffff;
-}
-.btn-primary:active {
-  transform: translateY(1px);
+  transform: rotate(-2deg) scale(1.04);
+  color: var(--ink);
 }
 
 .btn-secondary {
   display: inline-block;
-  background: #ffffff;
-  color: var(--ink);
-  padding: 0.85rem 1.75rem;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 1rem;
-  border: 2px solid var(--ink);
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-.btn-secondary:hover {
-  background: #F0F4F0;
-}
-
-.btn-ghost {
-  display: inline-block;
   background: transparent;
-  color: var(--night);
-  padding: 0.6rem 1rem;
-  font-weight: 700;
-  font-size: 0.95rem;
-  border: none;
-  cursor: pointer;
-}
-.btn-ghost:hover {
   color: var(--ink);
-}
-
-.btn-google {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  width: 100%;
-  background: white;
-  color: var(--night);
-  padding: 0.85rem 1.5rem;
-  border-radius: 12px;
-  font-weight: 600;
+  border: 2px solid var(--ink);
+  padding: 0.95rem 1.75rem;
+  border-radius: 999px;
+  font-weight: 700;
   font-size: 1rem;
-  border: 2px solid var(--border);
-  cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-.btn-google:hover {
-  border-color: var(--ink);
-  background: #fafafa;
-}
-
-/* --- Kart (topluluk/etkinlik) --- */
-.card {
-  display: block;
-  background: #ffffff;
-  border: 1px solid var(--border-soft);
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: var(--shadow-soft);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-  color: inherit;
-}
-.card:hover {
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-3px);
-  color: inherit;
-}
-
-/* --- Kategori badge (pill üstte) --- */
-.cat-badge {
-  display: inline-block;
-  background: var(--seal-soft);
-  color: var(--seal-deep);
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  text-transform: capitalize;
-  letter-spacing: 0.02em;
-}
-
-/* --- Filtre chip'leri --- */
-.filter-chip {
-  display: inline-block;
-  background: var(--paper-soft);
-  color: var(--night);
-  border: none;
-  border-radius: 999px;
-  padding: 0.65rem 1.25rem;
-  font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 700;
   cursor: pointer;
   text-decoration: none;
-  text-transform: capitalize;
-  transition: opacity 0.15s ease;
+  transition: transform 0.18s ease;
 }
-.filter-chip:hover {
-  opacity: 0.85;
-  color: var(--night);
+.btn-secondary:hover {
+  transform: rotate(2deg) scale(1.03);
+  background: rgba(30, 58, 43, .04);
 }
-.filter-chip.active {
+
+.btn-nav {
+  display: inline-block;
   background: var(--ink);
-  color: #ffffff;
+  color: var(--paper-soft);
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  transition: transform 0.18s ease;
 }
-.filter-chip.active:hover {
-  color: #ffffff;
+.btn-nav:hover {
+  transform: rotate(-2deg) scale(1.03);
+  color: var(--paper-soft);
 }
 
-/* --- Divider --- */
-.divider {
-  text-align: center;
-  margin: 1.5rem 0;
-  position: relative;
-  color: rgba(33, 33, 33, 0.5);
-  font-size: 0.875rem;
+/* --- Kartlar --- */
+.card {
+  background: var(--paper-cream);
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-decoration: none;
+  color: var(--ink);
 }
-.divider::before, .divider::after {
+.card:hover {
+  transform: translateY(-5px) rotate(-0.5deg);
+  box-shadow: 8px 11px 0 rgba(30, 58, 43, .17);
+  border-color: var(--ink);
+}
+
+/* --- Rozet stilleri --- */
+.badge-free {
+  background: var(--lime-soft);
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+
+.badge-mono {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  color: var(--coral-deep);
+  border: 1.5px solid rgba(176, 67, 48, .35);
+  background: rgba(255, 216, 77, .18);
+  padding: 5px 14px;
+  border-radius: 999px;
+}
+.badge-mono::before {
   content: '';
-  position: absolute;
-  top: 50%;
-  width: 40%;
-  height: 1px;
-  background: var(--border);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--coral);
+  display: inline-block;
 }
-.divider::before { left: 0; }
-.divider::after { right: 0; }
 
-/* Eski sınıflar — geçiş için tutuluyor, sonra temizlenecek */
-.serif, .catalog-number, .filter-link {
-  /* eski dilden kalan sınıflar — kullanılmıyor artık */
+.pill-city {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  border: 1.5px dashed rgba(30, 58, 43, .3);
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+
+/* --- Serif başlıklar --- */
+.serif {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.mono {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* --- Sarı highlight (kelime vurgusu) --- */
+.highlight-yellow {
+  background: linear-gradient(100deg, rgba(255, 216, 77, 0) 1%, rgba(255, 216, 77, .75) 6%, rgba(255, 216, 77, .85) 50%, rgba(255, 216, 77, .75) 94%, rgba(255, 216, 77, 0) 99%);
+  border-radius: 8px;
+  padding: 0 0.1em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* --- Sticky rozet (hero'daki eğik notlar) --- */
+.sticky-note {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  font-size: clamp(12px, 1.5vw, 18px);
+  padding: 0.24em 0.8em;
+  border-radius: 999px;
+  display: inline-block;
+  vertical-align: middle;
+  letter-spacing: -0.02em;
+}
+.sticky-blue { background: var(--sticky-blue-bg); color: var(--sticky-blue-ink); transform: rotate(-4deg); }
+.sticky-pink { background: var(--sticky-pink-bg); color: var(--sticky-pink-ink); transform: rotate(3deg); }
+.sticky-green { background: var(--sticky-green-bg); color: var(--sticky-green-ink); transform: rotate(-3deg); }
+
+/* --- Boş durum kutusu --- */
+.empty-state {
+  text-align: center;
+  padding: 56px 20px;
+  border: 1.5px dashed rgba(30, 58, 43, .3);
+  border-radius: 18px;
+  margin-top: 28px;
+}
+
+/* --- Kategori dairesi --- */
+.cat-circle {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+  color: var(--ink);
+  border: 1.5px solid;
+}
+.cat-circle:hover {
+  transform: translateY(-4px);
+  filter: brightness(.86) saturate(1.5);
+}
+.cat-circle.active {
+  background: var(--ink) !important;
+  color: var(--paper-soft) !important;
+  border-color: var(--ink) !important;
+  transform: rotate(-5deg);
+}
+
+/* --- Utility --- */
+.text-muted { color: var(--muted); }
+.text-ink { color: var(--ink); }
+.text-cream { color: var(--paper-soft); }
+
+/* --- Grid --- */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+  gap: 22px;
+  margin-top: 28px;
+}
+
+/* --- Mobile --- */
+@media (max-width: 640px) {
+  .container { padding: 1.5rem 1rem; }
+  .btn-primary, .btn-secondary { padding: 0.85rem 1.5rem; font-size: 0.95rem; }
 }
