@@ -5,7 +5,60 @@ import SearchBox from './search-box'
 
 export const dynamic = 'force-dynamic'
 
-const CATEGORIES = ['kitap', 'yürüyüş', 'yoga', 'dil', 'sanat', 'sohbet', 'sinema']
+// v2 tasarımın 14 kategorisi — her biri kendi renk + ikon + pattern'iyle
+const CATS = [
+  { n: 'Kitap',      slug: 'kitap',      bg: '#C9E8A0', ink: '#3E6B21', pt: 'stripes' },
+  { n: 'Doğa',       slug: 'doğa',       bg: '#FFD09E', ink: '#A35A1E', pt: 'dots' },
+  { n: 'Müzik',      slug: 'müzik',      bg: '#D5C3F5', ink: '#5B3EA6', pt: 'waves' },
+  { n: 'Lezzet',     slug: 'lezzet',     bg: '#FFE382', ink: '#8A6A00', pt: 'checker' },
+  { n: 'Dil',        slug: 'dil',        bg: '#B5D9F5', ink: '#2A5B8F', pt: 'stripes' },
+  { n: 'Spor',       slug: 'spor',       bg: '#AEE3CB', ink: '#1F6E52', pt: 'dots' },
+  { n: 'Sanat',      slug: 'sanat',      bg: '#F5BFDB', ink: '#A83A6E', pt: 'waves' },
+  { n: 'Oyun',       slug: 'oyun',       bg: '#FFC2B0', ink: '#B04330', pt: 'checker' },
+  { n: 'Tech',       slug: 'tech',       bg: '#BFD7E6', ink: '#33566B', pt: 'grid' },
+  { n: 'Sinema',     slug: 'sinema',     bg: '#CDC5EA', ink: '#544A86', pt: 'stripes' },
+  { n: 'Fotoğraf',   slug: 'fotoğraf',   bg: '#B5DEE8', ink: '#23697A', pt: 'dots' },
+  { n: 'Gönüllülük', slug: 'gönüllülük', bg: '#FFC7B0', ink: '#A34A22', pt: 'waves' },
+  { n: 'Kariyer',    slug: 'kariyer',    bg: '#C8DBBB', ink: '#46603A', pt: 'grid' },
+  { n: 'Sosyal',     slug: 'sosyal',     bg: '#FFBFCB', ink: '#A8354F', pt: 'waves' },
+]
+
+// Pattern arka planı üretir (v2'den)
+function patternStyle(pt: string, ink: string) {
+  const b = ink + '38'
+  if (pt === 'stripes') return { backgroundImage: `repeating-linear-gradient(45deg, ${b} 0px, ${b} 8px, transparent 8px, transparent 22px)` }
+  if (pt === 'dots')    return { backgroundImage: `radial-gradient(${ink}59 2.4px, transparent 2.7px)`, backgroundSize: '19px 19px' }
+  if (pt === 'waves')   return { backgroundImage: `radial-gradient(circle at 12px 0px, transparent 9px, ${b} 9.5px, ${b} 11.5px, transparent 12px)`, backgroundSize: '24px 15px' }
+  if (pt === 'checker') return { backgroundImage: `conic-gradient(${b} 25%, transparent 0 50%, ${b} 0 75%, transparent 0)`, backgroundSize: '26px 26px' }
+  return { backgroundImage: `linear-gradient(${b} 1.5px, transparent 1.5px), linear-gradient(90deg, ${b} 1.5px, transparent 1.5px)`, backgroundSize: '21px 21px' }
+}
+
+// Kategori ikonu SVG'leri (v2'den)
+function CatIcon({ slug, size = 34, color = 'currentColor' }: { slug: string; size?: number; color?: string }) {
+  const s = { fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+  const w = { fill: 'none', stroke: '#FAF4E8', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+  const paths: Record<string, React.ReactNode> = {
+    kitap: <><path d="M2 4h6a4 4 0 0 1 4 4v13c-1-1.3-2.4-2-4-2H2z" fill={color} /><path d="M22 4h-6a4 4 0 0 0-4 4v13c1-1.3 2.4-2 4-2h6z" fill={color} /></>,
+    doğa: <path d="m8 3 4 8 5-5 5 15H2z" fill={color} />,
+    müzik: <><path d="M12 2a3.5 3.5 0 0 0-3.5 3.5v6a3.5 3.5 0 0 0 7 0v-6A3.5 3.5 0 0 0 12 2z" fill={color} /><path d="M19 10v1.5a7 7 0 0 1-14 0V10" {...s} /><path d="M12 19v3" {...s} /></>,
+    lezzet: <><path d="M3 8h14v8.5a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill={color} /><path d="M17 9.5h1a3 3 0 1 1 0 6h-1" {...s} /><path d="M7 2.5V5" {...s} /><path d="M11 2.5V5" {...s} /></>,
+    dil: <><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z" fill={color} /><path d="M18 7h2a2 2 0 0 1 2 2v13l-4-4h-6a2 2 0 0 1-2-2v-2h6a2 2 0 0 0 2-2z" fill={color} /></>,
+    spor: <><path d="M12 15c-1.6-1.4-2.4-3.1-2.4-5.1S10.4 5.9 12 4c1.6 1.9 2.4 3.9 2.4 5.9S13.6 13.6 12 15z" fill={color} /><path d="M9.7 13.6C7.4 13.4 5.4 12.4 3.8 10.5c.9-1 2-1.7 3.3-2.1.5 1.9 1.4 3.7 2.6 5.2z" fill={color} /><path d="M14.3 13.6c2.3-.2 4.3-1.2 5.9-3.1-.9-1-2-1.7-3.3-2.1-.5 1.9-1.4 3.7-2.6 5.2z" fill={color} /><path d="M4 17c2.5 1.5 5.2 2 8 1.6 2.8.4 5.5-.1 8-1.6" {...s} /></>,
+    sanat: <><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.6-.7 1.6-1.7 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.7 1.6-1.7h2c3.1 0 5.6-2.5 5.6-5.6C22 6 17.5 2 12 2z" fill={color} /><circle cx="7" cy="10.5" r="1.1" fill="#FAF4E8" /><circle cx="11" cy="6.8" r="1.1" fill="#FAF4E8" /><circle cx="16" cy="8.5" r="1.1" fill="#FAF4E8" /></>,
+    oyun: <><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z" fill={color} /><path d="M6 11h4M8 9v4" {...w} /><circle cx="15.5" cy="12.2" r="1.1" fill="#FAF4E8" /><circle cx="18.3" cy="10" r="1.1" fill="#FAF4E8" /></>,
+    tech: <><rect x="3" y="4.5" width="18" height="12.5" rx="2" fill={color} /><rect x="1.5" y="18.5" width="21" height="2.5" rx="1.2" fill={color} /></>,
+    sinema: <><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z" fill={color} /><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill={color} /><path d="m6.2 5.3 3.1 3.9" {...w} /><path d="m12.4 3.4 3.1 4" {...w} /></>,
+    fotoğraf: <><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" fill={color} /><circle cx="12" cy="13" r="3.4" fill="none" stroke="#FAF4E8" strokeWidth="2" /></>,
+    gönüllülük: <><path d="M12 11.5 10 9.7C8.7 8.5 8 7.4 8 6.2 8 4.7 9.2 3.5 10.7 3.5c.8 0 1.5.4 1.9 1 .4-.6 1.1-1 1.9-1 1.5 0 2.7 1.2 2.7 2.7 0 1.2-.7 2.3-2 3.5z" fill={color} /><path d="M4.5 14.5c1.5 3.4 4 5.3 7.5 5.3s6-1.9 7.5-5.3" {...s} /></>,
+    kariyer: <><rect x="2" y="7" width="20" height="14" rx="2" fill={color} /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" {...s} /><path d="M2 13h20" {...w} /></>,
+    sosyal: <><g transform="rotate(-14 6.5 10)"><path d="M2.5 3.5h8l-4 6.5z" fill={color} /><path d="M6.5 10v7" {...s} /><path d="M4 17.5h5" {...s} /></g><g transform="rotate(14 17.5 10)"><path d="M13.5 3.5h8l-4 6.5z" fill={color} /><path d="M17.5 10v7" {...s} /><path d="M15 17.5h5" {...s} /></g></>,
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      {paths[slug] || null}
+    </svg>
+  )
+}
 
 export default async function HomePage({
   searchParams,
@@ -57,261 +110,330 @@ export default async function HomePage({
     return qs ? `/?${qs}` : '/'
   }
 
+  // Kategori adına göre v2'deki cat objesini bul (case-insensitive Türkçe)
+  const findCat = (slug: string | undefined) => {
+    if (!slug) return null
+    const s = slug.toLocaleLowerCase('tr')
+    return CATS.find((c) => c.slug === s) || null
+  }
+
   return (
     <main>
-      {/* Hero */}
+      {/* --- HERO --- */}
       <section style={{
-        maxWidth: '820px',
+        maxWidth: '1440px',
         margin: '0 auto',
-        padding: '64px 24px 72px',
+        padding: '38px 20px 60px',
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
-        gap: '22px',
+        justifyContent: 'center',
+        position: 'relative',
       }}>
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: 'var(--seal-soft)',
-          color: 'var(--seal-deep)',
-          fontSize: '14px',
-          fontWeight: 700,
-          padding: '8px 18px',
-          borderRadius: '999px',
-          letterSpacing: '0.2px',
-        }}>
-          <span style={{
-            width: '7px',
-            height: '7px',
-            borderRadius: '50%',
-            background: 'var(--seal)',
-            display: 'inline-block',
-          }} />
-          Ücretsiz • Sınırsız üye
-        </span>
-        <h1 style={{
-          fontSize: '62px',
-          fontWeight: 800,
-          lineHeight: 1.05,
-          letterSpacing: '-2px',
-          margin: 0,
-          color: 'var(--night)',
-        }}>
-          İnsanların kendi topluluklarını kurduğu bir yer
-        </h1>
-        <p style={{
-          fontSize: '19px',
-          fontWeight: 500,
-          lineHeight: 1.55,
-          color: 'var(--muted)',
-          margin: 0,
-          maxWidth: '560px',
-        }}>
-          Kitap kulübü, yürüyüş, dil pratiği. Topluluk kurmak tamamen ücretsiz.
-        </p>
-        <div style={{
-          display: 'flex',
-          gap: '14px',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          marginTop: '10px',
-        }}>
-          <Link href="/community/new" className="btn-primary" style={{ fontSize: '17px' }}>
-            Topluluk kur
-          </Link>
-          <Link href="#topluluklar" className="btn-secondary" style={{ fontSize: '17px' }}>
-            Toplulukları keşfet
-          </Link>
+        {/* Doodle çizgi — sol */}
+        <svg style={{ position: 'absolute', left: '6%', top: '40%' }} width="64" height="26" viewBox="0 0 64 26" fill="none" aria-hidden="true">
+          <path d="M3 20C13 6 22 4 31 11s18 8 30-4" stroke="var(--ink)" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="1 6" />
+        </svg>
+        {/* Doodle çizgi — sağ */}
+        <svg style={{ position: 'absolute', right: '6%', top: '60%' }} width="54" height="24" viewBox="0 0 54 24" fill="none" aria-hidden="true">
+          <path d="M51 5C41 18 33 20 25 14S10 8 3 17" stroke="var(--ink)" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="1 6" />
+        </svg>
+
+        <div style={{ flex: '0 1 820px', maxWidth: '820px', textAlign: 'center', position: 'relative', padding: '10px 0' }}>
+          {/* Rozet */}
+          <div className="badge-mono" style={{ marginBottom: '22px' }}>
+            tamamen ücretsiz · sınırsız üye
+          </div>
+
+          {/* Hero başlık — sarı highlight + sticky rozetler */}
+          <h1 style={{
+            fontFamily: "'Schibsted Grotesk', system-ui, sans-serif",
+            fontWeight: 800,
+            fontSize: 'clamp(40px, 6vw, 84px)',
+            lineHeight: 1.04,
+            margin: '0 0 20px',
+            color: 'var(--ink)',
+            letterSpacing: '-0.03em',
+          }}>
+            İnsanların{' '}
+            <span className="sticky-note sticky-blue">kitap + kahve</span>
+            {' '}kendi topluluklarını{' '}
+            <span className="sticky-note sticky-pink">photowalk</span>
+            {' '}kurduğu bir{' '}
+            <span className="highlight-yellow">yer</span>{' '}
+            <span className="sticky-note sticky-green">dil pratiği</span>
+          </h1>
+
+          <p style={{
+            maxWidth: '520px',
+            margin: '0 auto',
+            fontSize: '17px',
+            lineHeight: 1.65,
+            color: 'var(--muted)',
+          }}>
+            Kitap kulübünden sahil yürüyüşüne — merak ettiğin şeyi seven insanları bul, ya da kendi topluluğunu aç. Katılmak da kurmak da ücretsiz.
+          </p>
+
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '14px',
+            marginTop: '30px',
+          }}>
+            <Link href="/community/new" className="btn-primary" style={{ fontSize: '18px', padding: '16px 34px' }}>
+              Topluluk kur
+            </Link>
+            <Link href="/event/new" className="btn-secondary" style={{ fontSize: '18px', padding: '16px 30px' }}>
+              Etkinlik paylaş
+            </Link>
+          </div>
+
+          <div style={{ marginTop: '28px', fontFamily: "'IBM Plex Mono', monospace", fontSize: '13.5px', color: 'rgba(30,58,43,.62)' }}>
+            ✿ çevrimiçi başlar, çevrimdışı buluşur
+          </div>
         </div>
       </section>
 
-      {/* Topluluklar bölümü */}
-      <section id="topluluklar" style={{
-        maxWidth: '1200px',
+      {/* --- KATEGORİ STRIP'İ --- */}
+      <section id="kesfet" style={{
+        maxWidth: '1240px',
         margin: '0 auto',
-        padding: '0 24px 80px',
+        padding: '64px 8px 4px',
+        textAlign: 'center',
+        position: 'relative',
       }}>
         <h2 style={{
-          fontSize: '34px',
+          fontSize: 'clamp(24px, 3vw, 34px)',
           fontWeight: 800,
-          letterSpacing: '-1px',
-          margin: '0 0 24px',
-          color: 'var(--night)',
+          color: 'var(--ink)',
+          margin: 0,
+          letterSpacing: '-0.01em',
         }}>
-          Topluluklar
+          Ne ilgini çekiyor?
         </h2>
-
-        {/* Arama + şehir seçici */}
         <div style={{
           display: 'flex',
-          gap: '12px',
-          flexWrap: 'wrap',
-          marginBottom: '20px',
+          alignItems: 'flex-start',
+          gap: '18px',
+          marginTop: '22px',
+          overflowX: 'auto',
+          scrollSnapType: 'x proximity',
+          padding: '12px 28px 16px',
+          scrollbarWidth: 'none',
         }}>
-          <div style={{ flex: 1, minWidth: '260px' }}>
+          {CATS.map((c) => {
+            const isActive = activeCategory?.toLocaleLowerCase('tr') === c.slug
+            return (
+              <Link
+                key={c.slug}
+                href={buildCategoryHref(isActive ? null : c.slug)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '9px',
+                  width: '96px',
+                  flex: 'none',
+                  scrollSnapAlign: 'start',
+                  padding: '6px 0',
+                  textDecoration: 'none',
+                }}
+              >
+                <span
+                  className={`cat-circle${isActive ? ' active' : ''}`}
+                  style={{
+                    background: isActive ? undefined : c.bg,
+                    borderColor: isActive ? undefined : c.ink + '55',
+                    color: isActive ? undefined : 'var(--ink)',
+                  }}
+                >
+                  <CatIcon slug={c.slug} size={32} color={isActive ? 'var(--paper-soft)' : c.ink} />
+                </span>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--ink)', textAlign: 'center', lineHeight: 1.3 }}>
+                  {c.n}
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* --- TOPLULUKLAR --- */}
+      <section id="topluluklar" style={{ maxWidth: '1240px', margin: '0 auto', padding: '52px 20px 72px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px' }}>
+          <h2 style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: 'clamp(26px, 3.4vw, 38px)',
+            fontWeight: 800,
+            color: 'var(--ink)',
+            margin: 0,
+          }}>
+            <span className="highlight-yellow" style={{ color: 'var(--coral)' }}>
+              {activeCity || 'İstanbul'}
+            </span>{' '}
+            yakınındaki topluluklar
+          </h2>
+        </div>
+
+        {/* Arama + şehir seçici */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '22px' }}>
+          <div style={{ flex: '1 1 260px', minWidth: '220px' }}>
             <SearchBox initialQuery={activeQuery ?? ''} />
           </div>
-          <div style={{ minWidth: '200px' }}>
+          <div style={{ flex: '0 0 auto', minWidth: '180px' }}>
             <CityFilter cities={cities} activeCity={activeCity ?? ''} />
           </div>
         </div>
 
-        {/* Kategori chip'leri */}
-        <div style={{
-          display: 'flex',
-          gap: '10px',
-          flexWrap: 'wrap',
-          marginBottom: '32px',
-        }}>
+        {/* Aktif filter göstergesi */}
+        {activeCategory && (
           <Link
             href={buildCategoryHref(null)}
-            className={`filter-chip${!activeCategory ? ' active' : ''}`}
+            style={{
+              display: 'inline-block',
+              marginTop: '16px',
+              background: 'var(--ink)',
+              color: 'var(--lime)',
+              borderRadius: '999px',
+              padding: '7px 16px',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: '12.5px',
+              textDecoration: 'none',
+            }}
           >
-            hepsi
+            {activeCategory} ✕
           </Link>
-          {CATEGORIES.map((cat) => (
-            <Link
-              key={cat}
-              href={buildCategoryHref(cat)}
-              className={`filter-chip${activeCategory === cat ? ' active' : ''}`}
-            >
-              {cat}
-            </Link>
-          ))}
-        </div>
+        )}
 
         {/* Kartlar veya boş durum */}
         {!communities || communities.length === 0 ? (
-          <div style={{
-            background: '#ffffff',
-            padding: '3rem 2rem',
-            borderRadius: '16px',
-            textAlign: 'center',
-            border: '1px solid var(--border-soft)',
-          }}>
-            {hasFilter ? (
-              <>
-                <p style={{ color: 'var(--night)', fontSize: '17px', fontWeight: 600, marginBottom: '1.5rem' }}>
-                  Bu filtreye uyan topluluk yok — ama sen kurabilirsin.
-                </p>
-                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <Link href="/" className="btn-secondary">Filtreleri temizle</Link>
-                  <Link href="/community/new" className="btn-primary">Topluluk kur</Link>
-                </div>
-              </>
-            ) : (
-              <>
-                <p style={{ color: 'var(--night)', fontSize: '20px', fontWeight: 700, marginBottom: '0.5rem' }}>
-                  Henüz kimse bir topluluk kurmadı.
-                </p>
-                <p style={{ color: 'var(--muted)', fontSize: '16px', marginBottom: '1.5rem' }}>
-                  İlki sen ol.
-                </p>
-                <Link href="/community/new" className="btn-primary">Topluluk kur</Link>
-              </>
-            )}
+          <div className="empty-state">
+            <div style={{ fontSize: '34px' }}>🌱</div>
+            <div className="serif" style={{ fontSize: '24px', color: 'var(--ink)', marginTop: '10px' }}>
+              {hasFilter ? 'Bu filtreye uyan topluluk yok.' : 'Henüz burada bir topluluk yok.'}
+            </div>
+            <div style={{ fontSize: '15px', color: 'var(--muted)', marginTop: '6px' }}>
+              İlkini sen kurabilirsin — 2 dakika sürer.
+            </div>
+            <Link href="/community/new" className="btn-primary" style={{ marginTop: '18px' }}>
+              Topluluk kur
+            </Link>
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '28px',
-          }}>
+          <div className="grid-cards">
             {communities.map((community: any) => {
               const memberCount = community.community_members?.[0]?.count ?? 0
+              const cat = findCat(community.category)
+              const artStyle: React.CSSProperties = cat
+                ? { height: '148px', backgroundColor: cat.bg, ...patternStyle(cat.pt, cat.ink), display: 'grid', placeItems: 'center', color: cat.ink, position: 'relative' }
+                : { height: '148px', backgroundColor: 'var(--paper-soft)', display: 'grid', placeItems: 'center', color: 'var(--muted)', position: 'relative' }
 
               return (
-                <Link
-                  key={community.id}
-                  href={`/community/${community.id}`}
-                  className="card"
-                >
+                <Link key={community.id} href={`/community/${community.id}`} className="card">
+                  {/* Kart üstü — pattern arka planlı ikon veya kapak */}
                   {community.cover_image_url ? (
-                    <div style={{
-                      width: '100%',
-                      aspectRatio: '16 / 9',
-                      overflow: 'hidden',
-                      background: 'var(--paper-soft)',
-                    }}>
+                    <div style={{ width: '100%', height: '148px', overflow: 'hidden', background: 'var(--paper-soft)', position: 'relative' }}>
                       <img
                         src={community.cover_image_url}
                         alt=""
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          display: 'block',
-                        }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                       />
+                      <span style={{
+                        position: 'absolute', top: '10px', right: '10px',
+                        background: 'var(--lime-soft)', border: '1.5px solid var(--ink)',
+                        color: 'var(--ink)', fontSize: '11.5px', fontWeight: 700,
+                        padding: '2px 9px', borderRadius: '999px',
+                      }}>
+                        Ücretsiz
+                      </span>
                     </div>
                   ) : (
-                    <div style={{
-                      width: '100%',
-                      aspectRatio: '16 / 9',
-                      background: 'var(--paper-soft)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--muted)',
-                      fontSize: '0.9rem',
-                    }}>
-                      görsel yok
+                    <div style={artStyle}>
+                      <span style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(255,253,246,.85)', display: 'grid', placeItems: 'center' }}>
+                        {cat ? <CatIcon slug={cat.slug} size={34} color={cat.ink} /> : <span style={{ fontSize: '12px' }}>görsel yok</span>}
+                      </span>
+                      <span style={{
+                        position: 'absolute', top: '10px', right: '10px',
+                        background: 'var(--lime-soft)', border: '1.5px solid var(--ink)',
+                        color: 'var(--ink)', fontSize: '11.5px', fontWeight: 700,
+                        padding: '2px 9px', borderRadius: '999px',
+                      }}>
+                        Ücretsiz
+                      </span>
                     </div>
                   )}
-                  <div style={{
-                    padding: '18px 20px 20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                  }}>
-                    {community.category && (
-                      <span className="cat-badge" style={{ alignSelf: 'flex-start' }}>
-                        {community.category}
-                      </span>
-                    )}
+
+                  {/* Kart gövde */}
+                  <div style={{ padding: '14px 16px 12px', flex: 1 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+                      {community.category && cat && (
+                        <span style={{
+                          background: cat.bg, color: cat.ink,
+                          fontSize: '12px', fontWeight: 700,
+                          padding: '3px 10px', borderRadius: '999px',
+                        }}>
+                          {cat.n}
+                        </span>
+                      )}
+                      {community.city && (
+                        <span className="pill-city">📍 {community.city}</span>
+                      )}
+                    </div>
                     <h3 style={{
-                      fontSize: '19px',
-                      fontWeight: 800,
-                      letterSpacing: '-0.4px',
-                      lineHeight: 1.25,
-                      color: 'var(--night)',
-                      margin: '2px 0 0',
+                      fontSize: '20px', fontWeight: 800, margin: '8px 0 4px',
+                      color: 'var(--ink)', letterSpacing: '-0.01em',
                     }}>
                       {community.name}
                     </h3>
-                    <p style={{
-                      fontSize: '14.5px',
-                      fontWeight: 600,
-                      color: 'var(--muted)',
-                      margin: 0,
-                    }}>
-                      {community.city}
-                    </p>
-                    <p style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: 'var(--ink)',
-                      margin: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}>
-                      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                        <circle cx="5.5" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.6" />
-                        <circle cx="11" cy="5.5" r="2" stroke="currentColor" strokeWidth="1.6" />
-                        <path d="M1.5 13.5 C1.5 10.8 3.3 9.5 5.5 9.5 C7.7 9.5 9.5 10.8 9.5 13.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                        <path d="M11.5 9.8 C13.3 10 14.5 11.2 14.5 13.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                      </svg>
-                      {memberCount} üye
-                    </p>
+                    <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--ink)' }}>
+                      👥 {memberCount} üye
+                    </div>
                   </div>
                 </Link>
               )
             })}
           </div>
         )}
+      </section>
+
+      {/* --- ALT CTA BLOĞU --- */}
+      <section style={{ maxWidth: '1240px', margin: '8px auto 0', padding: '0 20px' }}>
+        <div style={{
+          background: 'var(--ink)',
+          borderRadius: '28px',
+          padding: 'clamp(44px, 6vw, 72px) 28px',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* Doodle */}
+          <svg style={{ position: 'absolute', top: '22px', left: '5%' }} width="60" height="26" viewBox="0 0 60 26" fill="none" aria-hidden="true">
+            <path d="M3 20C13 6 21 4 30 12s17 8 27-6" stroke="var(--lime)" strokeWidth="2" strokeLinecap="round" strokeDasharray="1 6" />
+          </svg>
+
+          <h2 className="serif" style={{
+            fontSize: 'clamp(30px, 4.4vw, 52px)',
+            color: 'var(--paper-soft)',
+            margin: 0,
+          }}>
+            Senin mahallende de <em>bir şeyler</em> olsun.
+          </h2>
+          <div style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: '13.5px',
+            color: 'var(--lime)',
+            marginTop: '14px',
+          }}>
+            topluluk kurmak 2 dakika sürer · hep ücretsiz
+          </div>
+          <Link href="/community/new" className="btn-primary" style={{
+            marginTop: '28px',
+            fontSize: '17px',
+            padding: '15px 32px',
+          }}>
+            Topluluk kur
+          </Link>
+        </div>
       </section>
     </main>
   )
