@@ -14,7 +14,11 @@ export default function LogoutButton() {
   }
 
   return (
-    <button onClick={handleLogout} className="btn-secondary" style={{ fontSize: '0.9rem' }}>
+    <button
+      onClick={handleLogout}
+      className="btn-secondary"
+      style={{ fontSize: '13.5px', padding: '8px 18px' }}
+    >
       Çıkış yap
     </button>
   )
