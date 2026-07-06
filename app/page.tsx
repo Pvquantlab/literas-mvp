@@ -34,7 +34,7 @@ function patternStyle(pt: string, ink: string) {
   return { backgroundImage: `linear-gradient(${b} 1.5px, transparent 1.5px), linear-gradient(90deg, ${b} 1.5px, transparent 1.5px)`, backgroundSize: '21px 21px' }
 }
 
-// Kategori ikonu — kartlar için (server component'te kullanılıyor)
+// Kategori ikonu — kartlar için
 function CatIcon({ slug, size = 34 }: { slug: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
     kitap: <><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z" /><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z" /></>,
@@ -145,7 +145,7 @@ export default async function HomePage({
 
         <div style={{ flex: '0 1 820px', maxWidth: '820px', textAlign: 'center', position: 'relative', padding: '10px 0' }}>
           <div className="badge-mono" style={{ marginBottom: '22px' }}>
-            tamamen ücretsiz · sınırsız üye
+            her zaman açık · herkese göre
           </div>
 
           <h1 style={{
@@ -182,7 +182,7 @@ export default async function HomePage({
             lineHeight: 1.65,
             color: 'var(--muted)',
           }}>
-            Ortak bir merakla başlar, bir masada büyür. Katılmak da kurmak da ücretsiz.
+            Burada bir masa senin adına her zaman ayrılmış.
           </p>
 
           <div style={{
@@ -207,7 +207,7 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* --- KATEGORİ STRIP'İ (v2 line-art + oklar) --- */}
+      {/* --- KATEGORİ STRIP'İ --- */}
       <section id="kesfet" style={{
         maxWidth: '1240px',
         margin: '0 auto',
@@ -224,7 +224,7 @@ export default async function HomePage({
         }}>
           Ne ilgini çekiyor?
         </h2>
-       <CategoryStrip
+        <CategoryStrip
           cats={CATS}
           activeCategory={activeCategory}
           activeCity={activeCity}
@@ -314,7 +314,7 @@ export default async function HomePage({
                         color: 'var(--ink)', fontSize: '11.5px', fontWeight: 700,
                         padding: '2px 9px', borderRadius: '999px',
                       }}>
-                        Ücretsiz
+                        Açık
                       </span>
                     </div>
                   ) : (
@@ -328,7 +328,7 @@ export default async function HomePage({
                         color: 'var(--ink)', fontSize: '11.5px', fontWeight: 700,
                         padding: '2px 9px', borderRadius: '999px',
                       }}>
-                        Ücretsiz
+                        Açık
                       </span>
                     </div>
                   )}
@@ -392,7 +392,7 @@ export default async function HomePage({
             color: 'var(--lime)',
             marginTop: '14px',
           }}>
-            topluluk kurmak 2 dakika sürer · hep ücretsiz
+            topluluk kurmak 2 dakika sürer · başlaman yeter
           </div>
           <Link href="/community/new" className="btn-primary" style={{
             marginTop: '28px',
