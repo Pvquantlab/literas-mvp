@@ -52,14 +52,22 @@ export default function MemberActions({
   const isDestructive = action === 'reject'
   const isNeutral = action === 'toggle-admin'
 
-  const buttonStyle = {
-    background: isDestructive ? '#ffffff' : isNeutral ? '#ffffff' : 'var(--ink)',
-    color: isDestructive ? 'var(--seal-deep)' : isNeutral ? 'var(--muted)' : '#ffffff',
-    border: isDestructive
-      ? '1px solid rgba(196, 98, 45, 0.35)'
+  const buttonStyle: React.CSSProperties = {
+    background: isDestructive
+      ? 'var(--paper-cream)'
       : isNeutral
-      ? '1px solid var(--border-soft)'
-      : 'none',
+      ? 'var(--paper-cream)'
+      : 'var(--lime)',
+    color: isDestructive
+      ? 'var(--coral-deep)'
+      : isNeutral
+      ? 'var(--muted)'
+      : 'var(--ink)',
+    border: isDestructive
+      ? '1.5px solid rgba(176, 67, 48, .35)'
+      : isNeutral
+      ? '1.5px solid var(--border-mid)'
+      : '2px solid var(--ink)',
     borderRadius: '999px',
     padding: '6px 14px',
     fontFamily: 'inherit',
@@ -67,7 +75,8 @@ export default function MemberActions({
     fontWeight: 700,
     cursor: loading ? 'wait' : 'pointer',
     opacity: loading ? 0.5 : 1,
-    transition: 'opacity 0.15s ease',
+    boxShadow: !isDestructive && !isNeutral ? '2px 3px 0 var(--ink)' : 'none',
+    transition: 'transform 0.15s ease, opacity 0.15s ease',
   }
 
   return (

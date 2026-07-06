@@ -48,20 +48,20 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   const canModerate = isFounder || isAdmin
 
   return (
-    <main style={{
-      maxWidth: '900px',
-      margin: '0 auto',
-      padding: '32px 24px 64px',
-    }}>
-      <Link href="/" style={{
-        color: 'var(--muted)',
-        fontSize: '14px',
-        fontWeight: 600,
-        marginBottom: '20px',
-        display: 'inline-block',
-        textDecoration: 'none',
-      }}>
-        ← Tüm topluluklar
+    <main style={{ maxWidth: '900px', margin: '0 auto', padding: '32px 24px 64px' }}>
+      <Link
+        href="/"
+        style={{
+          color: 'var(--muted)',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '13px',
+          fontWeight: 500,
+          marginBottom: '20px',
+          display: 'inline-block',
+          textDecoration: 'none',
+        }}
+      >
+        ← tüm topluluklar
       </Link>
 
       {/* Kapak resmi */}
@@ -70,92 +70,86 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           width: '100%',
           aspectRatio: '16 / 9',
           overflow: 'hidden',
-          borderRadius: '16px',
-          border: '1px solid var(--border-soft)',
-          background: 'var(--paper-soft)',
+          borderRadius: '18px',
+          border: '1.5px solid var(--border)',
+          background: 'var(--paper-cream)',
           marginBottom: '28px',
         }}>
           <img
             src={community.cover_image_url}
             alt=""
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         </div>
       )}
 
-      {/* Başlık */}
-      <h1 style={{
-        fontSize: '42px',
-        fontWeight: 800,
-        letterSpacing: '-1.2px',
+      {/* Başlık — Playfair + sarı highlight */}
+      <h1 className="serif" style={{
+        fontSize: 'clamp(32px, 4.4vw, 46px)',
         lineHeight: 1.1,
-        color: 'var(--night)',
-        margin: '0 0 10px',
+        color: 'var(--ink)',
+        margin: '0 0 12px',
       }}>
-        {community.name}
+        <span className="highlight-yellow">{community.name}</span>
       </h1>
 
       <p style={{
+        fontFamily: "'IBM Plex Mono', monospace",
         color: 'var(--muted)',
-        fontSize: '15px',
-        fontWeight: 600,
+        fontSize: '13.5px',
         marginBottom: '20px',
       }}>
-        {community.city} · {memberCount} üye · {founderName} kurdu
+        📍 {community.city} · 👥 {memberCount} üye · {founderName} kurdu
       </p>
 
       {community.description && (
         <p style={{
-          color: 'var(--night)',
+          color: 'var(--ink)',
           fontSize: '16.5px',
-          lineHeight: 1.6,
+          lineHeight: 1.65,
           marginBottom: '28px',
         }}>
           {community.description}
         </p>
       )}
 
-      {/* Katıl butonu / bekleyen istek */}
+      {/* Katıl butonu */}
       {user && !currentUserMembership && (
         <div style={{ marginBottom: '32px' }}>
           <JoinButton communityId={community.id} userId={user.id} />
         </div>
       )}
+
+      {/* Bekleyen istek göstergesi — coral */}
       {isPending && (
         <div style={{
-          background: 'var(--seal-soft)',
-          border: '1px solid rgba(196, 98, 45, 0.25)',
-          borderRadius: '12px',
-          padding: '14px 18px',
-          color: 'var(--seal-deep)',
-          fontSize: '14.5px',
-          fontWeight: 600,
+          background: 'rgba(255, 216, 77, .2)',
+          border: '1.5px solid rgba(176, 67, 48, .35)',
+          borderRadius: '999px',
+          padding: '10px 18px',
+          color: 'var(--coral-deep)',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '13px',
           marginBottom: '32px',
-          display: 'inline-block',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
         }}>
-          İsteğin bekliyor — kurucu onaylayınca haberin olur.
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--coral)' }} />
+          isteğin bekliyor · kurucu onaylayınca haberin olur
         </div>
       )}
 
-      {/* Bekleyen istekler (kurucu/admin görür) */}
+      {/* Bekleyen istekler (moderatör) */}
       {canModerate && pendingMembers.length > 0 && (
         <section style={{ marginTop: '32px', marginBottom: '32px' }}>
-          <h2 style={sectionTitleStyle}>Bekleyen istekler</h2>
+          <h2 style={sectionTitleStyle} className="serif">Bekleyen istekler</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {pendingMembers.map((m: any) => (
               <div key={m.id} style={memberRowStyle}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
                   {m.user?.avatar_url ? (
-                    <img
-                      src={m.user.avatar_url}
-                      alt=""
-                      style={avatarStyle}
-                    />
+                    <img src={m.user.avatar_url} alt="" style={avatarStyle} />
                   ) : (
                     <div style={avatarPlaceholderStyle}>
                       {m.user?.name?.[0]?.toUpperCase() ?? '?'}
@@ -163,7 +157,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                   )}
                   <Link
                     href={`/profile/${m.user_id}`}
-                    style={{ color: 'var(--night)', fontWeight: 700, textDecoration: 'none' }}
+                    style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'none' }}
                   >
                     {m.user?.name}
                   </Link>
@@ -180,17 +174,13 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
 
       {/* Üyeler */}
       <section style={{ marginTop: '40px' }}>
-        <h2 style={sectionTitleStyle}>Üyeler</h2>
+        <h2 style={sectionTitleStyle} className="serif">Üyeler</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {approvedMembers.map((m: any) => (
             <div key={m.id} style={memberRowStyle}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
                 {m.user?.avatar_url ? (
-                  <img
-                    src={m.user.avatar_url}
-                    alt=""
-                    style={avatarStyle}
-                  />
+                  <img src={m.user.avatar_url} alt="" style={avatarStyle} />
                 ) : (
                   <div style={avatarPlaceholderStyle}>
                     {m.user?.name?.[0]?.toUpperCase() ?? '?'}
@@ -198,16 +188,12 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                 )}
                 <Link
                   href={`/profile/${m.user_id}`}
-                  style={{ color: 'var(--night)', fontWeight: 700, textDecoration: 'none' }}
+                  style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'none' }}
                 >
                   {m.user?.name}
                 </Link>
-                {m.role === 'founder' && (
-                  <span style={roleBadgeStyle}>kurucu</span>
-                )}
-                {m.role === 'admin' && (
-                  <span style={roleBadgeStyle}>yönetici</span>
-                )}
+                {m.role === 'founder' && <span style={roleBadgeStyle}>kurucu</span>}
+                {m.role === 'admin' && <span style={roleBadgeStyle}>yönetici</span>}
               </div>
               {isFounder && m.role !== 'founder' && (
                 <MemberActions
@@ -223,7 +209,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
 
       {/* Yaklaşan etkinlikler */}
       <section style={{ marginTop: '40px' }}>
-        <h2 style={sectionTitleStyle}>Yaklaşan etkinlikler</h2>
+        <h2 style={sectionTitleStyle} className="serif">Yaklaşan etkinlikler</h2>
         <EventsList communityId={id} />
       </section>
     </main>
@@ -240,13 +226,14 @@ async function EventsList({ communityId }: { communityId: string }) {
 
   if (!events || events.length === 0) {
     return (
-      <p style={{
+      <div style={{
+        fontFamily: "'IBM Plex Mono', monospace",
         color: 'var(--muted)',
-        fontSize: '15px',
-        fontWeight: 500,
+        fontSize: '13.5px',
+        padding: '14px 0',
       }}>
-        Henüz planlanmış bir buluşma yok.
-      </p>
+        henüz planlanmış bir buluşma yok
+      </div>
     )
   }
 
@@ -254,15 +241,8 @@ async function EventsList({ communityId }: { communityId: string }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {events.map((event: any) => {
         const date = new Date(event.event_date)
-        const dateStr = date.toLocaleDateString('tr-TR', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        })
-        const timeStr = date.toLocaleTimeString('tr-TR', {
-          hour: '2-digit',
-          minute: '2-digit',
-        })
+        const dateStr = date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+        const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
         return (
           <Link
             key={event.id}
@@ -270,13 +250,13 @@ async function EventsList({ communityId }: { communityId: string }) {
             style={{
               display: 'flex',
               gap: '16px',
-              background: '#ffffff',
+              background: 'var(--paper-cream)',
               padding: '14px 18px',
-              borderRadius: '12px',
-              border: '1px solid var(--border-soft)',
+              borderRadius: '16px',
+              border: '1.5px solid var(--border)',
               alignItems: 'center',
               textDecoration: 'none',
-              transition: 'box-shadow 0.15s ease, transform 0.15s ease',
+              transition: 'all 0.18s ease',
             }}
           >
             {event.cover_image_url ? (
@@ -284,19 +264,14 @@ async function EventsList({ communityId }: { communityId: string }) {
                 flexShrink: 0,
                 width: '72px',
                 height: '72px',
-                borderRadius: '10px',
+                borderRadius: '12px',
                 overflow: 'hidden',
                 background: 'var(--paper-soft)',
               }}>
                 <img
                   src={event.cover_image_url}
                   alt=""
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    display: 'block',
-                  }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               </div>
             ) : (
@@ -304,26 +279,32 @@ async function EventsList({ communityId }: { communityId: string }) {
                 flexShrink: 0,
                 width: '72px',
                 height: '72px',
-                borderRadius: '10px',
+                borderRadius: '12px',
                 background: 'var(--paper-soft)',
-              }} />
+                display: 'grid',
+                placeItems: 'center',
+                color: 'var(--muted)',
+                fontSize: '22px',
+              }}>
+                📅
+              </div>
             )}
             <div style={{ minWidth: 0, flex: 1 }}>
               <h3 style={{
-                fontSize: '16.5px',
+                fontSize: '17px',
                 fontWeight: 800,
-                color: 'var(--night)',
+                color: 'var(--ink)',
                 marginBottom: '4px',
-                letterSpacing: '-0.3px',
+                letterSpacing: '-0.01em',
               }}>
                 {event.title}
               </h3>
               <p style={{
+                fontFamily: "'IBM Plex Mono', monospace",
                 color: 'var(--muted)',
-                fontSize: '14px',
-                fontWeight: 600,
+                fontSize: '12.5px',
               }}>
-                {dateStr} · {timeStr} · {event.location}
+                {dateStr} · {timeStr} · 📍 {event.location}
               </p>
             </div>
           </Link>
@@ -333,41 +314,39 @@ async function EventsList({ communityId }: { communityId: string }) {
   )
 }
 
-const sectionTitleStyle = {
-  fontSize: '22px',
-  fontWeight: 800,
-  letterSpacing: '-0.5px',
-  color: 'var(--night)',
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: 'clamp(22px, 2.8vw, 28px)',
+  color: 'var(--ink)',
   marginBottom: '18px',
 }
 
-const memberRowStyle = {
+const memberRowStyle: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
   gap: '12px',
   padding: '12px 16px',
-  background: '#ffffff',
-  border: '1px solid var(--border-soft)',
-  borderRadius: '12px',
-  flexWrap: 'wrap' as const,
+  background: 'var(--paper-cream)',
+  border: '1.5px solid var(--border)',
+  borderRadius: '14px',
+  flexWrap: 'wrap',
 }
 
-const avatarStyle = {
+const avatarStyle: React.CSSProperties = {
   width: '36px',
   height: '36px',
   borderRadius: '50%',
-  objectFit: 'cover' as const,
-  border: '1px solid var(--border-soft)',
+  objectFit: 'cover',
+  border: '1.5px solid var(--border)',
   flexShrink: 0,
 }
 
-const avatarPlaceholderStyle = {
+const avatarPlaceholderStyle: React.CSSProperties = {
   width: '36px',
   height: '36px',
   borderRadius: '50%',
   background: 'var(--paper-soft)',
-  color: 'var(--muted)',
+  color: 'var(--ink)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -376,12 +355,13 @@ const avatarPlaceholderStyle = {
   flexShrink: 0,
 }
 
-const roleBadgeStyle = {
-  background: 'var(--paper-soft)',
-  color: 'var(--muted)',
-  fontSize: '12px',
+const roleBadgeStyle: React.CSSProperties = {
+  background: 'var(--lime-soft)',
+  border: '1.5px solid var(--ink)',
+  color: 'var(--ink)',
+  fontSize: '11px',
   fontWeight: 700,
-  padding: '3px 10px',
+  padding: '2px 9px',
   borderRadius: '999px',
   letterSpacing: '0.02em',
 }
