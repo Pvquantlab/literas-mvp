@@ -4,6 +4,24 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import ImageUpload from '@/components/image-upload'
 
+// v2'nin 14 kategorisi (formda küçük harf slug'lar database'e yazılır)
+const CATEGORY_OPTIONS = [
+  { slug: 'kitap',      label: 'Kitap' },
+  { slug: 'doğa',       label: 'Doğa' },
+  { slug: 'müzik',      label: 'Müzik' },
+  { slug: 'lezzet',     label: 'Lezzet' },
+  { slug: 'dil',        label: 'Dil' },
+  { slug: 'spor',       label: 'Spor' },
+  { slug: 'sanat',      label: 'Sanat' },
+  { slug: 'oyun',       label: 'Oyun' },
+  { slug: 'tech',       label: 'Tech' },
+  { slug: 'sinema',     label: 'Sinema' },
+  { slug: 'fotoğraf',   label: 'Fotoğraf' },
+  { slug: 'gönüllülük', label: 'Gönüllülük' },
+  { slug: 'kariyer',    label: 'Kariyer' },
+  { slug: 'sosyal',     label: 'Sosyal' },
+]
+
 export default function NewCommunityForm() {
   const router = useRouter()
   const supabase = createClient()
@@ -68,11 +86,7 @@ export default function NewCommunityForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '20px',
-    }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       <div style={groupStyle}>
         <label htmlFor="name" style={labelStyle}>İsim</label>
         <input
@@ -86,20 +100,16 @@ export default function NewCommunityForm() {
       </div>
 
       <div style={groupStyle}>
-        <label htmlFor="category" style={labelStyle}>Tür</label>
+        <label htmlFor="category" style={labelStyle}>Kategori</label>
         <select
           id="category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           required
         >
-          <option value="kitap">kitap</option>
-          <option value="yürüyüş">yürüyüş</option>
-          <option value="yoga">yoga</option>
-          <option value="dil">dil</option>
-          <option value="sanat">sanat</option>
-          <option value="sohbet">sohbet</option>
-          <option value="sinema">sinema</option>
+          {CATEGORY_OPTIONS.map((c) => (
+            <option key={c.slug} value={c.slug}>{c.label}</option>
+          ))}
         </select>
       </div>
 
@@ -138,11 +148,11 @@ export default function NewCommunityForm() {
 
       {error && (
         <div style={{
-          background: 'var(--seal-soft)',
-          border: '1px solid rgba(196, 98, 45, 0.25)',
+          background: 'rgba(176, 67, 48, .1)',
+          border: '1.5px solid rgba(176, 67, 48, .3)',
           borderRadius: '12px',
           padding: '12px 16px',
-          color: 'var(--seal-deep)',
+          color: 'var(--coral-deep)',
           fontSize: '14px',
           fontWeight: 600,
           textAlign: 'center',
@@ -151,21 +161,27 @@ export default function NewCommunityForm() {
         </div>
       )}
 
-      <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', marginTop: '4px' }}>
+      <button
+        type="submit"
+        className="btn-primary"
+        disabled={loading}
+        style={{ width: '100%', marginTop: '8px', textAlign: 'center' }}
+      >
         {loading ? 'Kuruluyor…' : 'Topluluğu kur'}
       </button>
     </form>
   )
 }
 
-const groupStyle = {
+const groupStyle: React.CSSProperties = {
   display: 'flex',
-  flexDirection: 'column' as const,
+  flexDirection: 'column',
   gap: '6px',
 }
 
-const labelStyle = {
-  fontSize: '14px',
+const labelStyle: React.CSSProperties = {
+  fontFamily: "'IBM Plex Mono', monospace",
+  fontSize: '13px',
   fontWeight: 600,
-  color: 'var(--night)',
+  color: 'var(--ink)',
 }

@@ -14,29 +14,31 @@ export default async function NewCommunityPage() {
     <main style={{
       maxWidth: '560px',
       margin: '0 auto',
-      padding: '48px 24px 64px',
+      padding: '48px 24px 80px',
     }}>
-      <h1 style={{
-        fontSize: '32px',
-        fontWeight: 800,
-        letterSpacing: '-0.8px',
-        color: 'var(--night)',
-        margin: '0 0 10px',
-      }}>
-        Bir topluluk kur
-      </h1>
-      <p style={{
-        color: 'var(--muted)',
-        fontSize: '15px',
-        fontWeight: 500,
-        lineHeight: 1.55,
-        marginBottom: '32px',
-      }}>
-        Bir araya gelmek için bir bahane yeter. Topluluğunu kur,
-        insanlar etrafında toplansın.
-      </p>
+      <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+        <h1 className="serif" style={{
+          fontSize: 'clamp(32px, 4.4vw, 46px)',
+          color: 'var(--ink)',
+          margin: '0 0 12px',
+        }}>
+          Bir <span className="highlight-yellow">topluluk</span> kur
+        </h1>
+        <p style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          color: 'var(--muted)',
+          fontSize: '13.5px',
+          lineHeight: 1.5,
+          maxWidth: '380px',
+          margin: '0 auto',
+        }}>
+          bir araya gelmek için bir bahane yeter · 2 dakika sürer
+        </p>
+      </div>
 
-      <NewCommunityForm />
+      <div className="auth-card" style={{ marginTop: '32px' }}>
+        <NewCommunityForm />
+      </div>
     </main>
   )
 }
