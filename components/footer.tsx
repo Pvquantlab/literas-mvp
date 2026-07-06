@@ -53,7 +53,7 @@ export default function Footer() {
               literaslab
             </span>
           </Link>
-          <p
+         <p
             style={{
               fontSize: '14px',
               lineHeight: 1.6,
@@ -62,7 +62,7 @@ export default function Footer() {
               maxWidth: '240px',
             }}
           >
-            İnsanların kendi topluluklarını kurduğu yer. Tamamen ücretsiz.
+            İnsanların kendi topluluklarını kurduğu yer. Herkese açık.
           </p>
         </div>
 
