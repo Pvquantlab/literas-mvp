@@ -153,18 +153,27 @@ export default async function HomePage({
             fontWeight: 800,
             fontSize: 'clamp(40px, 6vw, 84px)',
             lineHeight: 1.04,
-            margin: '0 0 20px',
+            margin: '0 0 24px',
             color: 'var(--ink)',
             letterSpacing: '-0.03em',
           }}>
-            İnsanların{' '}
-            <span className="sticky-note sticky-blue">kitap + kahve</span>
-            {' '}kendi topluluklarını{' '}
-            <span className="sticky-note sticky-pink">photowalk</span>
-            {' '}kurduğu bir{' '}
-            <span className="highlight-yellow">yer</span>{' '}
-            <span className="sticky-note sticky-green">dil pratiği</span>
+            Harflerden kelimeler,<br />
+            insanlardan{' '}
+            <span className="highlight-yellow">topluluklar</span>.
           </h1>
+
+          {/* Sticky rozetler — başlığın altında, tek satır */}
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: '14px',
+            marginBottom: '28px',
+          }}>
+            <span className="sticky-note sticky-blue">kitap + kahve</span>
+            <span className="sticky-note sticky-pink">photowalk</span>
+            <span className="sticky-note sticky-green">dil pratiği</span>
+          </div>
 
           <p style={{
             maxWidth: '520px',
@@ -173,7 +182,7 @@ export default async function HomePage({
             lineHeight: 1.65,
             color: 'var(--muted)',
           }}>
-            Kitap kulübünden sahil yürüyüşüne — merak ettiğin şeyi seven insanları bul, ya da kendi topluluğunu aç. Katılmak da kurmak da ücretsiz.
+            Ortak bir merakla başlar, bir masada büyür. Katılmak da kurmak da ücretsiz.
           </p>
 
           <div style={{
