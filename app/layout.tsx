@@ -112,7 +112,7 @@ export default async function RootLayout({
                     Etkinlik oluştur
                   </Link>
                   <Link
-                    href={`/profile/${user.id}`}
+                   href="/ayarlar/profil"
                     className="btn-nav"
                   >
                     {profile?.name || 'Profilim'}
