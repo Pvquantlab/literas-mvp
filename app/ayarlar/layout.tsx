@@ -4,14 +4,14 @@ import { redirect } from "next/navigation";
 
 const menuItems = [
   { slug: "profil", label: "Profili Düzenle", icon: "edit", active: true },
-  { slug: "kisisel", label: "Kişisel Bilgiler", icon: "user", active: false },
+  { slug: "kisisel", label: "Kişisel Bilgiler", icon: "user", active: true },
   { slug: "hesap", label: "Hesap Yönetimi", icon: "settings", active: true },
-  { slug: "eposta", label: "E-posta Güncellemeleri", icon: "mail", active: false },
+  { slug: "eposta", label: "E-posta Güncellemeleri", icon: "mail", active: true },
   { slug: "gizlilik", label: "Gizlilik", icon: "lock", active: true },
-  { slug: "sosyal-medya", label: "Sosyal Medya", icon: "share", active: false },
-  { slug: "ilgi-alanlari", label: "İlgi Alanları", icon: "heart", active: false },
-  { slug: "bildirimler", label: "Bildirimler", icon: "bell", active: false },
-  { slug: "yardim", label: "Yardım", icon: "help", active: false },
+  { slug: "sosyal-medya", label: "Sosyal Medya", icon: "share", active: true },
+  { slug: "ilgi-alanlari", label: "İlgi Alanları", icon: "heart", active: true },
+  { slug: "bildirimler", label: "Bildirimler", icon: "bell", active: true },
+  { slug: "yardim", label: "Yardım", icon: "help", active: true },
 ];
 
 const icons: Record<string, JSX.Element> = {

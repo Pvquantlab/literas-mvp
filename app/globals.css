@@ -365,3 +365,23 @@ textarea {
   padding: 40px 32px;
   margin-top: 24px;
 }
+/* Toggle switch (ayarlar) */
+.literas-toggle:checked {
+  background: var(--lime) !important;
+}
+.literas-toggle::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.literas-toggle:checked::before {
+  transform: translateX(20px);
+  background: var(--ink);
+}
