@@ -76,7 +76,7 @@ export default async function RootLayout({
               flexWrap: 'wrap',
             }}>
               <Link
-                href="/#kesfet"
+               href="/kesfet"
                 style={{
                   color: 'var(--ink)',
                   textDecoration: 'none',
