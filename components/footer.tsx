@@ -68,25 +68,25 @@ export default function Footer() {
 
         {/* Keşfet */}
         <FooterColumn title="Keşfet">
-          <FooterLink href="/">Topluluklar</FooterLink>
-          <FooterLink href="/">Etkinlikler</FooterLink>
-          <FooterLink href="/">Şehirler</FooterLink>
-          <FooterLink href="/#kesfet">Kategoriler</FooterLink>
+          <FooterLink href="/kesfet?tab=topluluklar">Topluluklar</FooterLink>
+          <FooterLink href="/kesfet?tab=etkinlikler">Etkinlikler</FooterLink>
+          <FooterLink href="/kesfet">Şehirler</FooterLink>
+          <FooterLink href="/kesfet">Kategoriler</FooterLink>
         </FooterColumn>
 
         {/* Literaslab */}
         <FooterColumn title="Literaslab">
-          <FooterLink href="/">Hakkında</FooterLink>
-          <FooterLink href="/">İletişim</FooterLink>
-          <FooterLink href="/">SSS</FooterLink>
+          <FooterLink href="/hakkinda">Hakkında</FooterLink>
+          <FooterLink href="/iletisim">İletişim</FooterLink>
+          <FooterLink href="/sss">SSS</FooterLink>
         </FooterColumn>
 
         {/* Destek */}
         <FooterColumn title="Destek">
-          <FooterLink href="/">Yardım merkezi</FooterLink>
-          <FooterLink href="/">Topluluk kuralları</FooterLink>
-          <FooterLink href="/">Gizlilik</FooterLink>
-          <FooterLink href="/">Kullanım şartları</FooterLink>
+          <FooterLink href="/sss">Yardım merkezi</FooterLink>
+          <FooterLink href="/topluluk-kurallari">Topluluk kuralları</FooterLink>
+          <FooterLink href="/gizlilik">Gizlilik</FooterLink>
+          <FooterLink href="/kosullar">Kullanım şartları</FooterLink>
         </FooterColumn>
 
         {/* Sosyal medya */}

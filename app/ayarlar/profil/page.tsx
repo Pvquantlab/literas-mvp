@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { updateProfile } from "./actions";
+import AvatarEditor from "./avatar-editor";
 
 export default async function ProfilPage() {
   const supabase = await createClient();
@@ -28,33 +29,7 @@ export default async function ProfilPage() {
       </p>
 
       <form action={updateProfile}>
-        {/* Avatar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 30 }}>
-          <div style={{
-            width: 72, height: 72, borderRadius: "50%",
-            background: "var(--lime)",
-            display: "grid", placeItems: "center",
-            fontSize: 28, fontWeight: 800, color: "var(--ink)",
-            border: "2px solid var(--ink)",
-          }}>
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
-            ) : (
-              initial
-            )}
-          </div>
-          <button type="button" disabled style={{
-            padding: "10px 18px",
-            border: "1.5px solid var(--ink)",
-            borderRadius: 999,
-            background: "var(--paper)",
-            fontSize: 14, fontWeight: 600,
-            color: "rgba(30,58,43,0.4)",
-            cursor: "not-allowed",
-          }}>
-            Fotoğrafı değiştir (yakında)
-          </button>
-        </div>
+        <AvatarEditor initialUrl={profile?.avatar_url || null} initial={initial} />
 
         <Field label="Ad Soyad" name="name" defaultValue={profile?.name || ""} />
         <Field label="Kullanıcı adı" name="username" defaultValue={profile?.username || ""} placeholder="@kullaniciadi" />
