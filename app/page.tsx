@@ -78,8 +78,9 @@ export default async function HomePage({
   const supabase = await createClient()
 
   const { data: cityRows } = await supabase
-    .from('communities')
+ .from('communities')
     .select('city')
+    .eq('status', 'approved')
     .order('city', { ascending: true })
 
   const cities = Array.from(
@@ -99,6 +100,7 @@ export default async function HomePage({
       founder:profiles!founder_id(name),
       community_members(count)
     `)
+    .eq('status', 'approved')
     .eq('community_members.status', 'approved')
     .order('created_at', { ascending: false })
 

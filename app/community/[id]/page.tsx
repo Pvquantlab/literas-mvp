@@ -19,6 +19,8 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
       city,
       cover_image_url,
       created_at,
+      status,
+      founder_id,
       founder:profiles!founder_id(name)
     `)
     .eq('id', id)
@@ -29,6 +31,26 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   }
 
   const { data: { user } } = await supabase.auth.getUser()
+
+  // Site admin kontrolü (profiles.is_admin)
+  let isSiteAdmin = false
+  if (user) {
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .maybeSingle()
+    isSiteAdmin = !!prof?.is_admin
+  }
+
+  // Sadece approved topluluklar herkese açık.
+  // Founder ve site adminleri her durumu görebilir.
+  const isFounderOfThis = !!user && (community as any).founder_id === user.id
+  const canSeeDraft = isFounderOfThis || isSiteAdmin
+
+  if ((community as any).status !== 'approved' && !canSeeDraft) {
+    notFound()
+  }
 
   const { data: allMemberships } = await supabase
     .from('community_members')
