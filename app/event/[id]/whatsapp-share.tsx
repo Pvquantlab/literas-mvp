@@ -2,79 +2,78 @@
 
 import { useState } from 'react'
 
-export default function WhatsappShare({
-  title,
-  eventDateStr,
-  location,
-}: {
+type Props = {
   title: string
   eventDateStr: string
   location: string
-}) {
+}
+
+export default function WhatsappShare(props: Props) {
   const [copied, setCopied] = useState(false)
 
-  const url = typeof window !== 'undefined' ? window.location.href : ''
-  const shareText = `${title}\n📅 ${eventDateStr}\n📍 ${location}\n\n${url}`
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`
+  const shareText =
+    props.title +
+    '\n\ntarih: ' +
+    props.eventDateStr +
+    '\nyer: ' +
+    props.location
 
-  async function handleCopyLink() {
+  function handleWhatsapp() {
+    const fullText =
+      shareText + '\n\n' + window.location.href
+    const url =
+      'https://wa.me/?text=' + encodeURIComponent(fullText)
+    window.open(url, '_blank')
+  }
+
+  async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(url)
+      await navigator.clipboard.writeText(window.location.href)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setTimeout(function () {
+        setCopied(false)
+      }, 2000)
     } catch (err) {
-      console.error('Link kopyalanamadi:', err)
+      console.error('kopyalanamadi', err)
     }
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      gap: '10px',
-      flexWrap: 'wrap',
-    }}>
-      
-        href={whatsappUrl}
-        target="_blank"
-        rel="noopener noreferrer"
+    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+      <button
+        type="button"
+        onClick={handleWhatsapp}
         style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
           background: '#25D366',
-          color: '#fff',
+          color: '#ffffff',
           padding: '10px 18px',
           borderRadius: '999px',
           fontSize: '14px',
           fontWeight: 600,
-          textDecoration: 'none',
-          fontFamily: "'IBM Plex Mono', monospace",
           border: '1.5px solid #1DA851',
+          cursor: 'pointer',
+          fontFamily: "'IBM Plex Mono', monospace",
         }}
       >
-        <span>💬</span>
-        WhatsApp'ta paylaş
-      </a>
+        WhatsApp&apos;ta paylas
+      </button>
 
       <button
-        onClick={handleCopyLink}
         type="button"
+        onClick={handleCopy}
         style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
           background: 'transparent',
           color: 'var(--ink)',
           padding: '10px 18px',
           borderRadius: '999px',
           fontSize: '14px',
           fontWeight: 600,
+          border: '1.5px solid var(--ink)',
           cursor: 'pointer',
           fontFamily: "'IBM Plex Mono', monospace",
-          border: '1.5px solid var(--ink)',
         }}
       >
-        {copied ? '✓ Kopyalandı' : '🔗 Linki kopyala'}
+        {copied ? 'kopyalandi' : 'linki kopyala'}
       </button>
     </div>
   )
