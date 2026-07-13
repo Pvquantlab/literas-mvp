@@ -4,6 +4,49 @@ import { createClient } from '@/lib/supabase-server'
 import MemberActions from './member-actions'
 import JoinButton from './join-button'
 import EventCard from '@/components/event-card'
+import type { Metadata } from 'next'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+
+  const { data: community } = await supabase
+    .from('communities')
+    .select('name, description, city, cover_image_url, status')
+    .eq('id', id)
+    .single()
+
+  if (!community || (community as any).status !== 'approved') {
+    return { title: 'Topluluk bulunamadı' }
+  }
+
+  const desc = community.description
+    ? community.description.slice(0, 160)
+    : `${community.city}'da bir topluluk. Katılmak için literaslab'a gel.`
+
+  const images = community.cover_image_url ? [community.cover_image_url] : []
+
+  return {
+    title: community.name,
+    description: desc,
+    openGraph: {
+      title: community.name,
+      description: desc,
+      type: 'article',
+      images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: community.name,
+      description: desc,
+      images,
+    },
+  }
+}
 
 export const dynamic = 'force-dynamic'
 

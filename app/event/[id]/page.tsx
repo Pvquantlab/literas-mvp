@@ -4,6 +4,57 @@ import { createClient } from '@/lib/supabase-server'
 import RsvpForm from './rsvp-form'
 import EventActions from './event-actions'
 import EventMap from './event-map'
+import WhatsappShare from './whatsapp-share'
+import type { Metadata } from 'next'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('title, description, location, event_date, cover_image_url, community:communities(name)')
+    .eq('id', id)
+    .single()
+
+  if (!event) {
+    return { title: 'Etkinlik bulunamadı' }
+  }
+
+  const communityName = (event.community as any)?.name ?? 'literaslab'
+  const eventDateStr = new Date(event.event_date).toLocaleDateString('tr-TR', {
+    day: 'numeric',
+    month: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  const desc = event.description
+    ? event.description.slice(0, 160)
+    : `${communityName} · ${eventDateStr}${event.location ? ' · ' + event.location : ''}`
+
+  const images = event.cover_image_url ? [event.cover_image_url] : []
+
+  return {
+    title: event.title,
+    description: desc,
+    openGraph: {
+      title: event.title,
+      description: desc,
+      type: 'article',
+      images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: event.title,
+      description: desc,
+      images,
+    },
+  }
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -491,6 +542,13 @@ export default async function EventPage({
               )}
             </div>
           </div>
+          <div style={{ marginTop: '20px' }}>
+          <WhatsappShare
+            title={event.title}
+            eventDateStr={`${longDate}, ${timeStr}`}
+            location={event.location}
+          />
+        </div>
         </aside>
       </div>
 

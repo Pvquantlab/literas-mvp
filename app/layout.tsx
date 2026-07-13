@@ -4,9 +4,28 @@ import { createClient } from '@/lib/supabase-server'
 import Footer from '@/components/footer'
 import Header from '@/components/header'
 
-export const metadata = {
-  title: 'literaslab — kendi topluluğunu kur',
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  metadataBase: new URL('https://www.literaslab.com'),
+  title: {
+    default: 'literaslab — kendi topluluğunu kur',
+    template: '%s — literaslab',
+  },
   description: 'Kitap kulübü, yürüyüş, dil pratiği. Topluluk burada başlar.',
+  openGraph: {
+    type: 'website',
+    locale: 'tr_TR',
+    siteName: 'literaslab',
+    title: 'literaslab — kendi topluluğunu kur',
+    description: 'Kitap kulübü, yürüyüş, dil pratiği. Topluluk burada başlar.',
+    url: 'https://www.literaslab.com',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'literaslab — kendi topluluğunu kur',
+    description: 'Kitap kulübü, yürüyüş, dil pratiği. Topluluk burada başlar.',
+  },
 }
 
 export default async function RootLayout({
