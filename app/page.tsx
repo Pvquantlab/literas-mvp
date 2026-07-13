@@ -543,7 +543,7 @@ export default async function HomePage({
         }}>
           Ne ilgini çekiyor?
         </h2>
-        <CategoryStrip cats={CATS} activeCategory={activeCategory} buildHref={buildCategoryHref} />
+        <CategoryStrip cats={CATS} activeCategory={activeCategory ?? undefined} activeCity={activeCity ?? undefined} activeQuery={activeQuery ?? undefined} />
       </section>
 
       {/* Topluluklar */}

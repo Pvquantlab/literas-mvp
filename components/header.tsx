@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase'
 
 type Props = {
   user: { id: string } | null
@@ -12,6 +14,15 @@ type Props = {
 export default function Header({ user, profileName, profileAvatar }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    setMenuOpen(false)
+    router.push('/')
+    router.refresh()
+  }
 
   // Dışarı tıklayınca menü kapansın
   useEffect(() => {
@@ -297,12 +308,23 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
                       Ayarlar
                     </Link>
                     <span style={{ height: '1px', background: 'var(--border)', margin: '6px 8px' }} />
-                    <Link href="/auth/logout" role="menuitem" className="menu-item-danger" style={{
-                      ...menuItemStyle,
-                      color: 'var(--coral-deep)',
-                    }}>
+                    <button
+                      onClick={handleLogout}
+                      role="menuitem"
+                      className="menu-item-danger"
+                      style={{
+                        ...menuItemStyle,
+                        color: 'var(--coral-deep)',
+                        border: 'none',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        width: '100%',
+                        fontFamily: 'inherit',
+                      }}
+                    >
                       Çıkış yap
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
