@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
@@ -23,11 +22,20 @@ export default function RsvpForm({
   async function handleRsvp() {
     setLoading(true)
     setError('')
+
     const { error } = await supabase
       .from('rsvps')
       .insert({ event_id: eventId, user_id: userId })
+
     if (error) {
-      setError('Katılım kaydedilemedi: ' + error.message)
+      // Kapasite trigger'i hata firlattiysa (EVENT_FULL) guzel mesaj goster
+      if (error.message?.includes('EVENT_FULL')) {
+        setError('Bu etkinlik az önce doldu. Bir sonrakinde görüşürüz.')
+        // Sayfayi yenile ki isFull durumu guncellensin
+        router.refresh()
+      } else {
+        setError('Katılım kaydedilemedi. Lütfen tekrar dene.')
+      }
       setLoading(false)
     } else {
       router.refresh()
@@ -37,13 +45,15 @@ export default function RsvpForm({
   async function handleCancel() {
     setLoading(true)
     setError('')
+
     const { error } = await supabase
       .from('rsvps')
       .delete()
       .eq('event_id', eventId)
       .eq('user_id', userId)
+
     if (error) {
-      setError('İptal başarısız: ' + error.message)
+      setError('İptal başarısız. Lütfen tekrar dene.')
       setLoading(false)
     } else {
       router.refresh()
