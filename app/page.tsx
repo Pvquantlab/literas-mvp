@@ -370,8 +370,8 @@ export default async function HomePage({
             </h2>
 
             <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-              <SearchBox defaultValue={activeQuery ?? ''} />
-              <CityFilter cities={cities} activeCity={activeCity} />
+              <SearchBox initialQuery={activeQuery ?? ''} />
+              <CityFilter cities={cities} activeCity={activeCity ?? ''} />
             </div>
 
             {communities && communities.length > 0 ? (
@@ -557,8 +557,8 @@ export default async function HomePage({
         </h2>
 
         <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
-          <SearchBox defaultValue={activeQuery ?? ''} />
-          <CityFilter cities={cities} activeCity={activeCity} />
+          <SearchBox initialQuery={activeQuery ?? ''} />
+          <CityFilter cities={cities} activeCity={activeCity ?? ''} />
         </div>
 
         {communities && communities.length > 0 ? (
