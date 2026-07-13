@@ -2,6 +2,16 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { sendEmail } from '@/lib/email'
 
+// HTML injection'a karşı basit escape fonksiyonu
+function escapeHtml(str: string): string {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -15,6 +25,28 @@ export async function POST(
     return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
   }
 
+  // Topluluk onaylı mı? (draft/pending/rejected'a katılım istegi kabul edilmez)
+  const { data: community, error: communityError } = await supabase
+    .from('communities')
+    .select(`
+      name,
+      status,
+      founder:profiles!founder_id(name, email)
+    `)
+    .eq('id', communityId)
+    .single()
+
+  if (communityError || !community) {
+    return NextResponse.json({ error: 'Topluluk bulunamadı' }, { status: 404 })
+  }
+
+  if ((community as any).status !== 'approved') {
+    return NextResponse.json(
+      { error: 'Bu topluluk henüz aktif değil' },
+      { status: 403 }
+    )
+  }
+
   // Üyeliği ekle (pending)
   const { error: insertError } = await supabase
     .from('community_members')
@@ -26,20 +58,18 @@ export async function POST(
     })
 
   if (insertError) {
+    // Duplicate: kullanici zaten istek atmis (unique constraint)
+    if (insertError.code === '23505') {
+      return NextResponse.json(
+        { error: 'Zaten bu topluluğa istek göndermişsin' },
+        { status: 409 }
+      )
+    }
     console.error('[join] insert hatası:', insertError)
     return NextResponse.json({ error: 'İstek gönderilemedi' }, { status: 500 })
   }
 
-  // Topluluğun kurucusunu ve ismini bul, isteyenin ismini al
-  const { data: community } = await supabase
-    .from('communities')
-    .select(`
-      name,
-      founder:profiles!founder_id(name, email)
-    `)
-    .eq('id', communityId)
-    .single()
-
+  // İstek yapanın ismini al
   const { data: requester } = await supabase
     .from('profiles')
     .select('name')
@@ -47,9 +77,13 @@ export async function POST(
     .single()
 
   // Email at (hata olsa da isteği başarılı say — email opsiyonel)
-  if (community?.founder && (community.founder as any).email) {
-    const founder = community.founder as any
+  const founder = community.founder as any
+  if (founder?.email) {
     const requesterName = requester?.name ?? 'biri'
+
+    // HTML injection fix: kullanıcı verilerini escape et
+    const safeRequesterName = escapeHtml(requesterName)
+    const safeCommunityName = escapeHtml(community.name)
 
     await sendEmail({
       to: founder.email,
@@ -61,7 +95,7 @@ export async function POST(
             yeni bir üyelik isteği
           </h1>
           <p style="color: #1F2A24;">
-            <em>${requesterName}</em>, <strong>${community.name}</strong> topluluğuna katılmak istiyor.
+            <em>${safeRequesterName}</em>, <strong>${safeCommunityName}</strong> topluluğuna katılmak istiyor.
           </p>
           <p style="color: #1F2A24;">
             Onaylamak ya da reddetmek için topluluğa dön.
