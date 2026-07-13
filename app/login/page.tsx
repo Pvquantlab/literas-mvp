@@ -99,6 +99,18 @@ export default function LoginPage() {
             />
           </div>
 
+          <div style={{ textAlign: 'right', marginTop: '-6px' }}>
+            <Link href="/sifremi-unuttum" style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: '12.5px',
+              color: 'var(--muted)',
+              textDecoration: 'underline',
+              textUnderlineOffset: '3px',
+            }}>
+              parolamı unuttum
+            </Link>
+          </div>
+
           {error && (
             <div style={{
               background: 'rgba(176, 67, 48, .1)',
