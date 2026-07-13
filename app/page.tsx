@@ -1,73 +1,59 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
-import CityFilter from './city-filter'
-import SearchBox from './search-box'
+import EventCard from '@/components/event-card'
 import CategoryStrip from './category-strip'
+import SearchBox from './search-box'
+import CityFilter from './city-filter'
 
 export const dynamic = 'force-dynamic'
 
-// v2 tasarımın 14 kategorisi
 const CATS = [
-  { n: 'Kitap',      slug: 'kitap',      bg: '#C9E8A0', ink: '#3E6B21', pt: 'stripes' },
-  { n: 'Doğa',       slug: 'doğa',       bg: '#FFD09E', ink: '#A35A1E', pt: 'dots' },
-  { n: 'Müzik',      slug: 'müzik',      bg: '#D5C3F5', ink: '#5B3EA6', pt: 'waves' },
-  { n: 'Lezzet',     slug: 'lezzet',     bg: '#FFE382', ink: '#8A6A00', pt: 'checker' },
-  { n: 'Dil',        slug: 'dil',        bg: '#B5D9F5', ink: '#2A5B8F', pt: 'stripes' },
-  { n: 'Spor',       slug: 'spor',       bg: '#AEE3CB', ink: '#1F6E52', pt: 'dots' },
-  { n: 'Sanat',      slug: 'sanat',      bg: '#F5BFDB', ink: '#A83A6E', pt: 'waves' },
-  { n: 'Oyun',       slug: 'oyun',       bg: '#FFC2B0', ink: '#B04330', pt: 'checker' },
-  { n: 'Tech',       slug: 'tech',       bg: '#BFD7E6', ink: '#33566B', pt: 'grid' },
-  { n: 'Sinema',     slug: 'sinema',     bg: '#CDC5EA', ink: '#544A86', pt: 'stripes' },
-  { n: 'Fotoğraf',   slug: 'fotoğraf',   bg: '#B5DEE8', ink: '#23697A', pt: 'dots' },
-  { n: 'Gönüllülük', slug: 'gönüllülük', bg: '#FFC7B0', ink: '#A34A22', pt: 'waves' },
-  { n: 'Kariyer',    slug: 'kariyer',    bg: '#C8DBBB', ink: '#46603A', pt: 'grid' },
-  { n: 'Sosyal',     slug: 'sosyal',     bg: '#FFBFCB', ink: '#A8354F', pt: 'waves' },
+  { n: 'Kitap',      slug: 'kitap',      bg: '#C9E8A0', soft: '#F5E9D0', ink: '#3E6B21', pt: 'stripes' },
+  { n: 'Doğa',       slug: 'doğa',       bg: '#FFD09E', soft: '#DDE9D5', ink: '#A35A1E', pt: 'dots' },
+  { n: 'Müzik',      slug: 'müzik',      bg: '#D5C3F5', soft: '#E7DBEB', ink: '#5B3EA6', pt: 'waves' },
+  { n: 'Lezzet',     slug: 'lezzet',     bg: '#FFE382', soft: '#F3D8CE', ink: '#8A6A00', pt: 'checker' },
+  { n: 'Dil',        slug: 'dil',        bg: '#B5D9F5', soft: '#DCE4EE', ink: '#2A5B8F', pt: 'stripes' },
+  { n: 'Spor',       slug: 'spor',       bg: '#AEE3CB', soft: '#E5E0D2', ink: '#1F6E52', pt: 'dots' },
+  { n: 'Sanat',      slug: 'sanat',      bg: '#F5BFDB', soft: '#EFD9DC', ink: '#A83A6E', pt: 'waves' },
+  { n: 'Oyun',       slug: 'oyun',       bg: '#FFC2B0', soft: '#DFE8DE', ink: '#B04330', pt: 'checker' },
+  { n: 'Tech',       slug: 'tech',       bg: '#BFD7E6', soft: '#DAE0E6', ink: '#33566B', pt: 'grid' },
+  { n: 'Sinema',     slug: 'sinema',     bg: '#CDC5EA', soft: '#E4DED4', ink: '#544A86', pt: 'stripes' },
+  { n: 'Fotoğraf',   slug: 'fotoğraf',   bg: '#B5DEE8', soft: '#E0DEDC', ink: '#23697A', pt: 'dots' },
+  { n: 'Gönüllülük', slug: 'gönüllülük', bg: '#FFC7B0', soft: '#E1EBDA', ink: '#A34A22', pt: 'waves' },
+  { n: 'Kariyer',    slug: 'kariyer',    bg: '#C8DBBB', soft: '#E5DED0', ink: '#46603A', pt: 'grid' },
+  { n: 'Sosyal',     slug: 'sosyal',     bg: '#FFBFCB', soft: '#EBDFD3', ink: '#A8354F', pt: 'waves' },
 ]
+
 const DEFAULT_SOFT = '#E8E4D8'
 
-// Pattern arka planı üretir
-function patternStyle(pt: string, ink: string) {
-  const b = ink + '38'
-  if (pt === 'stripes') return { backgroundImage: `repeating-linear-gradient(45deg, ${b} 0px, ${b} 8px, transparent 8px, transparent 22px)` }
-  if (pt === 'dots')    return { backgroundImage: `radial-gradient(${ink}59 2.4px, transparent 2.7px)`, backgroundSize: '19px 19px' }
-  if (pt === 'waves')   return { backgroundImage: `radial-gradient(circle at 12px 0px, transparent 9px, ${b} 9.5px, ${b} 11.5px, transparent 12px)`, backgroundSize: '24px 15px' }
-  if (pt === 'checker') return { backgroundImage: `conic-gradient(${b} 25%, transparent 0 50%, ${b} 0 75%, transparent 0)`, backgroundSize: '26px 26px' }
-  return { backgroundImage: `linear-gradient(${b} 1.5px, transparent 1.5px), linear-gradient(90deg, ${b} 1.5px, transparent 1.5px)`, backgroundSize: '21px 21px' }
+function CatIcon({ slug, size = 34 }: { slug: string; size?: number }) {
+  const common = {
+    width: size, height: size, viewBox: '0 0 24 24',
+    fill: 'none', stroke: 'currentColor', strokeWidth: 1.7,
+    strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
+  }
+  switch (slug) {
+    case 'kitap':      return <svg {...common}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    case 'doğa':       return <svg {...common}><path d="M8 19v2"/><path d="M8 15v-3"/><path d="M12 21V11"/><path d="M16 21v-4"/><path d="M12 11 6 5l6-2 6 2z"/><path d="M18 12a3 3 0 1 0 3-3"/></svg>
+    case 'müzik':      return <svg {...common}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    case 'lezzet':     return <svg {...common}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
+    case 'dil':        return <svg {...common}><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+    case 'spor':       return <svg {...common}><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+    case 'sanat':      return <svg {...common}><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+    case 'oyun':       return <svg {...common}><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg>
+    case 'tech':       return <svg {...common}><rect width="18" height="12" x="3" y="4" rx="2"/><line x1="2" x2="22" y1="20" y2="20"/></svg>
+    case 'sinema':     return <svg {...common}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></svg>
+    case 'fotoğraf':   return <svg {...common}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+    case 'gönüllülük': return <svg {...common}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    case 'kariyer':    return <svg {...common}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+    case 'sosyal':     return <svg {...common}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    default:           return <svg {...common}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+  }
 }
 
-// Kategori ikonu — kartlar için
-function CatIcon({ slug, size = 34 }: { slug: string; size?: number }) {
-  const paths: Record<string, React.ReactNode> = {
-    kitap: <><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z" /><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z" /></>,
-    doğa: <path d="m8 3 4 8 5-5 5 15H2L8 3z" />,
-    müzik: <><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><path d="M12 19v3" /></>,
-    lezzet: <><path d="M17 8h1a4 4 0 1 1 0 8h-1" /><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z" /><path d="M7 2v2" /><path d="M11 2v2" /></>,
-    dil: <><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z" /><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" /><path d="M9.5 6.5h.01M12 6.5h.01M7 6.5h.01" /></>,
-    spor: <><path d="M12 14.5c-1.5-1.3-2.3-2.9-2.3-4.7 0-1.9.8-3.8 2.3-5.6 1.5 1.8 2.3 3.7 2.3 5.6 0 1.8-.8 3.4-2.3 4.7z" /><path d="M9.5 13.2c-2.2-.2-4-1.2-5.5-3 .8-1 1.9-1.7 3.2-2.1" /><path d="M14.5 13.2c2.2-.2 4-1.2 5.5-3-.8-1-1.9-1.7-3.2-2.1" /><path d="M3.5 16c2.6 1.7 5.4 2.3 8.5 1.7 3.1.6 5.9 0 8.5-1.7" /></>,
-    sanat: <><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.6-.7 1.6-1.7 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.7 1.6-1.7h2c3.1 0 5.6-2.5 5.6-5.6C22 6 17.5 2 12 2z" /><circle cx="7" cy="10.5" r="1" /><circle cx="11" cy="6.8" r="1" /><circle cx="16" cy="8.5" r="1" /></>,
-    oyun: <><path d="M6 11h4" /><path d="M8 9v4" /><path d="M15 12h.01" /><path d="M18 10h.01" /><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z" /></>,
-    tech: <><rect x="3" y="5" width="18" height="12" rx="2" /><path d="M2 20h20" /></>,
-    sinema: <><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z" /><path d="m6.2 5.3 3.1 3.9" /><path d="m12.4 3.4 3.1 4" /><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></>,
-    fotoğraf: <><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></>,
-    gönüllülük: <><path d="M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16" /><path d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9" /><path d="m2 15 6 6" /><path d="M19.5 8.5c.7-.7 1.5-1.6 1.5-2.7A2.73 2.73 0 0 0 16 4a2.78 2.78 0 0 0-5 1.8c0 1.2.8 2 1.5 2.8L16 12Z" /></>,
-    kariyer: <><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></>,
-    sosyal: <><g transform="rotate(-14 6.5 10)"><path d="M2.5 3.5h8l-4 6z" /><path d="M6.5 9.5V17" /><path d="M4 17.5h5" /></g><g transform="rotate(14 17.5 10)"><path d="M13.5 3.5h8l-4 6z" /><path d="M17.5 9.5V17" /><path d="M15 17.5h5" /></g></>,
-  }
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.4}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {paths[slug] || null}
-    </svg>
-  )
+function findCat(s: string | null) {
+  if (!s) return null
+  return CATS.find((c) => c.slug === s) || null
 }
 
 export default async function HomePage({
@@ -75,29 +61,69 @@ export default async function HomePage({
 }: {
   searchParams: Promise<{ category?: string; city?: string; q?: string }>
 }) {
-  const { category: activeCategory, city: activeCity, q: activeQuery } = await searchParams
-  const supabase = await createClient()
+  const params = await searchParams
+  const activeCategory = params.category ?? null
+  const activeCity = params.city ?? null
+  const activeQuery = params.q ?? null
 
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Kullanıcı verileri (giriş yapmışsa)
+  let profile: any = null
+  let myCommunities: any[] = []
+  let myRsvps: any[] = []
+  let suggestedEvents: any[] = []
+
+  if (user) {
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('id, name, avatar_url')
+      .eq('id', user.id)
+      .maybeSingle()
+    profile = prof
+
+    const { data: memberships } = await supabase
+      .from('community_members')
+      .select('community:communities(id, name, category, city)')
+      .eq('user_id', user.id)
+      .eq('status', 'approved')
+      .limit(5)
+    myCommunities = (memberships ?? []).map((m: any) => m.community).filter(Boolean)
+
+    const { data: rsvps } = await supabase
+      .from('rsvps')
+      .select('event:events(id, title, event_date, location)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5)
+    myRsvps = (rsvps ?? []).map((r: any) => r.event).filter(Boolean)
+
+    // Öneriler: yaklaşan etkinlikler
+    const { data: upcoming } = await supabase
+      .from('events')
+      .select('id, title, event_date, location, cover_image_url, community:communities(name, category)')
+      .gte('event_date', new Date().toISOString())
+      .order('event_date', { ascending: true })
+      .limit(8)
+    suggestedEvents = upcoming ?? []
+  }
+
+  // Şehir listesi
   const { data: cityRows } = await supabase
- .from('communities')
+    .from('communities')
     .select('city')
     .eq('status', 'approved')
     .order('city', { ascending: true })
-
   const cities = Array.from(
     new Set((cityRows ?? []).map((r: any) => r.city).filter(Boolean))
   ) as string[]
 
+  // Topluluk listesi
   let query = supabase
     .from('communities')
     .select(`
-      id,
-      name,
-      description,
-      city,
-      category,
-      cover_image_url,
-      created_at,
+      id, name, description, city, category, cover_image_url, created_at,
       founder:profiles!founder_id(name),
       community_members(count)
     `)
@@ -110,198 +136,436 @@ export default async function HomePage({
   if (activeQuery) query = query.ilike('name', `%${activeQuery}%`)
 
   const { data: communities } = await query
-
   const hasFilter = Boolean(activeCategory || activeCity || activeQuery)
 
   const buildCategoryHref = (cat: string | null) => {
-    const params = new URLSearchParams()
-    if (cat) params.set('category', cat)
-    if (activeCity) params.set('city', activeCity)
-    if (activeQuery) params.set('q', activeQuery)
-    const qs = params.toString()
-    return qs ? `/?${qs}` : '/'
+    const p = new URLSearchParams()
+    if (cat) p.set('category', cat)
+    if (activeCity) p.set('city', activeCity)
+    if (activeQuery) p.set('q', activeQuery)
+    const s = p.toString()
+    return s ? `/?${s}` : '/'
   }
 
-  const findCat = (slug: string | undefined) => {
-    if (!slug) return null
-    const s = slug.toLocaleLowerCase('tr')
-    return CATS.find((c) => c.slug === s) || null
+  // ===== GİRİŞ YAPMIŞ KULLANICI =====
+  if (user && profile) {
+    const initials = profile.name
+      ? profile.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
+      : '?'
+
+    return (
+      <div style={{
+        maxWidth: '1360px',
+        margin: '0 auto',
+        padding: '26px 24px 64px',
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '24px',
+        alignItems: 'flex-start',
+      }}>
+        {/* SOL SIDEBAR */}
+        <aside className="home-sidebar" style={{
+          flex: '1 1 280px',
+          maxWidth: '320px',
+          minWidth: '260px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+        }}>
+          {/* Profil kartı */}
+          <Link href={`/profile/${profile.id}`} className="sidebar-card" style={{
+            textDecoration: 'none',
+            background: 'var(--paper-cream)',
+            border: '1px solid var(--border)',
+            borderRadius: '16px',
+            padding: '14px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            transition: 'box-shadow .15s ease',
+          }}>
+            {profile.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={profile.avatar_url} alt="" style={{
+                width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover',
+              }} />
+            ) : (
+              <span style={{
+                width: '46px', height: '46px', borderRadius: '50%',
+                background: 'var(--paper-soft)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: '15px', fontWeight: 600, color: 'var(--ink)',
+              }}>
+                {initials}
+              </span>
+            )}
+            <span style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <span style={{ fontSize: '15.5px', fontWeight: 700, color: 'var(--ink)' }}>
+                {profile.name}
+              </span>
+              <span style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: '12px',
+                color: 'var(--muted)',
+              }}>
+                İstanbul
+              </span>
+            </span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}>
+              <path d="M10 6l6 6-6 6" />
+            </svg>
+          </Link>
+
+          {/* Katıldığın etkinlikler */}
+          <div style={{
+            background: 'var(--paper-cream)',
+            border: '1px solid var(--border)',
+            borderRadius: '16px',
+            padding: '16px',
+          }}>
+            <h2 style={{ margin: '0 0 12px', fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>
+              Gidiyorum
+            </h2>
+            {myRsvps.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                {myRsvps.map((ev: any) => (
+                  <Link key={ev.id} href={`/event/${ev.id}`} className="sidebar-link" style={{
+                    textDecoration: 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '2px',
+                    padding: '8px',
+                    borderRadius: '10px',
+                  }}>
+                    <span style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: '11px',
+                      color: 'var(--coral)',
+                    }}>
+                      {new Date(ev.event_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+                    </span>
+                    <span className="serif" style={{
+                      fontSize: '14.5px',
+                      fontWeight: 600,
+                      lineHeight: 1.3,
+                      color: 'var(--ink)',
+                    }}>
+                      {ev.title}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '20px 8px 8px' }}>
+                <p style={{ margin: '0 0 16px', fontSize: '14px', color: 'var(--muted)' }}>
+                  Henüz bir etkinliğe katılmadın.
+                </p>
+                <Link href="/kesfet" className="btn-primary" style={{
+                  display: 'inline-flex',
+                  textDecoration: 'none',
+                  fontSize: '13.5px',
+                  padding: '9px 18px',
+                }}>
+                  Etkinlikleri bul
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Toplulukların */}
+          <div style={{
+            background: 'var(--paper-cream)',
+            border: '1px solid var(--border)',
+            borderRadius: '16px',
+            padding: '16px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>
+                Toplulukların
+              </h2>
+              <span style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: '11px',
+                padding: '1px 8px',
+                borderRadius: '999px',
+                background: 'var(--paper-soft)',
+                color: 'var(--muted)',
+              }}>
+                {myCommunities.length}
+              </span>
+            </div>
+
+            {myCommunities.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '10px' }}>
+                {myCommunities.map((c: any) => (
+                  <Link key={c.id} href={`/community/${c.id}`} className="sidebar-link" style={{
+                    textDecoration: 'none',
+                    padding: '8px',
+                    borderRadius: '10px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: 'var(--ink)',
+                  }}>
+                    {c.name}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <>
+                <p style={{ margin: '12px 0 14px', fontSize: '13.5px', lineHeight: 1.5, color: 'var(--muted)' }}>
+                  Tutkularını paylaşan insanlarla aynı masaya otur.
+                </p>
+                <Link href="/kesfet" className="btn-secondary" style={{
+                  display: 'inline-flex',
+                  textDecoration: 'none',
+                  fontSize: '13.5px',
+                  padding: '9px 18px',
+                }}>
+                  Toplulukları keşfet
+                </Link>
+              </>
+            )}
+          </div>
+        </aside>
+
+        {/* SAĞ ANA ALAN */}
+        <main style={{ flex: '3 1 440px', minWidth: 0 }}>
+          {/* Senin için */}
+          {suggestedEvents.length > 0 && (
+            <section style={{ marginBottom: '40px' }}>
+              <h2 className="serif" style={{
+                margin: '0 0 18px',
+                fontSize: '27px',
+                fontWeight: 600,
+                letterSpacing: '-0.3px',
+                color: 'var(--ink)',
+              }}>
+                Senin için
+              </h2>
+              <div className="suggest-grid" style={{ display: 'grid', gap: '20px' }}>
+                {suggestedEvents.slice(0, 4).map((ev: any) => (
+                  <EventCard key={ev.id} event={ev} showCommunityName={true} />
+                ))}
+              </div>
+              <style>{`
+                .suggest-grid { grid-template-columns: 1fr; }
+                @media (min-width: 640px) {
+                  .suggest-grid { grid-template-columns: repeat(2, 1fr); }
+                }
+              `}</style>
+            </section>
+          )}
+
+          {/* Topluluklar */}
+          <section>
+            <h2 className="serif" style={{
+              margin: '0 0 18px',
+              fontSize: '27px',
+              fontWeight: 600,
+              letterSpacing: '-0.3px',
+              color: 'var(--ink)',
+            }}>
+              {activeCity ? `${activeCity} yakınındaki topluluklar` : 'Topluluklar'}
+            </h2>
+
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+              <SearchBox defaultValue={activeQuery ?? ''} />
+              <CityFilter cities={cities} activeCity={activeCity} />
+            </div>
+
+            {communities && communities.length > 0 ? (
+              <div className="community-grid" style={{ display: 'grid', gap: '20px' }}>
+                {communities.map((community: any) => {
+                  const cat = findCat(community.category)
+                  const memberCount = community.community_members?.[0]?.count ?? 0
+                  return (
+                    <Link
+                      key={community.id}
+                      href={`/community/${community.id}`}
+                      className="community-card-link"
+                      style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+                    >
+                      <article style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' }}>
+                        <div style={{
+                          position: 'relative',
+                          aspectRatio: '16 / 9',
+                          overflow: 'hidden',
+                          borderRadius: '14px',
+                          background: community.cover_image_url ? 'transparent' : (cat?.soft ?? DEFAULT_SOFT),
+                        }}>
+                          {community.cover_image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={community.cover_image_url}
+                              alt=""
+                              loading="lazy"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                            />
+                          ) : (
+                            <div style={{
+                              position: 'absolute',
+                              inset: 0,
+                              display: 'grid',
+                              placeItems: 'center',
+                              color: 'var(--ink)',
+                              opacity: 0.85,
+                            }}>
+                              {cat ? <CatIcon slug={cat.slug} size={72} /> : null}
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '0 2px' }}>
+                          <h3 className="community-title" style={{
+                            fontSize: '17px',
+                            fontWeight: 800,
+                            lineHeight: 1.25,
+                            color: 'var(--ink)',
+                            margin: 0,
+                            letterSpacing: '-0.01em',
+                          }}>
+                            {community.name}
+                          </h3>
+                          <p style={{
+                            fontSize: '13.5px',
+                            color: 'var(--muted)',
+                            margin: '4px 0 0',
+                            lineHeight: 1.4,
+                          }}>
+                            {cat ? cat.n : ''}{cat && community.city ? ' · ' : ''}{community.city}
+                          </p>
+                          <p style={{
+                            fontSize: '13.5px',
+                            color: 'var(--ink)',
+                            fontWeight: 600,
+                            margin: '6px 0 0',
+                          }}>
+                            {memberCount} üye
+                          </p>
+                        </div>
+                      </article>
+                    </Link>
+                  )
+                })}
+              </div>
+            ) : (
+              <p style={{ color: 'var(--muted)', fontSize: '15px' }}>
+                {hasFilter ? 'Bu filtreye uygun topluluk bulunamadı.' : 'Henüz topluluk yok.'}
+              </p>
+            )}
+
+            <style>{`
+              .community-grid { grid-template-columns: 1fr; }
+              @media (min-width: 640px) {
+                .community-grid { grid-template-columns: repeat(2, 1fr); }
+              }
+              @media (min-width: 1000px) {
+                .community-grid { grid-template-columns: repeat(3, 1fr); }
+              }
+              .community-card-link:hover .community-title {
+                text-decoration: underline;
+                text-decoration-thickness: 2px;
+                text-underline-offset: 3px;
+              }
+              .sidebar-card:hover {
+                box-shadow: 0 8px 20px rgba(30,58,43,.10);
+              }
+              .sidebar-link:hover {
+                background: var(--paper-soft);
+              }
+              @media (max-width: 780px) {
+                .home-sidebar {
+                  max-width: none !important;
+                  flex: 1 1 100% !important;
+                }
+              }
+            `}</style>
+          </section>
+        </main>
+      </div>
+    )
   }
 
+  // ===== GİRİŞ YAPMAMIŞ =====
   return (
     <main>
-      {/* --- HERO --- */}
+      {/* Hero */}
       <section style={{
-        maxWidth: '1440px',
+        maxWidth: '900px',
         margin: '0 auto',
-        padding: '38px 20px 60px',
-        display: 'flex',
-        justifyContent: 'center',
-        position: 'relative',
+        padding: '64px 24px 48px',
+        textAlign: 'center',
       }}>
-        <svg style={{ position: 'absolute', left: '6%', top: '40%' }} width="64" height="26" viewBox="0 0 64 26" fill="none" aria-hidden="true">
-          <path d="M3 20C13 6 22 4 31 11s18 8 30-4" stroke="var(--ink)" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="1 6" />
-        </svg>
-        <svg style={{ position: 'absolute', right: '6%', top: '60%' }} width="54" height="24" viewBox="0 0 54 24" fill="none" aria-hidden="true">
-          <path d="M51 5C41 18 33 20 25 14S10 8 3 17" stroke="var(--ink)" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="1 6" />
-        </svg>
+        <span style={{
+          display: 'inline-block',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '13px',
+          color: 'var(--coral)',
+          border: '1px solid var(--coral)',
+          padding: '5px 14px',
+          borderRadius: '999px',
+          marginBottom: '28px',
+        }}>
+          ● her zaman açık · herkese göre
+        </span>
 
-        <div style={{ flex: '0 1 820px', maxWidth: '820px', textAlign: 'center', position: 'relative', padding: '10px 0' }}>
-          <div className="badge-mono" style={{ marginBottom: '22px' }}>
-            her zaman açık · herkese göre
-          </div>
+        <h1 style={{
+          fontSize: 'clamp(38px, 6vw, 64px)',
+          fontWeight: 800,
+          lineHeight: 1.08,
+          letterSpacing: '-0.03em',
+          color: 'var(--ink)',
+          margin: '0 0 20px',
+        }}>
+          Harflerden kelimeler,<br />
+          insanlardan{' '}
+          <span className="highlight-yellow">topluluklar</span>.
+        </h1>
 
-          <h1 style={{
-            fontFamily: "'Schibsted Grotesk', system-ui, sans-serif",
-            fontWeight: 800,
-            fontSize: 'clamp(40px, 6vw, 84px)',
-            lineHeight: 1.04,
-            margin: '0 0 24px',
-            color: 'var(--ink)',
-            letterSpacing: '-0.03em',
-          }}>
-            Harflerden kelimeler,<br />
-            insanlardan{' '}
-            <span className="highlight-yellow">topluluklar</span>.
-          </h1>
+        <p style={{ fontSize: '17px', color: 'var(--muted)', marginBottom: '32px' }}>
+          Burada bir masa senin adına her zaman ayrılmış.
+        </p>
 
-          {/* Sticky rozetler — başlığın altında, tek satır */}
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: '14px',
-            marginBottom: '28px',
-          }}>
-            <span className="sticky-note sticky-blue">kitap + kahve</span>
-            <span className="sticky-note sticky-pink">photowalk</span>
-            <span className="sticky-note sticky-green">dil pratiği</span>
-          </div>
-
-          <p style={{
-            maxWidth: '520px',
-            margin: '0 auto',
-            fontSize: '17px',
-            lineHeight: 1.65,
-            color: 'var(--muted)',
-          }}>
-            Burada bir masa senin adına her zaman ayrılmış.
-          </p>
-
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '14px',
-            marginTop: '30px',
-          }}>
-            <Link href="/community/new" className="btn-primary" style={{ fontSize: '18px', padding: '16px 34px' }}>
-              Topluluk kur
-            </Link>
-            <Link href="/event/new" className="btn-secondary" style={{ fontSize: '18px', padding: '16px 30px' }}>
-              Etkinlik paylaş
-            </Link>
-          </div>
-
-          <div style={{ marginTop: '28px', fontFamily: "'IBM Plex Mono', monospace", fontSize: '13.5px', color: 'rgba(30,58,43,.62)' }}>
-            ✿ çevrimiçi başlar, çevrimdışı buluşur
-          </div>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link href="/community/new" className="btn-primary">Topluluk kur</Link>
+          <Link href="/event/new" className="btn-secondary">Etkinlik paylaş</Link>
         </div>
       </section>
 
-      {/* --- KATEGORİ STRIP'İ --- */}
-      <section id="kesfet" style={{
-        maxWidth: '1240px',
-        margin: '0 auto',
-        padding: '64px 8px 4px',
-        textAlign: 'center',
-        position: 'relative',
-      }}>
-        <h2 style={{
-          fontSize: 'clamp(24px, 3vw, 34px)',
-          fontWeight: 800,
+      {/* Kategoriler */}
+      <section style={{ maxWidth: '1360px', margin: '0 auto', padding: '0 24px 48px' }}>
+        <h2 className="serif" style={{
+          textAlign: 'center',
+          fontSize: 'clamp(24px, 3vw, 32px)',
           color: 'var(--ink)',
-          margin: 0,
-          letterSpacing: '-0.01em',
+          marginBottom: '28px',
         }}>
           Ne ilgini çekiyor?
         </h2>
-        <CategoryStrip
-          cats={CATS}
-          activeCategory={activeCategory}
-          activeCity={activeCity}
-          activeQuery={activeQuery}
-        />
+        <CategoryStrip cats={CATS} activeCategory={activeCategory} buildHref={buildCategoryHref} />
       </section>
 
-      {/* --- TOPLULUKLAR --- */}
-      <section id="topluluklar" style={{ maxWidth: '1240px', margin: '0 auto', padding: '52px 20px 72px' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px' }}>
-          <h2 style={{
-            fontFamily: "'Playfair Display', serif",
-            fontSize: 'clamp(26px, 3.4vw, 38px)',
-            fontWeight: 800,
-            color: 'var(--ink)',
-            margin: 0,
-          }}>
-            <span className="highlight-yellow" style={{ color: 'var(--coral)' }}>
-              {activeCity || 'İstanbul'}
-            </span>{' '}
-            yakınındaki topluluklar
-          </h2>
+      {/* Topluluklar */}
+      <section style={{ maxWidth: '1360px', margin: '0 auto', padding: '0 24px 64px' }}>
+        <h2 className="serif" style={{
+          fontSize: 'clamp(24px, 3vw, 34px)',
+          color: 'var(--ink)',
+          marginBottom: '24px',
+        }}>
+          <span className="highlight-yellow">{activeCity ?? 'İstanbul'}</span> yakınındaki topluluklar
+        </h2>
+
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+          <SearchBox defaultValue={activeQuery ?? ''} />
+          <CityFilter cities={cities} activeCity={activeCity} />
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '22px' }}>
-          <div style={{ flex: '1 1 260px', minWidth: '220px' }}>
-            <SearchBox initialQuery={activeQuery ?? ''} />
-          </div>
-          <div style={{ flex: '0 0 auto', minWidth: '180px' }}>
-            <CityFilter cities={cities} activeCity={activeCity ?? ''} />
-          </div>
-        </div>
-
-        {activeCategory && (
-          <Link
-            href={buildCategoryHref(null)}
-            style={{
-              display: 'inline-block',
-              marginTop: '16px',
-              background: 'var(--ink)',
-              color: 'var(--lime)',
-              borderRadius: '999px',
-              padding: '7px 16px',
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: '12.5px',
-              textDecoration: 'none',
-            }}
-          >
-            {activeCategory} ✕
-          </Link>
-        )}
-
-        {!communities || communities.length === 0 ? (
-          <div className="empty-state">
-            <div style={{ fontSize: '34px' }}>🌱</div>
-            <div className="serif" style={{ fontSize: '24px', color: 'var(--ink)', marginTop: '10px' }}>
-              {hasFilter ? 'Bu filtreye uyan topluluk yok.' : 'Henüz burada bir topluluk yok.'}
-            </div>
-            <div style={{ fontSize: '15px', color: 'var(--muted)', marginTop: '6px' }}>
-              İlkini sen kurabilirsin — 2 dakika sürer.
-            </div>
-            <Link href="/community/new" className="btn-primary" style={{ marginTop: '18px' }}>
-              Topluluk kur
-            </Link>
-          </div>
-        ) : (
-          <div className="grid-cards">
+        {communities && communities.length > 0 ? (
+          <div className="community-grid-guest" style={{ display: 'grid', gap: '20px' }}>
             {communities.map((community: any) => {
-              const memberCount = community.community_members?.[0]?.count ?? 0
               const cat = findCat(community.category)
-              const artStyle: React.CSSProperties = cat
-                ? { height: '148px', backgroundColor: cat.bg, ...patternStyle(cat.pt, cat.ink), display: 'grid', placeItems: 'center', color: cat.ink, position: 'relative' }
-                : { height: '148px', backgroundColor: 'var(--paper-soft)', display: 'grid', placeItems: 'center', color: 'var(--muted)', position: 'relative' }
-
+              const memberCount = community.community_members?.[0]?.count ?? 0
               return (
                 <Link
                   key={community.id}
@@ -309,12 +573,7 @@ export default async function HomePage({
                   className="community-card-link"
                   style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
                 >
-                  <article style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                    height: '100%',
-                  }}>
+                  <article style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' }}>
                     <div style={{
                       position: 'relative',
                       aspectRatio: '16 / 9',
@@ -323,6 +582,7 @@ export default async function HomePage({
                       background: community.cover_image_url ? 'transparent' : (cat?.soft ?? DEFAULT_SOFT),
                     }}>
                       {community.cover_image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={community.cover_image_url}
                           alt=""
@@ -335,46 +595,33 @@ export default async function HomePage({
                           inset: 0,
                           display: 'grid',
                           placeItems: 'center',
+                          color: 'var(--ink)',
+                          opacity: 0.85,
                         }}>
                           {cat ? <CatIcon slug={cat.slug} size={72} /> : null}
                         </div>
                       )}
                     </div>
 
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '4px',
-                      padding: '0 2px',
-                    }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '0 2px' }}>
                       <h3 className="community-title" style={{
-                        fontFamily: "'Schibsted Grotesk', system-ui, -apple-system, sans-serif",
                         fontSize: '17px',
                         fontWeight: 800,
                         lineHeight: 1.25,
                         color: 'var(--ink)',
                         margin: 0,
                         letterSpacing: '-0.01em',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
                       }}>
                         {community.name}
                       </h3>
-
                       <p style={{
                         fontSize: '13.5px',
                         color: 'var(--muted)',
                         margin: '4px 0 0',
                         lineHeight: 1.4,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
                       }}>
                         {cat ? cat.n : ''}{cat && community.city ? ' · ' : ''}{community.city}
                       </p>
-
                       <p style={{
                         fontSize: '13.5px',
                         color: 'var(--ink)',
@@ -389,57 +636,55 @@ export default async function HomePage({
               )
             })}
           </div>
+        ) : (
+          <p style={{ color: 'var(--muted)', fontSize: '15px' }}>
+            {hasFilter ? 'Bu filtreye uygun topluluk bulunamadı.' : 'Henüz topluluk yok.'}
+          </p>
         )}
+
+        <style>{`
+          .community-grid-guest { grid-template-columns: 1fr; }
+          @media (min-width: 640px) {
+            .community-grid-guest { grid-template-columns: repeat(2, 1fr); }
+          }
+          @media (min-width: 1000px) {
+            .community-grid-guest { grid-template-columns: repeat(4, 1fr); }
+          }
+          .community-card-link:hover .community-title {
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 3px;
+          }
+        `}</style>
       </section>
 
-      {/* --- ALT CTA --- */}
-      <section style={{ maxWidth: '1240px', margin: '8px auto 0', padding: '0 20px' }}>
+      {/* CTA */}
+      <section style={{ maxWidth: '1360px', margin: '0 auto', padding: '0 24px 64px' }}>
         <div style={{
           background: 'var(--ink)',
-          borderRadius: '28px',
-          padding: 'clamp(44px, 6vw, 72px) 28px',
+          borderRadius: '24px',
+          padding: '56px 32px',
           textAlign: 'center',
-          position: 'relative',
-          overflow: 'hidden',
         }}>
-          <svg style={{ position: 'absolute', top: '22px', left: '5%' }} width="60" height="26" viewBox="0 0 60 26" fill="none" aria-hidden="true">
-            <path d="M3 20C13 6 21 4 30 12s17 8 27-6" stroke="var(--lime)" strokeWidth="2" strokeLinecap="round" strokeDasharray="1 6" />
-          </svg>
-
-         <h2 className="serif" style={{
-            fontSize: 'clamp(30px, 4.4vw, 52px)',
-            color: 'var(--paper-soft)',
-            margin: 0,
-            lineHeight: 1.15,
+          <h2 className="serif" style={{
+            fontSize: 'clamp(30px, 4vw, 46px)',
+            color: 'var(--paper-cream)',
+            margin: '0 0 12px',
+            lineHeight: 1.2,
           }}>
-            Bir <em>masa</em> aç.<br />
-            Gerisini birlikte kuralım.
+            Bir <em>masa</em> aç.<br />Gerisini birlikte kuralım.
           </h2>
-          <div style={{
+          <p style={{
             fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: '13.5px',
+            fontSize: '13px',
             color: 'var(--lime)',
-            marginTop: '14px',
+            marginBottom: '28px',
           }}>
             topluluk kurmak 2 dakika sürer · başlaman yeter
-          </div>
-          <Link href="/community/new" className="btn-primary" style={{
-            marginTop: '28px',
-            fontSize: '17px',
-            padding: '15px 32px',
-          }}>
-            Topluluk kur
-          </Link>
+          </p>
+          <Link href="/community/new" className="btn-primary">Topluluk kur</Link>
         </div>
       </section>
-      <style>{`
-        .community-card-link:hover .community-title {
-          text-decoration: underline;
-          text-decoration-thickness: 2px;
-          text-underline-offset: 3px;
-        }
-      `}</style>
-
     </main>
   )
 }

@@ -1,23 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800&family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,700;0,800;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root {
   /* Ana renkler */
   --ink: #1E3A2B;
   --ink-hover: #152C1F;
   --ink-deep: #152C1F;
-  --paper: #FFFFFF;
+  --paper: #FAF6EC;
   --paper-cream: #FFFDF6;
-  --paper-soft: #FAF4E8;
+  --paper-soft: #F4EEDC;
   --night: #22301F;
-  --muted: rgba(34, 48, 31, .65);
-  --border: rgba(30, 58, 43, .16);
-  --border-mid: rgba(30, 58, 43, .35);
+  --muted: #6E684F;
+  --border: #EBE3CE;
+  --border-mid: #E0D8C2;
 
   /* Vurgu renkleri */
-  --lime: #D6FF3F;
-  --lime-soft: #C9F52C;
-  --coral: #FF6D5A;
-  --coral-deep: #B04330;
+  --lime: #C8EB4B;
+  --lime-soft: #D4F45E;
+  --coral: #BE5127;
+  --coral-deep: #8A4B2E;
   --yellow-highlight: #FFD84D;
 
   /* Sticky rozet renkleri */
@@ -43,7 +43,7 @@
 html, body {
   background: var(--paper);
   color: var(--night);
-  font-family: 'Schibsted Grotesk', system-ui, -apple-system, sans-serif;
+  font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -227,7 +227,7 @@ textarea {
 
 /* --- Serif başlıklar --- */
 .serif {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-weight: 800;
   letter-spacing: -0.01em;
 }
