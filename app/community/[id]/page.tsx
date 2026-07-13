@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import MemberActions from './member-actions'
 import JoinButton from './join-button'
+import EventCard from '@/components/event-card'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,7 +33,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Site admin kontrolü (profiles.is_admin)
   let isSiteAdmin = false
   if (user) {
     const { data: prof } = await supabase
@@ -43,8 +43,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
     isSiteAdmin = !!prof?.is_admin
   }
 
-  // Sadece approved topluluklar herkese açık.
-  // Founder ve site adminleri her durumu görebilir.
   const isFounderOfThis = !!user && (community as any).founder_id === user.id
   const canSeeDraft = isFounderOfThis || isSiteAdmin
 
@@ -86,7 +84,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         ← tüm topluluklar
       </Link>
 
-      {/* Kapak resmi */}
       {community.cover_image_url && (
         <div style={{
           width: '100%',
@@ -105,7 +102,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         </div>
       )}
 
-      {/* Başlık — Playfair + sarı highlight */}
       <h1 className="serif" style={{
         fontSize: 'clamp(32px, 4.4vw, 46px)',
         lineHeight: 1.1,
@@ -135,14 +131,12 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         </p>
       )}
 
-      {/* Katıl butonu */}
       {user && !currentUserMembership && (
         <div style={{ marginBottom: '32px' }}>
           <JoinButton communityId={community.id} userId={user.id} />
         </div>
       )}
 
-      {/* Bekleyen istek göstergesi — coral */}
       {isPending && (
         <div style={{
           background: 'rgba(255, 216, 77, .2)',
@@ -162,7 +156,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         </div>
       )}
 
-      {/* Bekleyen istekler (moderatör) */}
       {canModerate && pendingMembers.length > 0 && (
         <section style={{ marginTop: '32px', marginBottom: '32px' }}>
           <h2 style={sectionTitleStyle} className="serif">Bekleyen istekler</h2>
@@ -194,7 +187,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         </section>
       )}
 
-      {/* Üyeler */}
       <section style={{ marginTop: '40px' }}>
         <h2 style={sectionTitleStyle} className="serif">Üyeler</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -229,7 +221,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         </div>
       </section>
 
-      {/* Yaklaşan etkinlikler */}
       <section style={{ marginTop: '40px' }}>
         <h2 style={sectionTitleStyle} className="serif">Yaklaşan etkinlikler</h2>
         <EventsList communityId={id} />
@@ -242,7 +233,7 @@ async function EventsList({ communityId }: { communityId: string }) {
   const supabase = await createClient()
   const { data: events } = await supabase
     .from('events')
-    .select('id, title, location, event_date, cover_image_url')
+    .select('id, title, location, event_date, cover_image_url, community:communities(name, category)')
     .eq('community_id', communityId)
     .order('event_date', { ascending: true })
 
@@ -260,78 +251,20 @@ async function EventsList({ communityId }: { communityId: string }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {events.map((event: any) => {
-        const date = new Date(event.event_date)
-        const dateStr = date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
-        const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
-        return (
-          <Link
-            key={event.id}
-            href={`/event/${event.id}`}
-            style={{
-              display: 'flex',
-              gap: '16px',
-              background: 'var(--paper-cream)',
-              padding: '14px 18px',
-              borderRadius: '16px',
-              border: '1.5px solid var(--border)',
-              alignItems: 'center',
-              textDecoration: 'none',
-              transition: 'all 0.18s ease',
-            }}
-          >
-            {event.cover_image_url ? (
-              <div style={{
-                flexShrink: 0,
-                width: '72px',
-                height: '72px',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                background: 'var(--paper-soft)',
-              }}>
-                <img
-                  src={event.cover_image_url}
-                  alt=""
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-              </div>
-            ) : (
-              <div style={{
-                flexShrink: 0,
-                width: '72px',
-                height: '72px',
-                borderRadius: '12px',
-                background: 'var(--paper-soft)',
-                display: 'grid',
-                placeItems: 'center',
-                color: 'var(--muted)',
-                fontSize: '22px',
-              }}>
-                📅
-              </div>
-            )}
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <h3 style={{
-                fontSize: '17px',
-                fontWeight: 800,
-                color: 'var(--ink)',
-                marginBottom: '4px',
-                letterSpacing: '-0.01em',
-              }}>
-                {event.title}
-              </h3>
-              <p style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                color: 'var(--muted)',
-                fontSize: '12.5px',
-              }}>
-                {dateStr} · {timeStr} · 📍 {event.location}
-              </p>
-            </div>
-          </Link>
-        )
-      })}
+    <div className="events-grid" style={{ display: 'grid', gap: '20px' }}>
+      {events.map((event: any) => (
+        <EventCard
+          key={event.id}
+          event={event}
+          showCommunityName={false}
+        />
+      ))}
+      <style>{`
+        .events-grid { grid-template-columns: 1fr; }
+        @media (min-width: 640px) {
+          .events-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+      `}</style>
     </div>
   )
 }

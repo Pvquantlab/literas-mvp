@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import EventCard from '@/components/event-card'
 
 export default async function ProfilePage({
   params,
@@ -30,13 +31,13 @@ export default async function ProfilePage({
 
   const { data: organizedEvents } = await supabase
     .from('events')
-    .select('id, title, event_date, location, cover_image_url')
+    .select('id, title, event_date, location, cover_image_url, community:communities(name, category)')
     .eq('organizer_id', id)
     .order('event_date', { ascending: false })
 
   const { data: rsvps } = await supabase
     .from('rsvps')
-    .select('event:events(id, title, event_date, location, cover_image_url)')
+    .select('event:events(id, title, event_date, location, cover_image_url, community:communities(name, category))')
     .eq('user_id', id)
     .order('created_at', { ascending: false })
 
@@ -238,23 +239,17 @@ export default async function ProfilePage({
       <section style={{ marginBottom: '48px' }}>
         <h2 className="serif" style={sectionTitleStyle}>Düzenlediği etkinlikler</h2>
         {organizedEvents && organizedEvents.length > 0 ? (
-          <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="events-grid-org" style={{ display: 'grid', gap: '20px' }}>
             {organizedEvents.map((e: any) => (
-              <li key={e.id}>
-                <Link href={`/event/${e.id}`} style={eventRowStyle}>
-                  <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{e.title}</span>
-                  <span style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: '12.5px',
-                    color: 'var(--muted)',
-                  }}>
-                    {new Date(e.event_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    {e.location && ` · 📍 ${e.location}`}
-                  </span>
-                </Link>
-              </li>
+              <EventCard key={e.id} event={e} showCommunityName={true} />
             ))}
-          </ul>
+            <style>{`
+              .events-grid-org { grid-template-columns: 1fr; }
+              @media (min-width: 640px) {
+                .events-grid-org { grid-template-columns: repeat(2, 1fr); }
+              }
+            `}</style>
+          </div>
         ) : isOwnProfile ? (
           <p style={emptyLineStyle}>
             Henüz bir buluşma düzenlemedin. Kurduğun ya da yönettiğin bir topluluk varsa, oradan başlayabilirsin.
@@ -268,23 +263,17 @@ export default async function ProfilePage({
       <section>
         <h2 className="serif" style={sectionTitleStyle}>Katıldığı etkinlikler</h2>
         {rsvps && rsvps.length > 0 ? (
-          <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="events-grid-rsvp" style={{ display: 'grid', gap: '20px' }}>
             {rsvps.map((r: any) => (
-              <li key={r.event.id}>
-                <Link href={`/event/${r.event.id}`} style={eventRowStyle}>
-                  <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{r.event.title}</span>
-                  <span style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: '12.5px',
-                    color: 'var(--muted)',
-                  }}>
-                    {new Date(r.event.event_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    {r.event.location && ` · 📍 ${r.event.location}`}
-                  </span>
-                </Link>
-              </li>
+              <EventCard key={r.event.id} event={r.event} showCommunityName={true} />
             ))}
-          </ul>
+            <style>{`
+              .events-grid-rsvp { grid-template-columns: 1fr; }
+              @media (min-width: 640px) {
+                .events-grid-rsvp { grid-template-columns: repeat(2, 1fr); }
+              }
+            `}</style>
+          </div>
         ) : isOwnProfile ? (
           <p style={emptyLineStyle}>
             Henüz bir buluşmaya katılmadın.{' '}
@@ -310,18 +299,4 @@ const emptyLineStyle: React.CSSProperties = {
   color: 'var(--muted)',
   fontSize: '15px',
   lineHeight: 1.55,
-}
-
-const eventRowStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'baseline',
-  gap: '12px',
-  flexWrap: 'wrap',
-  padding: '14px 18px',
-  background: 'var(--paper-cream)',
-  border: '1.5px solid var(--border)',
-  borderRadius: '14px',
-  textDecoration: 'none',
-  transition: 'all 0.15s ease',
 }

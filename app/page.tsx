@@ -23,6 +23,7 @@ const CATS = [
   { n: 'Kariyer',    slug: 'kariyer',    bg: '#C8DBBB', ink: '#46603A', pt: 'grid' },
   { n: 'Sosyal',     slug: 'sosyal',     bg: '#FFBFCB', ink: '#A8354F', pt: 'waves' },
 ]
+const DEFAULT_SOFT = '#E8E4D8'
 
 // Pattern arka planı üretir
 function patternStyle(pt: string, ink: string) {
@@ -302,64 +303,88 @@ export default async function HomePage({
                 : { height: '148px', backgroundColor: 'var(--paper-soft)', display: 'grid', placeItems: 'center', color: 'var(--muted)', position: 'relative' }
 
               return (
-                <Link key={community.id} href={`/community/${community.id}`} className="card">
-                  {community.cover_image_url ? (
-                    <div style={{ width: '100%', height: '148px', overflow: 'hidden', background: 'var(--paper-soft)', position: 'relative' }}>
-                      <img
-                        src={community.cover_image_url}
-                        alt=""
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                      />
-                      <span style={{
-                        position: 'absolute', top: '10px', right: '10px',
-                        background: 'var(--lime-soft)', border: '1.5px solid var(--ink)',
-                        color: 'var(--ink)', fontSize: '11.5px', fontWeight: 700,
-                        padding: '2px 9px', borderRadius: '999px',
-                      }}>
-                        Açık
-                      </span>
-                    </div>
-                  ) : (
-                    <div style={artStyle}>
-                      <span style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(255,253,246,.85)', display: 'grid', placeItems: 'center', color: cat?.ink }}>
-                        {cat ? <CatIcon slug={cat.slug} size={34} /> : <span style={{ fontSize: '12px' }}>görsel yok</span>}
-                      </span>
-                      <span style={{
-                        position: 'absolute', top: '10px', right: '10px',
-                        background: 'var(--lime-soft)', border: '1.5px solid var(--ink)',
-                        color: 'var(--ink)', fontSize: '11.5px', fontWeight: 700,
-                        padding: '2px 9px', borderRadius: '999px',
-                      }}>
-                        Açık
-                      </span>
-                    </div>
-                  )}
-
-                  <div style={{ padding: '14px 16px 12px', flex: 1 }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-                      {community.category && cat && (
-                        <span style={{
-                          background: cat.bg, color: cat.ink,
-                          fontSize: '12px', fontWeight: 700,
-                          padding: '3px 10px', borderRadius: '999px',
-                        }}>
-                          {cat.n}
-                        </span>
-                      )}
-                      {community.city && (
-                        <span className="pill-city">📍 {community.city}</span>
-                      )}
-                    </div>
-                    <h3 style={{
-                      fontSize: '20px', fontWeight: 800, margin: '8px 0 4px',
-                      color: 'var(--ink)', letterSpacing: '-0.01em',
+                <Link
+                  key={community.id}
+                  href={`/community/${community.id}`}
+                  className="community-card-link"
+                  style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+                >
+                  <article style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                    height: '100%',
+                  }}>
+                    <div style={{
+                      position: 'relative',
+                      aspectRatio: '16 / 9',
+                      overflow: 'hidden',
+                      borderRadius: '14px',
+                      background: community.cover_image_url ? 'transparent' : (cat?.soft ?? DEFAULT_SOFT),
                     }}>
-                      {community.name}
-                    </h3>
-                    <div style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--ink)' }}>
-                      👥 {memberCount} üye
+                      {community.cover_image_url ? (
+                        <img
+                          src={community.cover_image_url}
+                          alt=""
+                          loading="lazy"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        />
+                      ) : (
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          display: 'grid',
+                          placeItems: 'center',
+                        }}>
+                          {cat ? <CatIcon slug={cat.slug} size={72} /> : null}
+                        </div>
+                      )}
                     </div>
-                  </div>
+
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                      padding: '0 2px',
+                    }}>
+                      <h3 className="community-title" style={{
+                        fontFamily: "'Schibsted Grotesk', system-ui, -apple-system, sans-serif",
+                        fontSize: '17px',
+                        fontWeight: 800,
+                        lineHeight: 1.25,
+                        color: 'var(--ink)',
+                        margin: 0,
+                        letterSpacing: '-0.01em',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}>
+                        {community.name}
+                      </h3>
+
+                      <p style={{
+                        fontSize: '13.5px',
+                        color: 'var(--muted)',
+                        margin: '4px 0 0',
+                        lineHeight: 1.4,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}>
+                        {cat ? cat.n : ''}{cat && community.city ? ' · ' : ''}{community.city}
+                      </p>
+
+                      <p style={{
+                        fontSize: '13.5px',
+                        color: 'var(--ink)',
+                        fontWeight: 600,
+                        margin: '6px 0 0',
+                      }}>
+                        {memberCount} üye
+                      </p>
+                    </div>
+                  </article>
                 </Link>
               )
             })}
@@ -407,6 +432,14 @@ export default async function HomePage({
           </Link>
         </div>
       </section>
+      <style>{`
+        .community-card-link:hover .community-title {
+          text-decoration: underline;
+          text-decoration-thickness: 2px;
+          text-underline-offset: 3px;
+        }
+      `}</style>
+
     </main>
   )
 }
