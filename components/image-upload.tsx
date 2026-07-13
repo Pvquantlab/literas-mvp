@@ -10,6 +10,18 @@ type Props = {
   hint?: string
 }
 
+// Güvenlik: sadece bu MIME tipleri kabul edilir
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
+const MAX_FILE_SIZE_MB = 5
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
+
+// MIME tipini güvenli uzantıya çevir (kullanıcının dosya adına güvenmiyoruz)
+const MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+}
+
 export default function ImageUpload({ bucket, value, onChange, label, hint }: Props) {
   const supabase = createClient()
   const [uploading, setUploading] = useState(false)
@@ -19,10 +31,26 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Güvenlik kontrolü 1: MIME tipi
+    if (!ALLOWED_MIME_TYPES.includes(file.type as any)) {
+      setError('Sadece JPG, PNG veya WebP görseller yüklenebilir')
+      // input'u sıfırla ki aynı dosyayı tekrar seçebilsin
+      e.target.value = ''
+      return
+    }
+
+    // Güvenlik kontrolü 2: Boyut
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setError(`Görsel en fazla ${MAX_FILE_SIZE_MB} MB olabilir`)
+      e.target.value = ''
+      return
+    }
+
     setUploading(true)
     setError(null)
 
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+    // Güvenli uzantı: dosya adından değil, MIME tipinden türet
+    const ext = MIME_TO_EXT[file.type]
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
 
     const { error: uploadError } = await supabase.storage
@@ -30,6 +58,7 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
       .upload(fileName, file, {
         cacheControl: '3600',
         upsert: false,
+        contentType: file.type,  // MIME tipini açık ver
       })
 
     if (uploadError) {
