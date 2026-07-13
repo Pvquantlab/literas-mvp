@@ -2,10 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
 
 function toLocalInputValue(iso: string) {
-  // ISO timestamp'i datetime-local input'unun beklediği "YYYY-MM-DDTHH:mm" formatına çevir
   const d = new Date(iso)
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
@@ -13,8 +11,6 @@ function toLocalInputValue(iso: string) {
 
 export default function EditEventForm({ event }: { event: any }) {
   const router = useRouter()
-  const supabase = createClient()
-
   const [title, setTitle] = useState(event.title)
   const [description, setDescription] = useState(event.description ?? '')
   const [location, setLocation] = useState(event.location)
@@ -23,6 +19,7 @@ export default function EditEventForm({ event }: { event: any }) {
     event.max_attendees ? String(event.max_attendees) : ''
   )
   const [loading, setLoading] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
 
   async function handleSubmit(e: React.FormEvent) {
@@ -30,19 +27,21 @@ export default function EditEventForm({ event }: { event: any }) {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase
-      .from('events')
-      .update({
+    const res = await fetch(`/api/event/${event.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         title,
         description: description || null,
         location,
         event_date: new Date(eventDate).toISOString(),
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
-      })
-      .eq('id', event.id)
+      }),
+    })
 
-    if (error) {
-      setError('Kaydedilemedi: ' + error.message)
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setError(data.error ?? 'Kaydedilemedi. Lütfen tekrar dene.')
       setLoading(false)
       return
     }
@@ -50,6 +49,37 @@ export default function EditEventForm({ event }: { event: any }) {
     router.push(`/event/${event.id}`)
     router.refresh()
   }
+
+  async function handleDelete() {
+    const confirmed = confirm(
+      `"${event.title}" etkinliğini iptal etmek istediğine emin misin?\n\nKatılımcılara iptal maili gidecek. Bu işlem geri alınamaz.`
+    )
+    if (!confirmed) return
+
+    setDeleting(true)
+    setError('')
+
+    const res = await fetch(`/api/event/${event.id}`, {
+      method: 'DELETE',
+    })
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setError(data.error ?? 'İptal edilemedi. Lütfen tekrar dene.')
+      setDeleting(false)
+      return
+    }
+
+    // Etkinlik silindi, topluluğa geri dön (varsa) yoksa ana sayfa
+    if (event.community_id) {
+      router.push(`/community/${event.community_id}`)
+    } else {
+      router.push('/')
+    }
+    router.refresh()
+  }
+
+  const busy = loading || deleting
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -62,6 +92,7 @@ export default function EditEventForm({ event }: { event: any }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
+          disabled={busy}
         />
       </div>
 
@@ -73,6 +104,7 @@ export default function EditEventForm({ event }: { event: any }) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
+          disabled={busy}
         />
       </div>
 
@@ -85,6 +117,7 @@ export default function EditEventForm({ event }: { event: any }) {
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           required
+          disabled={busy}
         />
       </div>
 
@@ -97,6 +130,7 @@ export default function EditEventForm({ event }: { event: any }) {
           value={eventDate}
           onChange={(e) => setEventDate(e.target.value)}
           required
+          disabled={busy}
         />
       </div>
 
@@ -110,6 +144,7 @@ export default function EditEventForm({ event }: { event: any }) {
           onChange={(e) => setMaxAttendees(e.target.value)}
           min="1"
           placeholder="Boş bırakırsan sınır yok"
+          disabled={busy}
         />
       </div>
 
@@ -118,13 +153,13 @@ export default function EditEventForm({ event }: { event: any }) {
       )}
 
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-        <button type="submit" disabled={loading} className="btn-primary">
+        <button type="submit" disabled={busy} className="btn-primary">
           {loading ? 'Kaydediliyor…' : 'Kaydet'}
         </button>
         <button
           type="button"
           onClick={() => router.push(`/event/${event.id}`)}
-          disabled={loading}
+          disabled={busy}
           style={{
             background: 'none',
             border: 'none',
@@ -140,6 +175,41 @@ export default function EditEventForm({ event }: { event: any }) {
           }}
         >
           vazgeç
+        </button>
+      </div>
+
+      {/* Tehlike bölgesi — etkinliği iptal et */}
+      <div style={{
+        marginTop: '2rem',
+        paddingTop: '1.5rem',
+        borderTop: '1.5px dashed var(--border, rgba(0,0,0,0.15))',
+      }}>
+        <p style={{
+          fontSize: '0.85rem',
+          opacity: 0.7,
+          marginBottom: '0.75rem',
+          fontFamily: "'IBM Plex Mono', monospace",
+        }}>
+          etkinliği iptal etmek istersen
+        </p>
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={busy}
+          style={{
+            background: 'none',
+            border: '1.5px solid var(--coral-deep, #B84330)',
+            color: 'var(--coral-deep, #B84330)',
+            padding: '10px 20px',
+            borderRadius: '12px',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: busy ? 'wait' : 'pointer',
+            opacity: busy ? 0.5 : 1,
+            fontFamily: "'IBM Plex Mono', monospace",
+          }}
+        >
+          {deleting ? 'İptal ediliyor…' : 'Etkinliği iptal et'}
         </button>
       </div>
     </form>
