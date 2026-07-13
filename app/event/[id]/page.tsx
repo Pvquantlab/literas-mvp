@@ -5,6 +5,7 @@ import RsvpForm from './rsvp-form'
 import EventActions from './event-actions'
 import EventMap from './event-map'
 import WhatsappShare from './whatsapp-share'
+import ReportButton from '@/components/report-button'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({
@@ -549,6 +550,11 @@ export default async function EventPage({
             location={event.location}
           />
         </div>
+        {user && user.id !== event.organizer_id && (
+            <div style={{ marginTop: '16px', textAlign: 'center' }}>
+              <ReportButton targetType="event" targetId={event.id} />
+            </div>
+          )}
         </aside>
       </div>
 

@@ -42,6 +42,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin/topluluklar" style={{ color: 'inherit', textDecoration: 'none' }}>
             topluluklar
           </Link>
+          <Link href="/admin/raporlar" style={{ color: 'inherit', textDecoration: 'none' }}>
+          raporlar
+        </Link>
           <span style={{ marginLeft: 'auto', opacity: 0.5 }}>
             ← siteye dön: <Link href="/" style={{ color: 'inherit' }}>ana sayfa</Link>
           </span>

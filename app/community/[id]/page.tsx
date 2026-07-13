@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase-server'
 import MemberActions from './member-actions'
 import JoinButton from './join-button'
 import EventCard from '@/components/event-card'
+import ReportButton from '@/components/report-button'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({
@@ -268,6 +269,11 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         <h2 style={sectionTitleStyle} className="serif">Yaklaşan etkinlikler</h2>
         <EventsList communityId={id} />
       </section>
+      {user && !isFounderOfThis && !canModerate && (
+        <div style={{ marginTop: '40px', textAlign: 'center', paddingTop: '20px', borderTop: '1px dashed var(--border)' }}>
+          <ReportButton targetType="community" targetId={community.id} />
+        </div>
+      )}
     </main>
   )
 }
