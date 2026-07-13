@@ -2,12 +2,23 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { sendEmail } from '@/lib/email'
 
+// HTML injection'a karşı basit escape fonksiyonu
+function escapeHtml(str: string): string {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string; memberId: string }> }
 ) {
   const { id: communityId, memberId } = await params
   const body = await req.json()
+
   const { action, currentRole } = body as {
     action: 'toggle-admin' | 'approve' | 'reject'
     currentRole?: 'member' | 'admin'
@@ -35,10 +46,13 @@ export async function POST(
 
   if (action === 'toggle-admin') {
     const newRole = currentRole === 'admin' ? 'member' : 'admin'
+    // IDOR fix: community_id de kontrol edilsin
     const { error } = await supabase
       .from('community_members')
       .update({ role: newRole })
       .eq('id', memberId)
+      .eq('community_id', communityId)
+
     if (error) {
       console.error('[member] toggle-admin hatası:', error)
       return NextResponse.json({ error: 'Güncellenemedi' }, { status: 500 })
@@ -47,11 +61,12 @@ export async function POST(
   }
 
   if (action === 'approve') {
-    // Önce üyeliği onayla
+    // IDOR fix: community_id de kontrol edilsin
     const { data: updated, error } = await supabase
       .from('community_members')
       .update({ status: 'approved' })
       .eq('id', memberId)
+      .eq('community_id', communityId)
       .select('user_id')
       .single()
 
@@ -74,6 +89,10 @@ export async function POST(
       .single()
 
     if (community && member?.email) {
+      // HTML injection fix: kullanıcı verilerini escape et
+      const safeMemberName = escapeHtml(member.name ?? '')
+      const safeCommunityName = escapeHtml(community.name)
+
       await sendEmail({
         to: member.email,
         subject: `${community.name} — hoş geldin`,
@@ -81,10 +100,10 @@ export async function POST(
           <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 2rem;">
             <p style="font-style: italic; color: #B8541A;">No. 0001</p>
             <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
-              hoş geldin ${member.name ?? ''}
+              hoş geldin ${safeMemberName}
             </h1>
             <p style="color: #1F2A24;">
-              <em>${community.name}</em> topluluğuna kabul edildin.
+              <em>${safeCommunityName}</em> topluluğuna kabul edildin.
               Etkinliklerden haberdar olacaksın.
             </p>
             <p style="font-style: italic; color: #1F2A24; opacity: 0.6; margin-top: 2rem;">
@@ -99,17 +118,18 @@ export async function POST(
   }
 
   if (action === 'reject') {
+    // IDOR fix: community_id de kontrol edilsin
     // Sessizce sil, kimseye söyleme
     const { error } = await supabase
       .from('community_members')
       .delete()
       .eq('id', memberId)
+      .eq('community_id', communityId)
+
     if (error) {
       console.error('[member] reject hatası:', error)
       return NextResponse.json({ error: 'Reddedilemedi' }, { status: 500 })
     }
     return NextResponse.json({ ok: true })
   }
-
-  return NextResponse.json({ error: 'Geçersiz aksiyon' }, { status: 400 })
 }
