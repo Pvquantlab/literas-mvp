@@ -166,6 +166,18 @@ export default async function EventPage({
   const userHasRsvp = user
     ? rsvps?.some((r: any) => r.user?.id === user.id)
     : false
+    // Kullanici waitlist'te mi?
+  let userInWaitlist = false
+  if (user) {
+    const { data: myWaitlist } = await supabase
+      .from('waitlist')
+      .select('id')
+      .eq('event_id', id)
+      .eq('user_id', user.id)
+      .is('promoted_at', null)
+      .maybeSingle()
+    userInWaitlist = !!myWaitlist
+  }
 
   const isOrganizer = user?.id === event.organizer_id
   const canManage = isOrganizer || isCommunityModerator
@@ -539,6 +551,7 @@ export default async function EventPage({
                   eventId={event.id}
                   userId={user.id}
                   userHasRsvp={userHasRsvp || false}
+                  userInWaitlist={userInWaitlist}
                   isFull={isFull}
                 />
               )}
