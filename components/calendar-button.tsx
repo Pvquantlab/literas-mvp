@@ -11,28 +11,50 @@ type Props = {
 }
 
 function toGoogleDate(iso: string): string {
-  // Google Calendar formati: 20260714T193000Z
   return iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '')
 }
 
 export default function CalendarButton(props: Props) {
   const [open, setOpen] = useState(false)
 
-  const start = new Date(props.eventDateIso)
-  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
+  function buildGoogleUrl(): string {
+    const start = new Date(props.eventDateIso)
+    const end = new Date(start.getTime() + 2 * 60 * 60 * 1000)
+    const startStr = toGoogleDate(start.toISOString())
+    const endStr = toGoogleDate(end.toISOString())
 
-  const startStr = toGoogleDate(start.toISOString())
-  const endStr = toGoogleDate(end.toISOString())
+    return (
+      'https://www.google.com/calendar/render?action=TEMPLATE' +
+      '&text=' + encodeURIComponent(props.title) +
+      '&dates=' + startStr + '/' + endStr +
+      '&details=' + encodeURIComponent(props.description || '') +
+      '&location=' + encodeURIComponent(props.location) +
+      '&sf=true&output=xml'
+    )
+  }
 
-  const googleUrl =
-    'https://www.google.com/calendar/render?action=TEMPLATE' +
-    '&text=' + encodeURIComponent(props.title) +
-    '&dates=' + startStr + '/' + endStr +
-    '&details=' + encodeURIComponent(props.description || '') +
-    '&location=' + encodeURIComponent(props.location) +
-    '&sf=true&output=xml'
+  function handleGoogle() {
+    window.open(buildGoogleUrl(), '_blank', 'noopener,noreferrer')
+    setOpen(false)
+  }
 
-  const icsUrl = '/api/event/' + props.eventId + '/ics'
+  function handleIcs() {
+    window.location.href = '/api/event/' + props.eventId + '/ics'
+    setOpen(false)
+  }
+
+  const dropdownItemStyle = {
+    padding: '10px 14px',
+    borderRadius: '8px',
+    background: 'transparent',
+    border: 'none',
+    color: 'var(--ink)',
+    fontSize: '13.5px',
+    fontFamily: "'IBM Plex Mono', monospace",
+    cursor: 'pointer',
+    textAlign: 'left' as const,
+    width: '100%',
+  }
 
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
@@ -59,8 +81,8 @@ export default function CalendarButton(props: Props) {
         Takvime ekle
       </button>
 
-      {open && (
-        <>
+      {open ? (
+        <div>
           <div
             onClick={function () {
               setOpen(false)
@@ -88,43 +110,15 @@ export default function CalendarButton(props: Props) {
               minWidth: '180px',
             }}
           >
-            
-              href={googleUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={function () {
-                setOpen(false)
-              }}
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: 'var(--ink)',
-                fontSize: '13.5px',
-                fontFamily: "'IBM Plex Mono', monospace",
-              }}
-            >
+            <button type="button" onClick={handleGoogle} style={dropdownItemStyle}>
               Google Takvim
-            </a>
-            
-              href={icsUrl}
-              onClick={function () {
-                setOpen(false)
-              }}
-              style={{
-                padding: '10px 14px',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: 'var(--ink)',
-                fontSize: '13.5px',
-                fontFamily: "'IBM Plex Mono', monospace",
-              }}
-            >
+            </button>
+            <button type="button" onClick={handleIcs} style={dropdownItemStyle}>
               Apple / Outlook (.ics)
-            </a>
+            </button>
           </div>
-        </>
-      )}
+        </div>
+      ) : null}
     </div>
   )
 }
