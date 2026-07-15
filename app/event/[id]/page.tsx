@@ -5,6 +5,7 @@ import RsvpForm from './rsvp-form'
 import EventActions from './event-actions'
 import EventMap from './event-map'
 import WhatsappShare from './whatsapp-share'
+import CalendarButton from '@/components/calendar-button'
 import ReportButton from '@/components/report-button'
 import type { Metadata } from 'next'
 
@@ -549,6 +550,15 @@ export default async function EventPage({
             eventDateStr={`${longDate}, ${timeStr}`}
             location={event.location}
           />
+          <div style={{ marginTop: '12px' }}>
+              <CalendarButton
+                eventId={event.id}
+                title={event.title}
+                description={event.description || ''}
+                location={event.location}
+                eventDateIso={event.event_date}
+              />
+            </div>
         </div>
         {user && user.id !== event.organizer_id && (
             <div style={{ marginTop: '16px', textAlign: 'center' }}>
