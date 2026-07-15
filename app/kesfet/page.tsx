@@ -6,6 +6,8 @@ import KesfetCategoryStrip from './kesfet-category-strip'
 
 export const dynamic = 'force-dynamic'
 
+const PAGE_SIZE = 12
+
 const CATS = [
   { n: 'Kitap',      slug: 'kitap',      soft: '#F5E9D0', ink: '#3E6B21' },
   { n: 'Doğa',       slug: 'doğa',       soft: '#DDE9D5', ink: '#A35A1E' },
@@ -24,6 +26,21 @@ const CATS = [
 ]
 
 const DEFAULT_SOFT = '#E8E4D8'
+
+// Türkçe karakter/aksan normalize — arama sorgusu için
+function normalizeQuery(q: string): string {
+  return q
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+}
+
+// textSearch için websearch formatına çevir — kullanıcı boşlukla ayırırsa AND ile arar
+function buildSearchQuery(q: string): string {
+  const normalized = normalizeQuery(q)
+  // Postgres websearch operatörlerini escape et (', ", :, &, |, !, <, >, (, ))
+  return normalized.replace(/['":&|!<>()]/g, ' ').split(/\s+/).filter(Boolean).join(' & ')
+}
 
 function CatIcon({ slug, size = 72 }: { slug: string; size?: number }) {
   const common = {
@@ -58,36 +75,61 @@ function findCat(s: string | null) {
 export default async function KesfetPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; kategori?: string; q?: string; city?: string }>
+  searchParams: Promise<{ tab?: string; kategori?: string; q?: string; city?: string; page?: string }>
 }) {
   const params = await searchParams
   const activeTab = params.tab === 'topluluklar' ? 'topluluklar' : 'etkinlikler'
   const activeCategory = params.kategori || null
   const searchQuery = params.q || null
   const city = params.city || 'İstanbul'
+  const pageParam = parseInt(params.page || '1', 10)
+  const activePage = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1
+
+  const rangeFrom = (activePage - 1) * PAGE_SIZE
+  const rangeTo = activePage * PAGE_SIZE - 1
 
   const supabase = await createClient()
 
   let events: any[] = []
   let communities: any[] = []
+  let hasMore = false
 
   if (activeTab === 'etkinlikler') {
-    let query = supabase
-      .from('events')
-      .select('id, title, event_date, location, cover_image_url, community:communities(id, name, category, city, status)')
-      .gte('event_date', new Date().toISOString())
-      .order('event_date', { ascending: true })
-      .limit(24)
+    // Kategori seçiliyse önce o kategorideki onaylı toplulukların id'lerini çek
+    let communityIds: string[] | null = null
+    if (activeCategory) {
+      const { data: cats } = await supabase
+        .from('communities')
+        .select('id')
+        .eq('category', activeCategory)
+        .eq('status', 'approved')
+      communityIds = (cats ?? []).map((c: any) => c.id)
+      // Kategoride hiç topluluk yoksa boş dönelim
+      if (communityIds.length === 0) {
+        events = []
+        hasMore = false
+      }
+    }
 
-    if (searchQuery) query = query.ilike('title', `%${searchQuery}%`)
+    if (!activeCategory || (communityIds && communityIds.length > 0)) {
+      let query = supabase
+        .from('events')
+        .select('id, title, event_date, location, cover_image_url, community:communities!inner(id, name, category, city, status)')
+        .gte('event_date', new Date().toISOString())
+        .eq('community.status', 'approved')
+        .order('event_date', { ascending: true })
+        .range(rangeFrom, rangeTo)
 
-    const { data } = await query
-    events = (data ?? []).filter((e: any) => {
-      // Sadece onaylı topluluklara ait etkinlikler (veya topluluksuz)
-      if (e.community && e.community.status !== 'approved') return false
-      if (!activeCategory) return true
-      return e.community?.category === activeCategory
-    })
+      if (communityIds) query = query.in('community_id', communityIds)
+      if (searchQuery) {
+        const q = buildSearchQuery(searchQuery)
+        if (q) query = query.textSearch('search_vector', q, { config: 'simple' })
+      }
+
+      const { data } = await query
+      events = data ?? []
+      hasMore = events.length === PAGE_SIZE
+    }
   } else {
     let query = supabase
       .from('communities')
@@ -95,13 +137,28 @@ export default async function KesfetPage({
       .eq('status', 'approved')
       .eq('community_members.status', 'approved')
       .order('created_at', { ascending: false })
-      .limit(24)
+      .range(rangeFrom, rangeTo)
 
     if (activeCategory) query = query.eq('category', activeCategory)
-    if (searchQuery) query = query.ilike('name', `%${searchQuery}%`)
+    if (searchQuery) {
+      const q = buildSearchQuery(searchQuery)
+      if (q) query = query.textSearch('search_vector', q, { config: 'simple' })
+    }
 
     const { data } = await query
     communities = data ?? []
+    hasMore = communities.length === PAGE_SIZE
+  }
+
+  // "Daha fazla göster" için sonraki sayfanın URL'i (mevcut parametreleri koru)
+  const buildNextPageHref = () => {
+    const p = new URLSearchParams()
+    if (activeTab === 'topluluklar') p.set('tab', 'topluluklar')
+    if (activeCategory) p.set('kategori', activeCategory)
+    if (searchQuery) p.set('q', searchQuery)
+    if (params.city) p.set('city', params.city)
+    p.set('page', String(activePage + 1))
+    return `/kesfet?${p.toString()}`
   }
 
   return (
@@ -188,97 +245,145 @@ export default async function KesfetPage({
       <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '28px 24px 64px' }}>
         {activeTab === 'etkinlikler' ? (
           events.length > 0 ? (
-            <div className="kesfet-grid" style={{ display: 'grid', gap: '24px' }}>
-              {events.map((ev: any) => (
-                <EventCard key={ev.id} event={ev} showCommunityName={true} />
-              ))}
-            </div>
+            <>
+              <div className="kesfet-grid" style={{ display: 'grid', gap: '24px' }}>
+                {events.map((ev: any) => (
+                  <EventCard key={ev.id} event={ev} showCommunityName={true} />
+                ))}
+              </div>
+              {hasMore && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
+                  <Link href={buildNextPageHref()} style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'var(--lime)',
+                    color: 'var(--ink)',
+                    border: '1.5px solid var(--ink)',
+                    textDecoration: 'none',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    padding: '12px 24px',
+                    borderRadius: '999px',
+                    boxShadow: '4px 5px 0 var(--ink)',
+                  }}>
+                    Daha fazla göster
+                  </Link>
+                </div>
+              )}
+            </>
           ) : (
             <p style={{ color: 'var(--muted)', fontSize: '15px', padding: '40px 0' }}>
-              {activeCategory
+              {searchQuery
+                ? `"${searchQuery}" için sonuç bulunamadı.`
+                : activeCategory
                 ? 'Bu kategoride yaklaşan etkinlik yok.'
                 : 'Yaklaşan etkinlik yok.'}
             </p>
           )
         ) : (
           communities.length > 0 ? (
-            <div className="kesfet-grid" style={{ display: 'grid', gap: '24px' }}>
-              {communities.map((c: any) => {
-                const cat = findCat(c.category)
-                const memberCount = c.community_members?.[0]?.count ?? 0
-                return (
-                  <Link
-                    key={c.id}
-                    href={`/community/${c.id}`}
-                    className="community-card-link"
-                    style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
-                  >
-                    <article style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' }}>
-                      <div style={{
-                        position: 'relative',
-                        aspectRatio: '16 / 9',
-                        overflow: 'hidden',
-                        borderRadius: '14px',
-                        background: c.cover_image_url ? 'transparent' : (cat?.soft ?? DEFAULT_SOFT),
-                      }}>
-                        {c.cover_image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={c.cover_image_url}
-                            alt=""
-                            loading="lazy"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                          />
-                        ) : (
-                          <div style={{
-                            position: 'absolute',
-                            inset: 0,
-                            display: 'grid',
-                            placeItems: 'center',
-                            color: 'var(--ink)',
-                            opacity: 0.85,
-                          }}>
-                            {cat ? <CatIcon slug={cat.slug} size={72} /> : null}
-                          </div>
-                        )}
-                      </div>
+            <>
+              <div className="kesfet-grid" style={{ display: 'grid', gap: '24px' }}>
+                {communities.map((c: any) => {
+                  const cat = findCat(c.category)
+                  const memberCount = c.community_members?.[0]?.count ?? 0
+                  return (
+                    <Link
+                      key={c.id}
+                      href={`/community/${c.id}`}
+                      className="community-card-link"
+                      style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+                    >
+                      <article style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' }}>
+                        <div style={{
+                          position: 'relative',
+                          aspectRatio: '16 / 9',
+                          overflow: 'hidden',
+                          borderRadius: '14px',
+                          background: c.cover_image_url ? 'transparent' : (cat?.soft ?? DEFAULT_SOFT),
+                        }}>
+                          {c.cover_image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={c.cover_image_url}
+                              alt=""
+                              loading="lazy"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                            />
+                          ) : (
+                            <div style={{
+                              position: 'absolute',
+                              inset: 0,
+                              display: 'grid',
+                              placeItems: 'center',
+                              color: 'var(--ink)',
+                              opacity: 0.85,
+                            }}>
+                              {cat ? <CatIcon slug={cat.slug} size={72} /> : null}
+                            </div>
+                          )}
+                        </div>
 
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '0 2px' }}>
-                        <h3 className="community-title" style={{
-                          fontSize: '17px',
-                          fontWeight: 800,
-                          lineHeight: 1.25,
-                          color: 'var(--ink)',
-                          margin: 0,
-                          letterSpacing: '-0.01em',
-                        }}>
-                          {c.name}
-                        </h3>
-                        <p style={{
-                          fontSize: '13.5px',
-                          color: 'var(--muted)',
-                          margin: '4px 0 0',
-                          lineHeight: 1.4,
-                        }}>
-                          {cat ? cat.n : ''}{cat && c.city ? ' · ' : ''}{c.city}
-                        </p>
-                        <p style={{
-                          fontSize: '13.5px',
-                          color: 'var(--ink)',
-                          fontWeight: 600,
-                          margin: '6px 0 0',
-                        }}>
-                          {memberCount} üye
-                        </p>
-                      </div>
-                    </article>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '0 2px' }}>
+                          <h3 className="community-title" style={{
+                            fontSize: '17px',
+                            fontWeight: 800,
+                            lineHeight: 1.25,
+                            color: 'var(--ink)',
+                            margin: 0,
+                            letterSpacing: '-0.01em',
+                          }}>
+                            {c.name}
+                          </h3>
+                          <p style={{
+                            fontSize: '13.5px',
+                            color: 'var(--muted)',
+                            margin: '4px 0 0',
+                            lineHeight: 1.4,
+                          }}>
+                            {cat ? cat.n : ''}{cat && c.city ? ' · ' : ''}{c.city}
+                          </p>
+                          <p style={{
+                            fontSize: '13.5px',
+                            color: 'var(--ink)',
+                            fontWeight: 600,
+                            margin: '6px 0 0',
+                          }}>
+                            {memberCount} üye
+                          </p>
+                        </div>
+                      </article>
+                    </Link>
+                  )
+                })}
+              </div>
+              {hasMore && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
+                  <Link href={buildNextPageHref()} style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'var(--lime)',
+                    color: 'var(--ink)',
+                    border: '1.5px solid var(--ink)',
+                    textDecoration: 'none',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    padding: '12px 24px',
+                    borderRadius: '999px',
+                    boxShadow: '4px 5px 0 var(--ink)',
+                  }}>
+                    Daha fazla göster
                   </Link>
-                )
-              })}
-            </div>
+                </div>
+              )}
+            </>
           ) : (
             <p style={{ color: 'var(--muted)', fontSize: '15px', padding: '40px 0' }}>
-              {activeCategory
+              {searchQuery
+                ? `"${searchQuery}" için sonuç bulunamadı.`
+                : activeCategory
                 ? 'Bu kategoride topluluk yok.'
                 : 'Henüz topluluk yok.'}
             </p>
