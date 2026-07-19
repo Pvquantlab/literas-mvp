@@ -8,3 +8,4 @@ node_modules
 # Local backup files
 *.backup
 *.backup2
+supabase/.temp
