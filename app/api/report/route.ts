@@ -1,48 +1,22 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
-
-// Kabul edilen rapor kategorileri
-const VALID_REASONS = [
-  'spam',
-  'rahatsiz_edici',
-  'yanlis_bilgi',
-  'sahte_hesap',
-  'nefret_soylemi',
-  'diger',
-] as const
-
-const VALID_TARGET_TYPES = ['event', 'community', 'user'] as const
+import { reportSchema } from '@/lib/validations'
 
 export async function POST(req: Request) {
-  const body = await req.json()
-  const { target_type, target_id, reason, description } = body
+  const parsed = reportSchema.safeParse(await req.json())
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Geçersiz veri', details: parsed.error.flatten().fieldErrors },
+      { status: 400 }
+    )
+  }
+  const { target_type, target_id, reason, description } = parsed.data
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
-  }
-
-  // Validasyon
-  if (!VALID_TARGET_TYPES.includes(target_type)) {
-    return NextResponse.json({ error: 'Geçersiz hedef tipi' }, { status: 400 })
-  }
-
-  if (!VALID_REASONS.includes(reason)) {
-    return NextResponse.json({ error: 'Geçersiz sebep' }, { status: 400 })
-  }
-
-  if (!target_id || typeof target_id !== 'string') {
-    return NextResponse.json({ error: 'Hedef ID eksik' }, { status: 400 })
-  }
-
-  // Description opsiyonel ama varsa 500 karakter sınırı
-  if (description && (typeof description !== 'string' || description.length > 500)) {
-    return NextResponse.json(
-      { error: 'Açıklama en fazla 500 karakter olabilir' },
-      { status: 400 }
-    )
   }
 
   // Kullanıcı kendi kendini rapor edemesin

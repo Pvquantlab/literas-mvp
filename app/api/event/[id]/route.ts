@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { sendEmail } from '@/lib/email'
+import { eventEditSchema } from '@/lib/validations'
 
 // HTML injection'a karşı basit escape
 function escapeHtml(str: string): string {
@@ -79,7 +80,14 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const body = await req.json()
+
+  const parsed = eventEditSchema.safeParse(await req.json())
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Geçersiz veri', details: parsed.error.flatten().fieldErrors },
+      { status: 400 }
+    )
+  }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -93,7 +101,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Yetkin yok' }, { status: 403 })
   }
 
-  const { title, description, location, event_date, max_attendees } = body
+  const { title, description, location, event_date, max_attendees } = parsed.data
 
   const { data: updatedEvent, error: updateError } = await supabase
     .from('events')

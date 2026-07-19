@@ -1,20 +1,23 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { waitlistSchema } from '@/lib/validations'
 
 // POST: waitlist'e gir
 export async function POST(req: Request) {
-  const body = await req.json()
-  const { event_id } = body
+  const parsed = waitlistSchema.safeParse(await req.json())
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Geçersiz veri', details: parsed.error.flatten().fieldErrors },
+      { status: 400 }
+    )
+  }
+  const { event_id } = parsed.data
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     return NextResponse.json({ error: 'Giris yapmalisin' }, { status: 401 })
-  }
-
-  if (!event_id || typeof event_id !== 'string') {
-    return NextResponse.json({ error: 'Etkinlik ID eksik' }, { status: 400 })
   }
 
   // Etkinlik var mi kontrolu
