@@ -1,9 +1,26 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { waitlistSchema } from '@/lib/validations'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 // POST: waitlist'e gir
 export async function POST(req: Request) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Giris yapmalisin' }, { status: 401 })
+  }
+
+  // Rate limit (hassas uç — dakikada 3)
+  const rl = await checkRateLimit(req, user.id, 'strict')
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Çok fazla istek, biraz bekle' },
+      { status: 429, headers: rl.headers }
+    )
+  }
+
   const parsed = waitlistSchema.safeParse(await req.json())
   if (!parsed.success) {
     return NextResponse.json(
@@ -12,13 +29,6 @@ export async function POST(req: Request) {
     )
   }
   const { event_id } = parsed.data
-
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Giris yapmalisin' }, { status: 401 })
-  }
 
   // Etkinlik var mi kontrolu
   const { data: event } = await supabase

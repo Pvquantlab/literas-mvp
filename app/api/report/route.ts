@@ -1,8 +1,25 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { reportSchema } from '@/lib/validations'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
+  }
+
+  // Rate limit (hassas uç — dakikada 3)
+  const rl = await checkRateLimit(req, user.id, 'strict')
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Çok fazla istek, biraz bekle' },
+      { status: 429, headers: rl.headers }
+    )
+  }
+
   const parsed = reportSchema.safeParse(await req.json())
   if (!parsed.success) {
     return NextResponse.json(
@@ -11,13 +28,6 @@ export async function POST(req: Request) {
     )
   }
   const { target_type, target_id, reason, description } = parsed.data
-
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
-  }
 
   // Kullanıcı kendi kendini rapor edemesin
   if (target_type === 'user' && target_id === user.id) {

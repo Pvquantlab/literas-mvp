@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { sendEmail } from '@/lib/email'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 // HTML injection'a karşı basit escape fonksiyonu
 function escapeHtml(str: string): string {
@@ -23,6 +24,15 @@ export async function POST(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
+  }
+
+  // Rate limit (dakikada 10)
+  const rl = await checkRateLimit(req, user.id, 'normal')
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Çok fazla istek, biraz bekle' },
+      { status: 429, headers: rl.headers }
+    )
   }
 
   // Topluluk onaylı mı? (draft/pending/rejected'a katılım istegi kabul edilmez)
@@ -81,7 +91,6 @@ export async function POST(
   if (founder?.email) {
     const requesterName = requester?.name ?? 'biri'
 
-    // HTML injection fix: kullanıcı verilerini escape et
     const safeRequesterName = escapeHtml(requesterName)
     const safeCommunityName = escapeHtml(community.name)
 
