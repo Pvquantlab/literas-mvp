@@ -34,6 +34,7 @@ export default function AttendeeList({
           'postgres_changes',
           { event: '*', schema: 'public', table: 'rsvps' },
           async (payload) => {
+            console.log('[attendee-list] OLAY:', payload.eventType, payload)
             if (payload.eventType === 'DELETE') {
               const oldRow = payload.old as { id: string }
               setAttendees((prev) => prev.filter((a) => a.id !== oldRow.id))
@@ -60,7 +61,7 @@ export default function AttendeeList({
             }
           }
         )
-      .subscribe()
+      .subscribe((status, err) => console.log('[attendee-list] durum:', status, err ?? ''))
 
     return () => {
       supabase.removeChannel(channel)
