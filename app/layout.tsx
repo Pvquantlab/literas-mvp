@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase-server'
 import Footer from '@/components/footer'
 import Header from '@/components/header'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.literaslab.com'),
@@ -26,6 +26,21 @@ export const metadata: Metadata = {
     title: 'literaslab — kendi topluluğunu kur',
     description: 'Kitap kulübü, yürüyüş, dil pratiği. Topluluk burada başlar.',
   },
+  icons: {
+    icon: [{ url: '/icon-192.png', sizes: '192x192', type: 'image/png' }],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'literas',
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#1E3A2B',
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default async function RootLayout({
@@ -56,6 +71,11 @@ export default async function RootLayout({
         />
         {children}
         <Footer />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}) }) }`,
+          }}
+        />
       </body>
     </html>
   )
