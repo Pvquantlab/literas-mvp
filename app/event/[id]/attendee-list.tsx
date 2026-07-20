@@ -31,40 +31,38 @@ export default function AttendeeList({
       if (session) supabase.realtime.setAuth(session.access_token)
 
       channel = supabase
-      .channel(`rsvps:${eventId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'rsvps', filter: `event_id=eq.${eventId}` },
-        async (payload) => {
-          const row = payload.new as { id: string; user_id: string | null }
-          setAttendees((prev) => {
-            if (prev.some((a) => a.id === row.id)) return prev
-            return [...prev, { id: row.id, user: null }]
-          })
-          // Profil bilgisini ayrıca çek (RLS: sadece giriş yapan görebilir; başarısızsa placeholder kalır)
-          if (row.user_id) {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('id, name, avatar_url')
-              .eq('id', row.user_id)
-              .maybeSingle()
-            if (profile) {
-              setAttendees((prev) =>
-                prev.map((a) => (a.id === row.id ? { ...a, user: profile } : a))
-              )
+      .channel(`rsvps-${eventId}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'rsvps' },
+          async (payload) => {
+            if (payload.eventType === 'DELETE') {
+              const oldRow = payload.old as { id: string }
+              setAttendees((prev) => prev.filter((a) => a.id !== oldRow.id))
+              return
+            }
+            // INSERT (UPDATE de buraya düşer ama rsvps'te önemsiz)
+            const row = payload.new as { id: string; event_id: string; user_id: string | null }
+            if (String(row.event_id) !== String(eventId)) return
+            setAttendees((prev) => {
+              if (prev.some((a) => a.id === row.id)) return prev
+              return [...prev, { id: row.id, user: null }]
+            })
+            if (row.user_id) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('id, name, avatar_url')
+                .eq('id', row.user_id)
+                .maybeSingle()
+              if (profile) {
+                setAttendees((prev) =>
+                  prev.map((a) => (a.id === row.id ? { ...a, user: profile } : a))
+                )
+              }
             }
           }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'rsvps' },
-        (payload) => {
-          const oldRow = payload.old as { id: string }
-          setAttendees((prev) => prev.filter((a) => a.id !== oldRow.id))
-        }
-      )
-      .subscribe()
+        )
+        .subscribe((status, err) => console.log('[attendee-list]', status, err ?? ''))
     })()
 
     return () => {
