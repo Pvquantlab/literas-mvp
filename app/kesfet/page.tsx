@@ -123,7 +123,7 @@ export default async function KesfetPage({
       if (communityIds) query = query.in('community_id', communityIds)
       if (searchQuery) {
         const q = buildSearchQuery(searchQuery)
-        if (q) query = query.textSearch('search_vector', q, { config: 'simple' })
+        if (q) query = query.textSearch('search_vector', q, { config: 'turkish' })
       }
 
       const { data } = await query
@@ -142,7 +142,7 @@ export default async function KesfetPage({
     if (activeCategory) query = query.eq('category', activeCategory)
     if (searchQuery) {
       const q = buildSearchQuery(searchQuery)
-      if (q) query = query.textSearch('search_vector', q, { config: 'simple' })
+      if (q) query = query.textSearch('search_vector', q, { config: 'turkish' })
     }
 
     const { data } = await query
