@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase'
+import { createClient as createRealtimeClient } from '@supabase/supabase-js'
 
 type Attendee = {
   id: string
@@ -21,16 +21,14 @@ export default function AttendeeList({
   const [attendees, setAttendees] = useState<Attendee[]>(initialAttendees)
 
   useEffect(() => {
-    const supabase = createClient()
-    let channel: ReturnType<typeof supabase.channel> | null = null
-
-    ;(async () => {
-      // Realtime'a oturum token'ını ver — postgres_changes RLS'i JWT ile uygular.
-      // Oturum yoksa anon key ile devam eder (public SELECT açık olduğundan yine çalışır).
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) supabase.realtime.setAuth(session.access_token)
-
-      channel = supabase
+    // Realtime için ayrı, düz supabase-js client (createBrowserClient/ssr realtime'da olay teslim etmiyor).
+    // rsvps SELECT herkese açık olduğundan anon rolü yeterli.
+    const supabase = createRealtimeClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { persistSession: false } }
+    )
+    const channel = supabase
       .channel(`rsvps-${eventId}`)
         .on(
           'postgres_changes',
@@ -62,11 +60,10 @@ export default function AttendeeList({
             }
           }
         )
-        .subscribe((status, err) => console.log('[attendee-list]', status, err ?? ''))
-    })()
+      .subscribe()
 
     return () => {
-      if (channel) supabase.removeChannel(channel)
+      supabase.removeChannel(channel)
     }
   }, [eventId])
 
