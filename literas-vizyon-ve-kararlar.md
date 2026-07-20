@@ -118,3 +118,14 @@ Keşfet ve arama, ürün gereği yalnızca (a) `event_date >= now()` gelecek etk
 elle eklerken bu iki koşul unutulursa etkinlik "arama bozuk" gibi görünerek elenir — ama
 sistem doğru çalışıyordur. Kural: test etkinliği HER ZAMAN gelecek tarihli + onaylı
 topluluğa bağlı oluşturulur. (2026-07 Türkçe FTS hata ayıklamasında öğrenildi.)
+
+**Realtime (Supabase) çalışmıyor: "SUBSCRIBED ama olay gelmiyor" (2.4'te öğrenildi)**
+Belirti: kanal SUBSCRIBED olur, hata yok, ama postgres_changes olayları client'a hiç gelmez.
+Kök neden: @supabase/realtime-js sürüm regresyonu (2.108.x'te binding'ler sessizce teslim
+edilmiyordu). Çözüm: supabase-js + ssr'ı güncelle (2.108→2.110 çözdü). Teşhis yöntemi:
+(1) realtime.subscription + pg_replication_slots ile backend'i doğrula, (2) esm.sh'ten güncel
+supabase-js ile çıplak tek-dosya HTML testi yap — çalışıyorsa sorun bundle'daki sürümdedir.
+Kalıcı desenler: realtime client modül seviyesinde tek örnek; tek postgres_changes binding
+(event:'*') + filtre client'ta; handler'a ilk satır teşhis log'u. Not: realtime.messages RLS
+policy'si SADECE private Broadcast/Presence içindir — postgres_changes kaynak tablonun RLS'ini
+kullanır, bu policy'yle uğraşma. (2026-07, ~2 saatlik hata ayıklamayla öğrenildi.)
