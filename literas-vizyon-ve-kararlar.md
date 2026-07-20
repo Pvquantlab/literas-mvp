@@ -111,3 +111,10 @@ tek cümleyle bildir ("2.4'ten önce 1.2 şart, onunla başlıyorum").
 
 *Bu dosya canlıdır: yeni bir karar alındığında buraya işlenir. Bir tartışma
 ikinci kez yaşanıyorsa, sonucu buraya yazmak o tartışmanın son yaşanışıdır.*
+
+**"Arama/keşfet bir etkinliği bulmuyor" (test verisi tuzağı)**
+Keşfet ve arama, ürün gereği yalnızca (a) `event_date >= now()` gelecek etkinlikleri ve
+(b) `status='approved'` onaylı topluluklara bağlı olanları gösterir. Test verisini SQL'den
+elle eklerken bu iki koşul unutulursa etkinlik "arama bozuk" gibi görünerek elenir — ama
+sistem doğru çalışıyordur. Kural: test etkinliği HER ZAMAN gelecek tarihli + onaylı
+topluluğa bağlı oluşturulur. (2026-07 Türkçe FTS hata ayıklamasında öğrenildi.)
