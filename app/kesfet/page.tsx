@@ -39,7 +39,7 @@ function normalizeQuery(q: string): string {
 function buildSearchQuery(q: string): string {
   const normalized = normalizeQuery(q)
   // Postgres websearch operatörlerini escape et (', ", :, &, |, !, <, >, (, ))
-  return normalized.replace(/['":&|!<>()]/g, ' ').split(/\s+/).filter(Boolean).join(' & ')
+  return normalized.replace(/['":&|!<>()]/g, ' ').split(/\s+/).filter(Boolean).join(' ')
 }
 
 function CatIcon({ slug, size = 72 }: { slug: string; size?: number }) {
@@ -123,10 +123,11 @@ export default async function KesfetPage({
       if (communityIds) query = query.in('community_id', communityIds)
       if (searchQuery) {
         const q = buildSearchQuery(searchQuery)
-        if (q) query = query.textSearch('search_vector', q, { config: 'turkish' })
+        if (q) query = query.textSearch('search_vector', q, { config: 'turkish', type: 'websearch' })
       }
 
-      const { data } = await query
+      const { data, error } = await query
+      if (error) console.error('kesfet arama hatasi:', error)
       events = data ?? []
       hasMore = events.length === PAGE_SIZE
     }
@@ -142,10 +143,11 @@ export default async function KesfetPage({
     if (activeCategory) query = query.eq('category', activeCategory)
     if (searchQuery) {
       const q = buildSearchQuery(searchQuery)
-      if (q) query = query.textSearch('search_vector', q, { config: 'turkish' })
+      if (q) query = query.textSearch('search_vector', q, { config: 'turkish', type: 'websearch' })
     }
 
-    const { data } = await query
+    const { data, error } = await query
+      if (error) console.error('kesfet arama hatasi:', error)
     communities = data ?? []
     hasMore = communities.length === PAGE_SIZE
   }
