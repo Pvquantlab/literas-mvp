@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import RsvpForm from './rsvp-form'
+import AttendeeList from './attendee-list'
 import EventActions from './event-actions'
 import EventMap from './event-map'
 import WhatsappShare from './whatsapp-share'
@@ -355,57 +356,11 @@ export default async function EventPage({
             </div>
           )}
 
-          {/* Katılımcılar (sol altta gösterelim) */}
-          <div style={{ marginTop: '40px' }}>
-            <h3 style={{
-              fontFamily: "'Schibsted Grotesk', system-ui, sans-serif",
-              fontSize: '18px',
-              fontWeight: 700,
-              color: 'var(--ink)',
-              marginBottom: '16px',
-            }}>
-              Katılımcılar
-              <span style={{
-                marginLeft: '10px',
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: '13px',
-                fontWeight: 500,
-                color: 'var(--muted)',
-              }}>
-                {attendeeCount}{event.max_attendees ? ` / ${event.max_attendees}` : ''}
-              </span>
-            </h3>
-            {rsvps && rsvps.length > 0 ? (
-              <ul style={{
-                listStyle: 'none',
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '8px',
-                padding: 0,
-                margin: 0,
-              }}>
-                {rsvps.map((r: any) => (
-                  <li key={r.id}>
-                    {r.user?.id ? (
-                      <Link href={`/profile/${r.user.id}`} style={rsvpChipStyle}>
-                        {r.user.name}
-                      </Link>
-                    ) : (
-                      <span style={rsvpChipStyle}>Anonim</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p style={{
-                fontSize: '14px',
-                color: 'var(--muted)',
-                fontStyle: 'italic',
-              }}>
-                Henüz katılan yok — sen ilk ol.
-              </p>
-            )}
-          </div>
+          <AttendeeList
+            eventId={event.id}
+            initialAttendees={(rsvps as any) ?? []}
+            maxAttendees={event.max_attendees ?? null}
+          />
         </div>
 
         {/* SAĞ — sticky sidebar */}
