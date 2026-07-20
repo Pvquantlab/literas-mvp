@@ -95,7 +95,7 @@ Ayrıntılar `literas-yol-haritasi.md` dosyasında. Özet durum:
 - [x] **1.4** Upstash rate limit — 4 uca limit; Vercel env + redeploy; anon 401 doğrulandı
       (commit 6579976)
 - [ ] **1.5** Sentry — ERTELENDİ (kullanıcı kararı, sonra eklenecek)
-- [ ] **2.1** OG görselleri ✓ · **2.2** cron hatırlatma ✓ · **2.3** PWA ·
+- [ ] **2.1** OG görselleri ✓ · **2.2** cron hatırlatma ✓ · **2.3** PWA ✓ ·
       **2.4** Realtime katılımcı listesi · **2.5** Türkçe FTS ✓ · **2.6** QR check-in
 - [ ] **Aşama 3** tekrarlayan etkinlik serileri, topluluk duyuruları, katılım karnesi, kişisel keşif
 - [ ] **Aşama 4** iyzico/PayTR ödeme, Expo mobil (kullanıcı çekişi görünce)
