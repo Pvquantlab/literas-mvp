@@ -56,7 +56,7 @@ export default function AttendeeList({
           setAttendees((prev) => prev.filter((a) => a.id !== oldRow.id))
         }
       )
-      .subscribe()
+      .subscribe((status) => { console.log('[attendee-list] channel status:', status) })
 
     return () => {
       supabase.removeChannel(channel)
