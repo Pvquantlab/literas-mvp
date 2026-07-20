@@ -22,7 +22,15 @@ export default function AttendeeList({
 
   useEffect(() => {
     const supabase = createClient()
-    const channel = supabase
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
+    ;(async () => {
+      // Realtime'a oturum token'ını ver — postgres_changes RLS'i JWT ile uygular.
+      // Oturum yoksa anon key ile devam eder (public SELECT açık olduğundan yine çalışır).
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) supabase.realtime.setAuth(session.access_token)
+
+      channel = supabase
       .channel(`rsvps:${eventId}`)
       .on(
         'postgres_changes',
@@ -56,10 +64,11 @@ export default function AttendeeList({
           setAttendees((prev) => prev.filter((a) => a.id !== oldRow.id))
         }
       )
-      .subscribe((status) => { console.log('[attendee-list] channel status:', status) })
+      .subscribe()
+    })()
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channel) supabase.removeChannel(channel)
     }
   }, [eventId])
 
