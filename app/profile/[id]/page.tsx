@@ -198,45 +198,45 @@ export default async function ProfilePage({
         {memberships && memberships.length > 0 ? (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '20px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))',
+            gap: '16px',
           }}>
             {memberships.map((m: any) => (
               <Link key={m.community.id} href={`/community/${m.community.id}`} className="card">
                 {m.community.cover_image_url ? (
-                  <div style={{ width: '100%', aspectRatio: '16 / 9', overflow: 'hidden', background: 'var(--paper-soft)' }}>
+                  <div style={{ width: '100%', aspectRatio: '16 / 10', overflow: 'hidden', background: 'var(--paper-soft)' }}>
                     <img src={m.community.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   </div>
                 ) : (
                   <div style={{
                     width: '100%',
-                    aspectRatio: '16 / 9',
+                    aspectRatio: '16 / 10',
                     background: 'var(--paper-soft)',
                     display: 'grid',
                     placeItems: 'center',
                     color: 'var(--muted)',
-                    fontSize: '32px',
+                    fontSize: '28px',
                   }}>
                     ✿
                   </div>
                 )}
-                <div style={{ padding: '14px 16px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ padding: '11px 13px 12px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
                   {m.community.category && (
                     <span style={{
                       alignSelf: 'flex-start',
                       background: 'var(--lime-soft)',
                       border: '1.5px solid var(--ink)',
                       color: 'var(--ink)',
-                      fontSize: '11.5px',
+                      fontSize: '11px',
                       fontWeight: 700,
-                      padding: '2px 9px',
+                      padding: '2px 8px',
                       borderRadius: '999px',
                     }}>
                       {m.community.category}
                     </span>
                   )}
                   <h3 style={{
-                    fontSize: '18px',
+                    fontSize: '15.5px',
                     fontWeight: 800,
                     color: 'var(--ink)',
                     margin: '2px 0 0',
@@ -246,7 +246,7 @@ export default async function ProfilePage({
                   </h3>
                   <p style={{
                     fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: '12.5px',
+                    fontSize: '11.5px',
                     color: 'var(--muted)',
                     margin: 0,
                   }}>
