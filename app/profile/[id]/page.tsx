@@ -60,25 +60,25 @@ export default async function ProfilePage({
   ]
 
   return (
-    <main style={{ maxWidth: '1080px', margin: '0 auto', padding: '40px 24px 64px', display: 'flex', gap: '36px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-      {/* ===== SOL: PROFİL KARTI ===== */}
+    <main style={{ maxWidth: '1080px', margin: '0 auto', padding: '40px 24px 64px', display: 'flex', gap: '36px', alignItems: 'stretch', flexWrap: 'wrap' }}>
+      {/* ===== SOL: PROFİL KARTI — sağ sütunla aynı yükseklikte uzanır ===== */}
       <aside className="profile-aside" style={{
-        position: 'sticky',
-        top: '16px',
         flex: '0 1 300px',
         minWidth: '260px',
+        display: 'flex',
+        flexDirection: 'column',
         background: 'var(--paper-cream)',
         border: '1px solid var(--border)',
         borderRadius: '20px',
         boxShadow: '0 8px 28px rgba(30,58,43,0.08)',
-        padding: '26px 24px 20px',
+        padding: '28px 24px 22px',
       }}>
-        {/* Avatar */}
-        <div style={{ display: 'grid', placeItems: 'center', marginBottom: '18px' }}>
+        {/* Avatar — referanstaki gibi kartın yıldızı */}
+        <div style={{ display: 'grid', placeItems: 'center', marginBottom: '20px' }}>
           {profile.avatar_url ? (
             <div style={{
-              width: '128px',
-              height: '128px',
+              width: '184px',
+              height: '184px',
               borderRadius: '50%',
               overflow: 'hidden',
               border: '1.5px solid var(--border)',
@@ -87,14 +87,14 @@ export default async function ProfilePage({
             </div>
           ) : (
             <div style={{
-              width: '128px',
-              height: '128px',
+              width: '184px',
+              height: '184px',
               borderRadius: '50%',
               background: 'var(--paper-soft)',
               border: '1.5px solid var(--border)',
               display: 'grid',
               placeItems: 'center',
-              fontSize: '52px',
+              fontSize: '72px',
               fontWeight: 800,
               color: 'var(--ink)',
             }}>
@@ -105,7 +105,7 @@ export default async function ProfilePage({
 
         {/* İsim + düzenle */}
         <h1 style={{
-          fontSize: '21px',
+          fontSize: '23px',
           fontWeight: 800,
           color: 'var(--ink)',
           margin: '0 0 4px',
@@ -152,15 +152,17 @@ export default async function ProfilePage({
           </p>
         </div>
 
-        {/* Ayraç + istatistikler */}
-        <div style={{ height: '1px', background: 'var(--border)', margin: '18px 0 14px' }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          {stats.map((s) => (
-            <div key={s.label} style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>{s.value}</div>
-              <div style={{ fontSize: '11.5px', color: 'var(--muted)', marginTop: '2px' }}>{s.label}</div>
-            </div>
-          ))}
+        {/* Ayraç + istatistikler — kartın en altına sabitlenir */}
+        <div style={{ marginTop: 'auto' }}>
+          <div style={{ height: '1px', background: 'var(--border)', margin: '20px 0 14px' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            {stats.map((s) => (
+              <div key={s.label} style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>{s.value}</div>
+                <div style={{ fontSize: '11.5px', color: 'var(--muted)', marginTop: '2px' }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </aside>
 
