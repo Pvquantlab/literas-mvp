@@ -1,21 +1,19 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
-
-const VALID_STATUSES = ['reviewed', 'dismissed', 'actioned'] as const
+import { reportUpdateSchema } from '@/lib/validations'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const body = await req.json()
-  const { status, admin_note } = body
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
+    return NextResponse.json({ error: 'Giris yapmalisin' }, { status: 401 })
   }
 
   // Admin mi?
@@ -23,22 +21,28 @@ export async function PATCH(
     .from('profiles')
     .select('is_admin')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   if (!profile?.is_admin) {
     return NextResponse.json({ error: 'Yetkin yok' }, { status: 403 })
   }
 
-  if (!VALID_STATUSES.includes(status)) {
-    return NextResponse.json({ error: 'Geçersiz status' }, { status: 400 })
+  const rl = await checkRateLimit(req, user.id, 'normal')
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Cok fazla istek, biraz bekle' },
+      { status: 429, headers: rl.headers }
+    )
   }
 
-  if (admin_note && (typeof admin_note !== 'string' || admin_note.length > 500)) {
+  const parsed = reportUpdateSchema.safeParse(await req.json())
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Admin notu en fazla 500 karakter' },
+      { error: 'Gecersiz veri', details: parsed.error.flatten().fieldErrors },
       { status: 400 }
     )
   }
+  const { status, admin_note } = parsed.data
 
   const { error: updateError } = await supabase
     .from('reports')
@@ -46,13 +50,13 @@ export async function PATCH(
       status,
       reviewed_at: new Date().toISOString(),
       reviewed_by: user.id,
-      admin_note: admin_note || null,
+      admin_note: admin_note ?? null,
     })
     .eq('id', id)
 
   if (updateError) {
-    console.error('[report PATCH] hatası:', updateError)
-    return NextResponse.json({ error: 'Güncellenemedi' }, { status: 500 })
+    console.error('[report PATCH] hatasi:', updateError)
+    return NextResponse.json({ error: 'Guncellenemedi' }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true })

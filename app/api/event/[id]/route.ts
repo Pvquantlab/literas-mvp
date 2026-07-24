@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { sendEmail } from '@/lib/email'
 import { eventEditSchema } from '@/lib/validations'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 // HTML injection'a karşı basit escape
 function escapeHtml(str: string): string {
@@ -96,12 +97,21 @@ export async function PATCH(
     return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
   }
 
+  const rl = await checkRateLimit(req, user.id, 'strict')
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Cok fazla istek, biraz bekle' },
+      { status: 429, headers: rl.headers }
+    )
+  }
+
   const { ok, event: oldEvent } = await checkCanManage(supabase, user.id, id)
   if (!ok || !oldEvent) {
     return NextResponse.json({ error: 'Yetkin yok' }, { status: 403 })
   }
 
-  const { title, description, location, event_date, max_attendees } = parsed.data
+  const { title, description, location, event_date, max_attendees, cover_image_url } =
+    parsed.data
 
   const { data: updatedEvent, error: updateError } = await supabase
     .from('events')
@@ -111,6 +121,7 @@ export async function PATCH(
       location,
       event_date,
       max_attendees: max_attendees ?? null,
+      cover_image_url: cover_image_url ?? null,
     })
     .eq('id', id)
     .select()
@@ -193,6 +204,14 @@ export async function DELETE(
 
   if (!user) {
     return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
+  }
+
+  const rlDel = await checkRateLimit(_req, user.id, 'strict')
+  if (!rlDel.ok) {
+    return NextResponse.json(
+      { error: 'Cok fazla istek, biraz bekle' },
+      { status: 429, headers: rlDel.headers }
+    )
   }
 
   const { ok, event } = await checkCanManage(supabase, user.id, id)

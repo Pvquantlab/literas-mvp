@@ -89,6 +89,20 @@ export const reportSchema = z.object({
     .transform((v) => (v ? v : undefined)),
 })
 
+// ---- Sikayet (admin islemi) -----------------------------------------------
+
+export const reportUpdateSchema = z.object({
+  status: z.enum(['reviewed', 'dismissed', 'actioned'], {
+    error: 'Gecersiz durum',
+  }),
+  admin_note: z
+    .string()
+    .trim()
+    .max(500, 'Admin notu en fazla 500 karakter olabilir')
+    .optional()
+    .transform((v) => (v ? v : undefined)),
+})
+
 // ---- Topluluk (server action'lar için) ------------------------------------
 
 export const communitySchema = z.object({
