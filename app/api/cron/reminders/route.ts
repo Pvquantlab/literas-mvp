@@ -28,9 +28,17 @@ function formatTr(iso: string): string {
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 export async function GET(req: Request) {
-  // Yetki: Vercel Cron, CRON_SECRET'i Authorization header'da yollar
+  // Yetki: Vercel Cron, CRON_SECRET'i Authorization header'da yollar.
+  // CRON_SECRET tanımlı değilse kapalı başarısız ol — aksi halde template literal
+  // "Bearer undefined" düz metnine dönüşür ve uç herkese açık hale gelir.
+  const cronSecret = process.env.CRON_SECRET
+  if (!cronSecret) {
+    console.error('[cron/reminders] CRON_SECRET tanımlı değil — istek reddedildi')
+    return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
+  }
+
   const auth = req.headers.get('authorization')
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (auth !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
   }
 
