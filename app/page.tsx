@@ -633,7 +633,7 @@ export default async function HomePage({
                       aspectRatio: '16 / 9',
                       overflow: 'hidden',
                       borderRadius: '14px',
-                      background: community.cover_image_url ? 'transparent' : (cat?.soft ?? DEFAULT_SOFT),
+                      background: community.cover_image_url ? DEFAULT_SOFT : catGradient(community.category),
                     }}>
                       {community.cover_image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -644,16 +644,38 @@ export default async function HomePage({
                           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                         />
                       ) : (
-                        <div style={{
+                        <>
+                          <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'radial-gradient(circle at 72% 18%, rgba(255,255,255,.22), transparent 58%)',
+                          }} />
+                          <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'grid',
+                            placeItems: 'center',
+                            color: '#FFFFFF',
+                          }}>
+                            <CatIcon slug={cat?.slug ?? 'default'} size={84} />
+                          </div>
+                        </>
+                      )}
+                      {cat && (
+                        <span style={{
                           position: 'absolute',
-                          inset: 0,
-                          display: 'grid',
-                          placeItems: 'center',
+                          left: '12px',
+                          top: '12px',
+                          background: '#FFFFFF',
                           color: 'var(--ink)',
-                          opacity: 0.85,
+                          fontSize: '11.5px',
+                          fontWeight: 700,
+                          padding: '4px 11px',
+                          borderRadius: '999px',
+                          boxShadow: '0 2px 8px rgba(30,58,43,.18)',
                         }}>
-                          {cat ? <CatIcon slug={cat.slug} size={72} /> : null}
-                        </div>
+                          {cat.n}
+                        </span>
                       )}
                     </div>
 
@@ -681,7 +703,16 @@ export default async function HomePage({
                         color: 'var(--ink)',
                         fontWeight: 600,
                         margin: '6px 0 0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
                       }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                          <circle cx="9" cy="7" r="4" />
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
                         {memberCount} üye
                       </p>
                     </div>
