@@ -10,3 +10,4 @@ node_modules
 *.backup2
 supabase/.temp
 .vercel
+*.backup*
