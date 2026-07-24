@@ -382,7 +382,7 @@ export default async function HomePage({
                   <line x1="3" x2="21" y1="10" y2="10" />
                 </svg>
               </div>
-              <div>
+              <div className="whitespace-nowrap">
                 <div className="text-sm font-bold text-ink">Haftalık buluşmalar</div>
                 <div className="text-xs text-mute">şehrinde, her hafta</div>
               </div>
@@ -393,7 +393,7 @@ export default async function HomePage({
                 <i className="not-italic -ml-[9px] grid h-[30px] w-[30px] place-items-center rounded-full border-[2.5px] border-white bg-forest text-[11px] font-bold text-white">M</i>
                 <i className="not-italic -ml-[9px] grid h-[30px] w-[30px] place-items-center rounded-full border-[2.5px] border-white bg-[#2B3A55] text-[11px] font-bold text-white">Z</i>
               </div>
-              <div>
+              <div className="whitespace-nowrap">
                 <div className="text-sm font-bold text-ink">Topluluğuna katıl</div>
                 <div className="text-xs text-mute">ilk üyelerden ol</div>
               </div>

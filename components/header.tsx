@@ -60,9 +60,9 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
           <input
             type="text"
             name="q"
-            placeholder="Etkinlik, topluluk ara…"
+            placeholder="Etkinlik ara…"
             aria-label="Etkinlik ara"
-            className="bare-input min-w-[60px] flex-1 text-sm text-ink"
+            className="bare-input min-w-[90px] flex-1 text-sm text-ink"
           />
           <span className="h-[22px] w-px shrink-0 bg-line" />
           <input
