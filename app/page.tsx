@@ -300,7 +300,7 @@ export default async function HomePage({
         <div className="animate-blob pointer-events-none absolute -top-[140px] right-[-80px] -z-10 h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle,rgba(194,80,31,.14),transparent_65%)] blur-[90px]" />
         <div className="animate-blob pointer-events-none absolute -left-[100px] bottom-[-120px] -z-10 h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,rgba(233,180,76,.18),transparent_65%)] blur-[90px]" />
 
-        <div className="mx-auto grid max-w-[1120px] items-center gap-14 px-6 pb-[88px] pt-[72px] lg:grid-cols-[1.05fr_.95fr]">
+        <div className="mx-auto grid max-w-[1120px] items-center gap-12 px-6 pb-[72px] pt-[56px] lg:grid-cols-[1.05fr_.95fr]">
           <div>
             <Reveal>
               <span className="mb-[22px] inline-flex items-center gap-2 rounded-full bg-brand-tint px-[14px] py-[7px] text-[13px] font-semibold text-brand">
@@ -354,26 +354,50 @@ export default async function HomePage({
             </Reveal>
           </div>
 
-          {/* Görsel kolaj — geniş ekranda */}
-          <div className="relative hidden h-[460px] lg:block">
-            <div className="absolute left-0 top-0 h-[62%] w-[62%] overflow-hidden rounded-[20px] shadow-[0_16px_40px_rgba(23,32,43,.12)]" style={{ background: categoryGradient('kitap') }}>
-              <div className="grid h-full place-items-center">
-                <CategoryIcon slug="kitap" size={52} color="rgba(255,255,255,.92)" />
+          {/* Görsel kolaj — geniş ekranda: düzenli ızgara, büyük ikonlar */}
+          <div className="relative hidden h-[420px] lg:block">
+            <div className="grid h-full grid-cols-2 gap-4">
+              {/* sol: uzun karo */}
+              <div
+                className="relative overflow-hidden rounded-[24px] shadow-[0_16px_40px_rgba(23,32,43,.12)]"
+                style={{ background: categoryGradient('kitap') }}
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(255,255,255,.20),transparent_58%)]" />
+                <div className="relative grid h-full place-items-center">
+                  <div className="grid h-[108px] w-[108px] place-items-center rounded-full bg-white/15">
+                    <CategoryIcon slug="kitap" size={54} color="#FFFFFF" />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="absolute bottom-0 right-0 h-[52%] w-[52%] overflow-hidden rounded-[20px] shadow-[0_16px_40px_rgba(23,32,43,.12)]" style={{ background: categoryGradient('doğa') }}>
-              <div className="grid h-full place-items-center">
-                <CategoryIcon slug="doğa" size={44} color="rgba(255,255,255,.92)" />
-              </div>
-            </div>
-            <div className="absolute bottom-[8%] left-[6%] h-[38%] w-[38%] overflow-hidden rounded-[20px] shadow-[0_16px_40px_rgba(23,32,43,.12)]" style={{ background: categoryGradient('müzik') }}>
-              <div className="grid h-full place-items-center">
-                <CategoryIcon slug="müzik" size={34} color="rgba(255,255,255,.92)" />
+              {/* sağ: iki karo üst üste */}
+              <div className="grid grid-rows-2 gap-4">
+                <div
+                  className="relative overflow-hidden rounded-[24px] shadow-[0_16px_40px_rgba(23,32,43,.12)]"
+                  style={{ background: categoryGradient('doğa') }}
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(255,255,255,.20),transparent_58%)]" />
+                  <div className="relative grid h-full place-items-center">
+                    <div className="grid h-[84px] w-[84px] place-items-center rounded-full bg-white/15">
+                      <CategoryIcon slug="doğa" size={42} color="#FFFFFF" />
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className="relative overflow-hidden rounded-[24px] shadow-[0_16px_40px_rgba(23,32,43,.12)]"
+                  style={{ background: categoryGradient('müzik') }}
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(255,255,255,.20),transparent_58%)]" />
+                  <div className="relative grid h-full place-items-center">
+                    <div className="grid h-[84px] w-[84px] place-items-center rounded-full bg-white/15">
+                      <CategoryIcon slug="müzik" size={42} color="#FFFFFF" />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* yüzen kartlar */}
-            <div className="animate-bob absolute right-[4%] top-[12%] flex items-center gap-3 rounded-[14px] bg-white p-[14px] px-[18px] shadow-[0_16px_40px_rgba(23,32,43,.12)]">
+            {/* yüzen kartlar — kenarlara düzgün oturur */}
+            <div className="animate-bob absolute -top-5 right-5 flex items-center gap-3 rounded-[14px] bg-white p-[14px] px-[18px] shadow-[0_16px_40px_rgba(23,32,43,.12)]">
               <div className="grid h-[38px] w-[38px] place-items-center rounded-[10px] bg-brand-tint">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C2501F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -387,7 +411,7 @@ export default async function HomePage({
                 <div className="text-xs text-mute">şehrinde, her hafta</div>
               </div>
             </div>
-            <div className="animate-bob-delay absolute bottom-[34%] right-[10%] flex items-center gap-3 rounded-[14px] bg-white p-[14px] px-[18px] shadow-[0_16px_40px_rgba(23,32,43,.12)]">
+            <div className="animate-bob-delay absolute -bottom-5 left-5 flex items-center gap-3 rounded-[14px] bg-white p-[14px] px-[18px] shadow-[0_16px_40px_rgba(23,32,43,.12)]">
               <div className="flex">
                 <i className="not-italic grid h-[30px] w-[30px] place-items-center rounded-full border-[2.5px] border-white bg-brand text-[11px] font-bold text-white">A</i>
                 <i className="not-italic -ml-[9px] grid h-[30px] w-[30px] place-items-center rounded-full border-[2.5px] border-white bg-forest text-[11px] font-bold text-white">M</i>
