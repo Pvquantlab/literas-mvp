@@ -5,13 +5,13 @@
   --ink: #1E3A2B;
   --ink-hover: #152C1F;
   --ink-deep: #152C1F;
-  --paper: #FAF6EC;
-  --paper-cream: #FFFDF6;
-  --paper-soft: #F4EEDC;
+  --paper: #FFFFFF;
+  --paper-cream: #FFFFFF;
+  --paper-soft: #F5F4F0;
   --night: #22301F;
   --muted: #6E684F;
-  --border: #EBE3CE;
-  --border-mid: #E0D8C2;
+  --border: #E8E5DD;
+  --border-mid: #D9D6CC;
 
   /* Vurgu renkleri */
   --lime: #C8EB4B;
