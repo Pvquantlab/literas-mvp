@@ -17,7 +17,7 @@ export default async function ProfilePage({
   // Herkese açık profil vitrini (e-posta vb. özel alanlar bu görünümde yok)
   const { data: profile } = await supabase
     .from('public_profiles')
-    .select('id, name, bio, avatar_url, created_at')
+    .select('id, name, bio, avatar_url, location, created_at')
     .eq('id', id)
     .single()
 
@@ -53,94 +53,134 @@ export default async function ProfilePage({
 
   const roleLabel = (role: string) => role === 'founder' ? 'kurucu' : role === 'admin' ? 'yönetici' : 'üye'
 
+  const stats = [
+    { value: memberships?.length ?? 0, label: 'Topluluk' },
+    { value: organizedEvents?.length ?? 0, label: 'Düzenlediği' },
+    { value: rsvps?.length ?? 0, label: 'Katıldığı' },
+  ]
+
   return (
-    <main style={{ maxWidth: '900px', margin: '0 auto', padding: '48px 24px' }}>
-      {/* Başlık */}
-      <section style={{
-        marginBottom: '48px',
-        paddingBottom: '32px',
-        borderBottom: '1.5px solid var(--border)',
+    <main style={{ maxWidth: '1080px', margin: '0 auto', padding: '40px 24px 64px', display: 'flex', gap: '36px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      {/* ===== SOL: PROFİL KARTI ===== */}
+      <aside className="profile-aside" style={{
+        position: 'sticky',
+        top: '16px',
+        flex: '0 1 300px',
+        minWidth: '260px',
+        background: 'var(--paper-cream)',
+        border: '1px solid var(--border)',
+        borderRadius: '20px',
+        boxShadow: '0 8px 28px rgba(30,58,43,0.08)',
+        padding: '26px 24px 20px',
       }}>
-        <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        {/* Avatar */}
+        <div style={{ display: 'grid', placeItems: 'center', marginBottom: '18px' }}>
           {profile.avatar_url ? (
             <div style={{
-              width: '112px',
-              height: '112px',
+              width: '128px',
+              height: '128px',
               borderRadius: '50%',
               overflow: 'hidden',
-              border: '2px solid var(--ink)',
-              flexShrink: 0,
+              border: '1.5px solid var(--border)',
             }}>
               <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
           ) : (
             <div style={{
-              width: '112px',
-              height: '112px',
+              width: '128px',
+              height: '128px',
               borderRadius: '50%',
-              background: 'var(--lime)',
-              border: '2px solid var(--ink)',
+              background: 'var(--paper-soft)',
+              border: '1.5px solid var(--border)',
               display: 'grid',
               placeItems: 'center',
-              fontSize: '46px',
+              fontSize: '52px',
               fontWeight: 800,
               color: 'var(--ink)',
-              fontFamily: "'Playfair Display', serif",
-              flexShrink: 0,
             }}>
               {profile.name?.[0]?.toUpperCase() ?? '?'}
             </div>
           )}
+        </div>
 
-          <div style={{ flex: 1, minWidth: '240px' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '14px', flexWrap: 'wrap', marginBottom: '6px' }}>
-              <h1 className="serif" style={{
-                fontSize: 'clamp(32px, 4.4vw, 46px)',
-                color: 'var(--ink)',
-                margin: 0,
-              }}>
-                <span className="highlight-yellow">{profile.name}</span>
-              </h1>
-              {isOwnProfile && (
-                <Link
-                  href={`/profile/${profile.id}/edit`}
-                  style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: '13px',
-                    color: 'var(--muted)',
-                    textDecoration: 'underline',
-                    textUnderlineOffset: '3px',
-                  }}
-                >
-                  düzenle
-                </Link>
-              )}
-            </div>
-            <p style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              color: 'var(--muted)',
-              fontSize: '13px',
-              margin: 0,
-            }}>
-              ✿ {membershipText}
+        {/* İsim + düzenle */}
+        <h1 style={{
+          fontSize: '21px',
+          fontWeight: 800,
+          color: 'var(--ink)',
+          margin: '0 0 4px',
+          letterSpacing: '-0.3px',
+          lineHeight: 1.25,
+        }}>
+          {profile.name}
+        </h1>
+        {isOwnProfile && (
+          <Link
+            href={`/profile/${profile.id}/edit`}
+            style={{
+              display: 'inline-block',
+              fontSize: '13.5px',
+              fontWeight: 600,
+              color: 'var(--coral)',
+              marginBottom: '12px',
+              textDecoration: 'none',
+            }}
+          >
+            Profili düzenle
+          </Link>
+        )}
+
+        {/* Konum + katılım */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', marginTop: isOwnProfile ? '2px' : '10px' }}>
+          {profile.location && (
+            <p style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', color: 'var(--muted)', margin: 0 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              {profile.location}
             </p>
-            {profile.bio && (
+          )}
+          <p style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13.5px', color: 'var(--muted)', margin: 0 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <line x1="16" x2="16" y1="2" y2="6" />
+              <line x1="8" x2="8" y1="2" y2="6" />
+              <line x1="3" x2="21" y1="10" y2="10" />
+            </svg>
+            {membershipText}
+          </p>
+        </div>
+
+        {/* Ayraç + istatistikler */}
+        <div style={{ height: '1px', background: 'var(--border)', margin: '18px 0 14px' }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {stats.map((s) => (
+            <div key={s.label} style={{ textAlign: 'center', flex: 1 }}>
+              <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>{s.value}</div>
+              <div style={{ fontSize: '11.5px', color: 'var(--muted)', marginTop: '2px' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      {/* ===== SAĞ: İÇERİK ===== */}
+      <div style={{ flex: '1 1 480px', minWidth: 0 }}>
+        {/* Hakkında */}
+        {(profile.bio || isOwnProfile) && (
+          <section style={{ marginBottom: '40px' }}>
+            <h2 className="serif" style={sectionTitleStyle}>Hakkında</h2>
+            {profile.bio ? (
               <p style={{
-                marginTop: '16px',
                 color: 'var(--ink)',
-                fontSize: '16.5px',
-                lineHeight: 1.6,
+                fontSize: '16px',
+                lineHeight: 1.65,
+                margin: 0,
               }}>
                 {profile.bio}
               </p>
-            )}
-            {isOwnProfile && !profile.bio && (
-              <p style={{
-                marginTop: '16px',
-                color: 'var(--muted)',
-                fontSize: '15px',
-                lineHeight: 1.55,
-              }}>
+            ) : (
+              <p style={emptyLineStyle}>
                 <Link
                   href={`/profile/${profile.id}/edit`}
                   style={{ color: 'var(--ink)', textDecoration: 'underline', fontWeight: 600 }}
@@ -149,9 +189,8 @@ export default async function ProfilePage({
                 </Link> — birkaç cümle profile bir yüz katar.
               </p>
             )}
-          </div>
-        </div>
-      </section>
+          </section>
+        )}
 
       {/* Topluluklar */}
       <section style={{ marginBottom: '48px' }}>
@@ -286,6 +325,12 @@ export default async function ProfilePage({
           <p style={emptyLineStyle}>Henüz bir etkinliğe katılmadı.</p>
         )}
       </section>
+      </div>
+      <style>{`
+        @media (max-width: 860px) {
+          .profile-aside { position: static !important; flex: 1 1 100% !important; }
+        }
+      `}</style>
     </main>
   )
 }
