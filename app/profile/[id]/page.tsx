@@ -60,8 +60,8 @@ export default async function ProfilePage({
   ]
 
   return (
-    <main style={{ maxWidth: '1080px', margin: '0 auto', padding: '40px 24px 64px', display: 'flex', gap: '36px', alignItems: 'stretch', flexWrap: 'wrap' }}>
-      {/* ===== SOL: PROFİL KARTI — sağ sütunla aynı yükseklikte uzanır ===== */}
+    <main style={{ maxWidth: '1080px', margin: '0 auto', padding: '40px 24px 64px', display: 'flex', gap: '36px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      {/* ===== SOL: PROFİL KARTI — içeriği kadar yükseklikte, kompakt ===== */}
       <aside className="profile-aside" style={{
         flex: '0 1 300px',
         minWidth: '260px',
@@ -152,9 +152,9 @@ export default async function ProfilePage({
           </p>
         </div>
 
-        {/* Ayraç + istatistikler — kartın en altına sabitlenir */}
-        <div style={{ marginTop: 'auto' }}>
-          <div style={{ height: '1px', background: 'var(--border)', margin: '20px 0 14px' }} />
+        {/* Ayraç + istatistikler — içeriğin hemen ardından gelir */}
+        <div>
+          <div style={{ height: '1px', background: 'var(--border)', margin: '22px 0 14px' }} />
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             {stats.map((s) => (
               <div key={s.label} style={{ textAlign: 'center', flex: 1 }}>
@@ -200,49 +200,53 @@ export default async function ProfilePage({
         {memberships && memberships.length > 0 ? (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))',
-            gap: '16px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))',
+            gap: '14px',
           }}>
             {memberships.map((m: any) => (
-              <Link key={m.community.id} href={`/community/${m.community.id}`} className="card">
-                {m.community.cover_image_url ? (
-                  <div style={{ width: '100%', aspectRatio: '16 / 10', overflow: 'hidden', background: 'var(--paper-soft)' }}>
+              <Link
+                key={m.community.id}
+                href={`/community/${m.community.id}`}
+                className="member-card"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px',
+                  padding: '12px',
+                  background: 'var(--paper-cream)',
+                  border: '1.5px solid var(--border)',
+                  borderRadius: '14px',
+                  textDecoration: 'none',
+                  transition: 'all 0.18s ease',
+                }}
+              >
+                {/* Kare kapak görseli */}
+                <div style={{
+                  width: '96px',
+                  height: '96px',
+                  flex: 'none',
+                  borderRadius: '10px',
+                  overflow: 'hidden',
+                  background: 'var(--paper-soft)',
+                  display: 'grid',
+                  placeItems: 'center',
+                  color: 'var(--muted)',
+                  fontSize: '26px',
+                }}>
+                  {m.community.cover_image_url ? (
                     <img src={m.community.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  </div>
-                ) : (
-                  <div style={{
-                    width: '100%',
-                    aspectRatio: '16 / 10',
-                    background: 'var(--paper-soft)',
-                    display: 'grid',
-                    placeItems: 'center',
-                    color: 'var(--muted)',
-                    fontSize: '28px',
-                  }}>
-                    ✿
-                  </div>
-                )}
-                <div style={{ padding: '11px 13px 12px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                  {m.community.category && (
-                    <span style={{
-                      alignSelf: 'flex-start',
-                      background: 'var(--lime-soft)',
-                      border: '1.5px solid var(--ink)',
-                      color: 'var(--ink)',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      padding: '2px 8px',
-                      borderRadius: '999px',
-                    }}>
-                      {m.community.category}
-                    </span>
+                  ) : (
+                    '✿'
                   )}
+                </div>
+                {/* İsim + bilgi */}
+                <div style={{ minWidth: 0 }}>
                   <h3 style={{
-                    fontSize: '15.5px',
-                    fontWeight: 800,
+                    fontSize: '15px',
+                    fontWeight: 700,
                     color: 'var(--ink)',
-                    margin: '2px 0 0',
-                    lineHeight: 1.25,
+                    margin: 0,
+                    lineHeight: 1.3,
                   }}>
                     {m.community.name}
                   </h3>
@@ -250,7 +254,7 @@ export default async function ProfilePage({
                     fontFamily: "'IBM Plex Mono', monospace",
                     fontSize: '11.5px',
                     color: 'var(--muted)',
-                    margin: 0,
+                    margin: '5px 0 0',
                   }}>
                     📍 {m.community.city} · {roleLabel(m.role)}
                   </p>
@@ -329,6 +333,11 @@ export default async function ProfilePage({
       </section>
       </div>
       <style>{`
+        .member-card:hover {
+          border-color: var(--ink) !important;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(30,58,43,.10);
+        }
         @media (max-width: 860px) {
           .profile-aside { position: static !important; flex: 1 1 100% !important; }
         }
