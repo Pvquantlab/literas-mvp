@@ -61,46 +61,66 @@ export default function AvatarEditor({
   return (
     <div style={{ marginBottom: 30 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-        <button
-          type="button"
-          onClick={openPicker}
-          disabled={uploading}
-          aria-label="Fotoğrafı değiştir"
-          style={{
-            width: 88, height: 88, borderRadius: "50%",
-            background: url ? "transparent" : "var(--lime)",
-            border: "2px solid var(--ink)",
-            display: "grid", placeItems: "center",
-            fontSize: 32, fontWeight: 800, color: "var(--ink)",
-            cursor: uploading ? "wait" : "pointer",
-            overflow: "hidden",
-            padding: 0,
-            fontFamily: "inherit",
-            position: "relative",
-          }}
-        >
-          {url ? (
-            <img
-              src={url}
-              alt=""
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          ) : (
-            initial
-          )}
-          {uploading && (
-            <span style={{
-              position: "absolute", inset: 0,
-              background: "rgba(30,58,43,0.55)",
-              color: "white",
+        <div style={{ position: "relative", width: 88, height: 88, flex: "0 0 auto" }}>
+          <button
+            type="button"
+            onClick={openPicker}
+            disabled={uploading}
+            aria-label="Fotoğrafı değiştir"
+            style={{
+              width: "100%", height: "100%", borderRadius: "50%",
+              background: url ? "transparent" : "var(--paper-soft)",
+              border: "1.5px solid var(--border)",
               display: "grid", placeItems: "center",
-              fontSize: 11,
-              fontFamily: "'IBM Plex Mono', monospace",
-            }}>
-              yükleniyor…
+              fontSize: 32, fontWeight: 800, color: "var(--ink)",
+              cursor: uploading ? "wait" : "pointer",
+              overflow: "hidden",
+              padding: 0,
+              fontFamily: "inherit",
+              position: "relative",
+            }}
+          >
+            {url ? (
+              <img
+                src={url}
+                alt=""
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              initial
+            )}
+            {uploading && (
+              <span style={{
+                position: "absolute", inset: 0,
+                background: "rgba(30,58,43,0.55)",
+                color: "white",
+                display: "grid", placeItems: "center",
+                fontSize: 11,
+                fontFamily: "'IBM Plex Mono', monospace",
+              }}>
+                yükleniyor…
+              </span>
+            )}
+          </button>
+          {!uploading && (
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute", right: -2, bottom: -2,
+                width: 26, height: 26, borderRadius: "50%",
+                background: "var(--coral)",
+                border: "2px solid var(--paper)",
+                display: "grid", placeItems: "center",
+                pointerEvents: "none",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
             </span>
           )}
-        </button>
+        </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
           <button
