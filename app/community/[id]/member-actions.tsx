@@ -16,22 +16,24 @@ export default function MemberActions({
   const router = useRouter()
   const params = useParams<{ id: string }>()
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleClick() {
     setLoading(true)
+    setError(null)
 
     const res = await fetch(
       `/api/community/${params.id}/member/${memberId}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, currentRole }),
+       body: JSON.stringify({ action }),
       }
     )
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
-      console.error('[member-actions] hata:', data.error)
+      setError(data.error ?? 'Bir şeyler ters gitti')
       setLoading(false)
       return
     }
@@ -80,8 +82,21 @@ export default function MemberActions({
   }
 
   return (
-    <button onClick={handleClick} disabled={loading} style={buttonStyle}>
-      {loading ? '...' : label}
-    </button>
+    <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '4px' }}>
+      <button onClick={handleClick} disabled={loading} style={buttonStyle}>
+        {loading ? '...' : label}
+      </button>
+      {error && (
+        <span
+          style={{
+            fontSize: '12px',
+            color: 'var(--coral-deep)',
+            fontFamily: 'inherit',
+          }}
+        >
+          {error}
+        </span>
+      )}
+    </div>
   )
 }

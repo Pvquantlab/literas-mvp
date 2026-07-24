@@ -19,9 +19,8 @@ export async function POST(
   const { id: communityId, memberId } = await params
   const body = await req.json()
 
-  const { action, currentRole } = body as {
+ const { action } = body as {
     action: 'toggle-admin' | 'approve' | 'reject'
-    currentRole?: 'member' | 'admin'
   }
 
   const supabase = await createClient()
@@ -38,14 +37,41 @@ export async function POST(
     .select('role, status')
     .eq('community_id', communityId)
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
 
   if (!actor || actor.status !== 'approved' || !['founder', 'admin'].includes(actor.role)) {
     return NextResponse.json({ error: 'Yetkin yok' }, { status: 403 })
   }
+  // Hedef üyeyi DB'den oku — istemciden gelen currentRole'e ASLA güvenme.
+  const { data: target } = await supabase
+    .from('community_members')
+    .select('id, role, status, user_id')
+    .eq('id', memberId)
+    .eq('community_id', communityId)
+    .maybeSingle()
+
+  if (!target) {
+    return NextResponse.json({ error: 'Üye bulunamadı' }, { status: 404 })
+  }
+
+  // Kurucuya hiç kimse dokunamaz — admin de, kurucunun kendisi de.
+  if (target.role === 'founder') {
+    return NextResponse.json(
+      { error: 'Kurucu üzerinde işlem yapılamaz' },
+      { status: 403 }
+    )
+  }
+
+  // Admin rolünü yalnızca kurucu verebilir/alabilir.
+  if (action === 'toggle-admin' && actor.role !== 'founder') {
+    return NextResponse.json(
+      { error: 'Yalnızca kurucu yönetici atayabilir' },
+      { status: 403 }
+    )
+  }
 
   if (action === 'toggle-admin') {
-    const newRole = currentRole === 'admin' ? 'member' : 'admin'
+    const newRole = target.role === 'admin' ? 'member' : 'admin'
     // IDOR fix: community_id de kontrol edilsin
     const { error } = await supabase
       .from('community_members')
@@ -132,4 +158,6 @@ export async function POST(
     }
     return NextResponse.json({ ok: true })
   }
+  return NextResponse.json({ error: 'Geçersiz işlem' }, { status: 400 })
 }
+
