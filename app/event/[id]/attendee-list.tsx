@@ -71,67 +71,37 @@ export default function AttendeeList({
   const count = attendees.length
 
   return (
-    <div style={{ marginTop: '40px' }}>
-      <h3 style={{
-        fontFamily: "'Schibsted Grotesk', system-ui, sans-serif",
-        fontSize: '18px',
-        fontWeight: 700,
-        color: 'var(--ink)',
-        marginBottom: '16px',
-      }}>
+    <div className="mt-10">
+      <h3 className="mb-4 text-lg font-bold text-ink">
         Katılımcılar
-        <span style={{
-          marginLeft: '10px',
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: '13px',
-          fontWeight: 500,
-          color: 'var(--muted)',
-        }}>
+        <span className="ml-2.5 text-[13px] font-medium text-mute">
           {count}{maxAttendees ? ` / ${maxAttendees}` : ''}
         </span>
       </h3>
       {count > 0 ? (
-        <ul style={{
-          listStyle: 'none',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '8px',
-          padding: 0,
-          margin: 0,
-        }}>
+        <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
           {attendees.map((r) => (
             <li key={r.id}>
               {r.user?.id ? (
-                <Link href={`/profile/${r.user.id}`} style={rsvpChipStyle}>
+                <Link
+                  href={`/profile/${r.user.id}`}
+                  className="inline-block rounded-full border border-line bg-white px-3.5 py-1.5 text-[13.5px] font-bold text-ink transition hover:border-brand hover:text-brand"
+                >
                   {r.user.name}
                 </Link>
               ) : (
-                <span style={rsvpChipStyle}>Yeni katılımcı</span>
+                <span className="inline-block rounded-full border border-line bg-white px-3.5 py-1.5 text-[13.5px] font-bold text-mute">
+                  Yeni katılımcı
+                </span>
               )}
             </li>
           ))}
         </ul>
       ) : (
-        <p style={{
-          fontSize: '14px',
-          color: 'var(--muted)',
-          fontStyle: 'italic',
-        }}>
+        <p className="text-sm italic text-mute">
           Henüz katılan yok — sen ilk ol.
         </p>
       )}
     </div>
   )
-}
-
-const rsvpChipStyle: React.CSSProperties = {
-  display: 'inline-block',
-  background: 'var(--paper-cream)',
-  padding: '6px 14px',
-  borderRadius: '999px',
-  border: '1.5px solid var(--border-mid)',
-  fontSize: '13.5px',
-  fontWeight: 700,
-  color: 'var(--ink)',
-  textDecoration: 'none',
 }

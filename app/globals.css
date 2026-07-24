@@ -1,24 +1,40 @@
-@import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+/* ============ YENİ MARKA (Tailwind tema tokenları) ============ */
+@theme {
+  --color-brand: #C2501F;
+  --color-brand-dark: #A84317;
+  --color-brand-tint: #FBECE3;
+  --color-mustard: #E9B44C;
+  --color-forest: #2F6B4F;
+  --color-ink: #17202B;
+  --color-body: #55606E;
+  --color-mute: #8A94A2;
+  --color-warm: #FAF7F2;
+  --color-line: #EDE7DD;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
 
 :root {
-  /* Ana renkler */
-  --ink: #1E3A2B;
-  --ink-hover: #152C1F;
-  --ink-deep: #152C1F;
-  --paper: #FAF6EC;
-  --paper-cream: #FFFDF6;
-  --paper-soft: #F4EEDC;
-  --night: #22301F;
-  --muted: #6E684F;
-  --border: #EBE3CE;
-  --border-mid: #E0D8C2;
+  /* Ana renkler — yeni kimlik (eski değişken adları korunuyor) */
+  --ink: #17202B;
+  --ink-hover: #0E141B;
+  --ink-deep: #0E141B;
+  --paper: #FAF7F2;
+  --paper-cream: #FFFFFF;
+  --paper-soft: #F3EEE5;
+  --night: #17202B;
+  --muted: #55606E;
+  --border: #EDE7DD;
+  --border-mid: #E0D8C9;
 
-  /* Vurgu renkleri */
-  --lime: #C8EB4B;
-  --lime-soft: #D4F45E;
-  --coral: #BE5127;
-  --coral-deep: #8A4B2E;
-  --yellow-highlight: #FFD84D;
+  /* Vurgu renkleri — terracotta kimliği */
+  --lime: #C2501F;
+  --lime-soft: #D96A2B;
+  --coral: #C2501F;
+  --coral-deep: #A84317;
+  --yellow-highlight: #E9B44C;
 
   /* Sticky rozet renkleri */
   --sticky-blue-bg: #D7E9FB;
@@ -29,9 +45,9 @@
   --sticky-green-ink: #4B6B00;
 
   /* Legacy — geriye dönük uyumluluk */
-  --seal: #C4622D;
-  --seal-soft: #F9EDE4;
-  --seal-deep: #A84E1F;
+  --seal: #C2501F;
+  --seal-soft: #FBECE3;
+  --seal-deep: #A84317;
 }
 
 * {
@@ -43,7 +59,7 @@
 html, body {
   background: var(--paper);
   color: var(--night);
-  font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Inter', 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -68,7 +84,7 @@ button {
 }
 
 ::selection {
-  background: var(--lime);
+  background: rgba(233, 180, 76, .55);
   color: var(--ink);
 }
 
@@ -86,17 +102,29 @@ input, textarea, select {
 }
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: var(--ink);
-  box-shadow: 0 0 0 3px rgba(214, 255, 63, .55);
+  border-color: var(--coral);
+  box-shadow: 0 0 0 3px rgba(194, 80, 31, .18);
 }
 input::placeholder {
-  color: rgba(30, 58, 43, .5);
+  color: rgba(23, 32, 43, .45);
   font-weight: 500;
 }
 textarea {
   border-radius: 20px;
   min-height: 120px;
   resize: vertical;
+}
+
+/* Çerçevesiz input (header/hero arama çubukları içinde) */
+.bare-input,
+.bare-input:focus {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  width: 100%;
 }
 
 .container {
@@ -111,11 +139,11 @@ textarea {
   padding: 2rem 1.5rem;
 }
 
-/* --- Butonlar --- */
+/* --- Butonlar (eski sayfalar için) --- */
 .btn-primary {
   display: inline-block;
   background: var(--lime);
-  color: var(--ink);
+  color: #FFFFFF;
   border: 2px solid var(--ink);
   padding: 0.95rem 2rem;
   border-radius: 999px;
@@ -128,7 +156,7 @@ textarea {
 }
 .btn-primary:hover {
   transform: rotate(-2deg) scale(1.04);
-  color: var(--ink);
+  color: #FFFFFF;
 }
 
 .btn-secondary {
@@ -146,7 +174,7 @@ textarea {
 }
 .btn-secondary:hover {
   transform: rotate(2deg) scale(1.03);
-  background: rgba(30, 58, 43, .04);
+  background: rgba(23, 32, 43, .04);
 }
 
 .btn-nav {
@@ -165,7 +193,7 @@ textarea {
   color: var(--paper-soft);
 }
 
-/* --- Kartlar --- */
+/* --- Kartlar (eski sayfalar için) --- */
 .card {
   background: var(--paper-cream);
   border: 1.5px solid var(--border);
@@ -180,13 +208,13 @@ textarea {
 }
 .card:hover {
   transform: translateY(-5px) rotate(-0.5deg);
-  box-shadow: 8px 11px 0 rgba(30, 58, 43, .17);
+  box-shadow: 8px 11px 0 rgba(23, 32, 43, .17);
   border-color: var(--ink);
 }
 
 /* --- Rozet stilleri --- */
 .badge-free {
-  background: var(--lime-soft);
+  background: var(--seal-soft);
   border: 1.5px solid var(--ink);
   color: var(--ink);
   font-size: 11.5px;
@@ -202,8 +230,8 @@ textarea {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 12.5px;
   color: var(--coral-deep);
-  border: 1.5px solid rgba(176, 67, 48, .35);
-  background: rgba(255, 216, 77, .18);
+  border: 1.5px solid rgba(194, 80, 31, .35);
+  background: rgba(233, 180, 76, .18);
   padding: 5px 14px;
   border-radius: 999px;
 }
@@ -220,12 +248,12 @@ textarea {
   font-size: 12px;
   font-weight: 600;
   color: var(--muted);
-  border: 1.5px dashed rgba(30, 58, 43, .3);
+  border: 1.5px dashed rgba(23, 32, 43, .3);
   padding: 2px 9px;
   border-radius: 999px;
 }
 
-/* --- Serif başlıklar --- */
+/* --- Serif başlıklar (eski sayfalar) --- */
 .serif {
   font-family: 'Literata', Georgia, serif;
   font-weight: 800;
@@ -236,16 +264,16 @@ textarea {
   font-family: 'IBM Plex Mono', monospace;
 }
 
-/* --- Sarı highlight (kelime vurgusu) --- */
+/* --- Hardal highlight (kelime vurgusu) --- */
 .highlight-yellow {
-  background: linear-gradient(100deg, rgba(255, 216, 77, 0) 1%, rgba(255, 216, 77, .75) 6%, rgba(255, 216, 77, .85) 50%, rgba(255, 216, 77, .75) 94%, rgba(255, 216, 77, 0) 99%);
+  background: linear-gradient(100deg, rgba(233, 180, 76, 0) 1%, rgba(233, 180, 76, .55) 6%, rgba(233, 180, 76, .65) 50%, rgba(233, 180, 76, .55) 94%, rgba(233, 180, 76, 0) 99%);
   border-radius: 8px;
   padding: 0 0.1em;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
 
-/* --- Sticky rozet (hero'daki eğik notlar) --- */
+/* --- Sticky rozet (eski hero notları) --- */
 .sticky-note {
   font-family: 'IBM Plex Mono', monospace;
   font-weight: 500;
@@ -264,12 +292,12 @@ textarea {
 .empty-state {
   text-align: center;
   padding: 56px 20px;
-  border: 1.5px dashed rgba(30, 58, 43, .3);
+  border: 1.5px dashed rgba(23, 32, 43, .3);
   border-radius: 18px;
   margin-top: 28px;
 }
 
-/* --- Kategori dairesi (v2 line-art versiyon) --- */
+/* --- Kategori dairesi (eski sayfalar) --- */
 .cat-circle {
   width: 116px;
   height: 116px;
@@ -284,7 +312,7 @@ textarea {
 }
 .cat-circle:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 24px rgba(30, 58, 43, .14);
+  box-shadow: 0 10px 24px rgba(23, 32, 43, .14);
 }
 .cat-circle.active {
   background: var(--ink) !important;
@@ -346,7 +374,7 @@ textarea {
   margin: 20px 0;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 12.5px;
-  color: rgba(30, 58, 43, .55);
+  color: rgba(23, 32, 43, .55);
   text-transform: lowercase;
 }
 .divider::before,
@@ -365,6 +393,7 @@ textarea {
   padding: 40px 32px;
   margin-top: 24px;
 }
+
 /* Toggle switch (ayarlar) */
 .literas-toggle:checked {
   background: var(--lime) !important;
@@ -384,4 +413,34 @@ textarea {
 .literas-toggle:checked::before {
   transform: translateX(20px);
   background: var(--ink);
+}
+
+/* ============ YENİ MİKRO-HAREKETLER ============ */
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes blobDrift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(46px, -34px) scale(1.12); }
+}
+.animate-bob { animation: bob 5.5s ease-in-out infinite; }
+.animate-bob-delay { animation: bob 5.5s ease-in-out 2.7s infinite; }
+.animate-blob { animation: blobDrift 16s ease-in-out infinite alternate; }
+
+/* scroll'da yumuşak beliriş (Reveal bileşeni ile) */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity .65s ease, transform .65s ease;
+}
+.reveal.visible { opacity: 1; transform: none; }
+.reveal-d1 { transition-delay: .08s; }
+.reveal-d2 { transition-delay: .16s; }
+.reveal-d3 { transition-delay: .24s; }
+
+/* hareket istemeyen kullanıcıya saygı */
+@media (prefers-reduced-motion: reduce) {
+  .animate-bob, .animate-bob-delay, .animate-blob { animation: none !important; }
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
 }

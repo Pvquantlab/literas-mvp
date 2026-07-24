@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
 import EventCard from '@/components/event-card'
+import CommunityCard from '@/components/community-card'
+import CategoryIcon, { categoryGradient } from '@/components/category-icon'
+import Reveal from '@/components/reveal'
 import CategoryStrip from './category-strip'
 import SearchBox from './search-box'
 import CityFilter from './city-filter'
@@ -8,53 +11,21 @@ import CityFilter from './city-filter'
 export const dynamic = 'force-dynamic'
 
 const CATS = [
-  { n: 'Kitap',      slug: 'kitap',      bg: '#C9E8A0', soft: '#F5E9D0', ink: '#3E6B21', pt: 'stripes' },
-  { n: 'Doğa',       slug: 'doğa',       bg: '#FFD09E', soft: '#DDE9D5', ink: '#A35A1E', pt: 'dots' },
-  { n: 'Müzik',      slug: 'müzik',      bg: '#D5C3F5', soft: '#E7DBEB', ink: '#5B3EA6', pt: 'waves' },
-  { n: 'Lezzet',     slug: 'lezzet',     bg: '#FFE382', soft: '#F3D8CE', ink: '#8A6A00', pt: 'checker' },
-  { n: 'Dil',        slug: 'dil',        bg: '#B5D9F5', soft: '#DCE4EE', ink: '#2A5B8F', pt: 'stripes' },
-  { n: 'Spor',       slug: 'spor',       bg: '#AEE3CB', soft: '#E5E0D2', ink: '#1F6E52', pt: 'dots' },
-  { n: 'Sanat',      slug: 'sanat',      bg: '#F5BFDB', soft: '#EFD9DC', ink: '#A83A6E', pt: 'waves' },
-  { n: 'Oyun',       slug: 'oyun',       bg: '#FFC2B0', soft: '#DFE8DE', ink: '#B04330', pt: 'checker' },
-  { n: 'Tech',       slug: 'tech',       bg: '#BFD7E6', soft: '#DAE0E6', ink: '#33566B', pt: 'grid' },
-  { n: 'Sinema',     slug: 'sinema',     bg: '#CDC5EA', soft: '#E4DED4', ink: '#544A86', pt: 'stripes' },
-  { n: 'Fotoğraf',   slug: 'fotoğraf',   bg: '#B5DEE8', soft: '#E0DEDC', ink: '#23697A', pt: 'dots' },
-  { n: 'Gönüllülük', slug: 'gönüllülük', bg: '#FFC7B0', soft: '#E1EBDA', ink: '#A34A22', pt: 'waves' },
-  { n: 'Kariyer',    slug: 'kariyer',    bg: '#C8DBBB', soft: '#E5DED0', ink: '#46603A', pt: 'grid' },
-  { n: 'Sosyal',     slug: 'sosyal',     bg: '#FFBFCB', soft: '#EBDFD3', ink: '#A8354F', pt: 'waves' },
+  { n: 'Kitap',      slug: 'kitap' },
+  { n: 'Doğa',       slug: 'doğa' },
+  { n: 'Müzik',      slug: 'müzik' },
+  { n: 'Lezzet',     slug: 'lezzet' },
+  { n: 'Dil',        slug: 'dil' },
+  { n: 'Spor',       slug: 'spor' },
+  { n: 'Sanat',      slug: 'sanat' },
+  { n: 'Oyun',       slug: 'oyun' },
+  { n: 'Teknoloji',  slug: 'tech' },
+  { n: 'Sinema',     slug: 'sinema' },
+  { n: 'Fotoğraf',   slug: 'fotoğraf' },
+  { n: 'Gönüllülük', slug: 'gönüllülük' },
+  { n: 'Kariyer',    slug: 'kariyer' },
+  { n: 'Sosyal',     slug: 'sosyal' },
 ]
-
-const DEFAULT_SOFT = '#E8E4D8'
-
-function CatIcon({ slug, size = 34 }: { slug: string; size?: number }) {
-  const common = {
-    width: size, height: size, viewBox: '0 0 24 24',
-    fill: 'none', stroke: 'currentColor', strokeWidth: 1.7,
-    strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
-  }
-  switch (slug) {
-    case 'kitap':      return <svg {...common}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-    case 'doğa':       return <svg {...common}><path d="M8 19v2"/><path d="M8 15v-3"/><path d="M12 21V11"/><path d="M16 21v-4"/><path d="M12 11 6 5l6-2 6 2z"/><path d="M18 12a3 3 0 1 0 3-3"/></svg>
-    case 'müzik':      return <svg {...common}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-    case 'lezzet':     return <svg {...common}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
-    case 'dil':        return <svg {...common}><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
-    case 'spor':       return <svg {...common}><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-    case 'sanat':      return <svg {...common}><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
-    case 'oyun':       return <svg {...common}><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg>
-    case 'tech':       return <svg {...common}><rect width="18" height="12" x="3" y="4" rx="2"/><line x1="2" x2="22" y1="20" y2="20"/></svg>
-    case 'sinema':     return <svg {...common}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></svg>
-    case 'fotoğraf':   return <svg {...common}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-    case 'gönüllülük': return <svg {...common}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-    case 'kariyer':    return <svg {...common}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-    case 'sosyal':     return <svg {...common}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    default:           return <svg {...common}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-  }
-}
-
-function findCat(s: string | null) {
-  if (!s) return null
-  return CATS.find((c) => c.slug === s) || null
-}
 
 export default async function HomePage({
   searchParams,
@@ -73,7 +44,6 @@ export default async function HomePage({
   let profile: any = null
   let myCommunities: any[] = []
   let myRsvps: any[] = []
-  let suggestedEvents: any[] = []
 
   if (user) {
     const { data: prof } = await supabase
@@ -98,16 +68,17 @@ export default async function HomePage({
       .order('created_at', { ascending: false })
       .limit(5)
     myRsvps = (rsvps ?? []).map((r: any) => r.event).filter(Boolean)
-
-    // Öneriler: yaklaşan etkinlikler
-    const { data: upcoming } = await supabase
-      .from('events')
-      .select('id, title, event_date, location, cover_image_url, community:communities(name, category)')
-      .gte('event_date', new Date().toISOString())
-      .order('event_date', { ascending: true })
-      .limit(8)
-    suggestedEvents = upcoming ?? []
   }
+
+  // Yaklaşan etkinlikler — herkese açık, onaylı topluluklardan
+  const { data: upcomingEvents } = await supabase
+    .from('events')
+    .select('id, title, event_date, location, cover_image_url, max_attendees, rsvps(count), community:communities!inner(id, name, category, city, status)')
+    .gte('event_date', new Date().toISOString())
+    .eq('community.status', 'approved')
+    .order('event_date', { ascending: true })
+    .limit(6)
+  const events = upcomingEvents ?? []
 
   // Şehir listesi
   const { data: cityRows } = await supabase
@@ -134,17 +105,68 @@ export default async function HomePage({
   if (activeCity) query = query.eq('city', activeCity)
   if (activeQuery) query = query.ilike('name', `%${activeQuery}%`)
 
-  const { data: communities } = await query
+  const { data: communityRows } = await query
+  const communities = (communityRows ?? []).map((c: any) => ({
+    ...c,
+    memberCount: c.community_members?.[0]?.count ?? 0,
+  }))
   const hasFilter = Boolean(activeCategory || activeCity || activeQuery)
 
-  const buildCategoryHref = (cat: string | null) => {
-    const p = new URLSearchParams()
-    if (cat) p.set('category', cat)
-    if (activeCity) p.set('city', activeCity)
-    if (activeQuery) p.set('q', activeQuery)
-    const s = p.toString()
-    return s ? `/?${s}` : '/'
-  }
+  const communitiesSection = (
+    <section className="py-14">
+      <div className="mx-auto max-w-[1120px] px-6">
+        <Reveal>
+          <div className="mb-7 flex items-baseline justify-between">
+            <h2 className="text-[28px] font-extrabold tracking-[-1px] text-ink">
+              {activeCity ? `${activeCity} ` : ''}yakınındaki <span className="text-brand">topluluklar</span>
+            </h2>
+            <Link href="/kesfet?tab=topluluklar" className="text-[14.5px] font-semibold text-brand hover:underline">
+              Hepsini keşfet →
+            </Link>
+          </div>
+        </Reveal>
+
+        <div className="mb-6 flex flex-wrap gap-3">
+          <div className="w-full min-[560px]:w-auto min-[560px]:flex-1 min-[560px]:max-w-[380px]">
+            <SearchBox initialQuery={activeQuery ?? ''} />
+          </div>
+          <div className="w-full min-[560px]:w-[200px]">
+            <CityFilter cities={cities} activeCity={activeCity ?? ''} />
+          </div>
+        </div>
+
+        {communities.length > 0 ? (
+          <Reveal>
+            <div className="grid grid-cols-1 gap-[22px] sm:grid-cols-2 lg:grid-cols-4">
+              {communities.map((community: any) => (
+                <CommunityCard key={community.id} community={community} />
+              ))}
+            </div>
+          </Reveal>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-[#D9D0BE] bg-white px-6 py-14 text-center">
+            {hasFilter ? (
+              <>
+                <p className="mb-2 text-[16px] font-semibold text-ink">Bu filtreye uygun topluluk bulunamadı.</p>
+                <p className="text-[14px] text-mute">Farklı bir kategori veya şehir dene.</p>
+              </>
+            ) : (
+              <>
+                <p className="mb-2 text-[17px] font-bold text-ink">Henüz topluluk yok.</p>
+                <p className="mb-6 text-[14.5px] text-mute">Bu sayfa ilk toplulukla dolmaya başlayacak — o sen olabilirsin.</p>
+                <Link
+                  href="/community/new"
+                  className="inline-flex rounded-full bg-brand px-6 py-3 text-[15px] font-bold text-white transition hover:-translate-y-px hover:bg-brand-dark"
+                >
+                  İlk topluluğu sen kur →
+                </Link>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  )
 
   // ===== GİRİŞ YAPMIŞ KULLANICI =====
   if (user && profile) {
@@ -153,119 +175,51 @@ export default async function HomePage({
       : '?'
 
     return (
-      <div style={{
-        maxWidth: '1360px',
-        margin: '0 auto',
-        padding: '26px 24px 64px',
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '24px',
-        alignItems: 'flex-start',
-      }}>
+      <div className="mx-auto flex max-w-[1120px] flex-wrap items-start gap-6 px-6 pb-16 pt-7">
         {/* SOL SIDEBAR */}
-        <aside className="home-sidebar" style={{
-          flex: '1 1 280px',
-          maxWidth: '320px',
-          minWidth: '260px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-        }}>
+        <aside className="flex min-w-[260px] max-w-full flex-1 basis-[280px] flex-col gap-4 lg:max-w-[320px]">
           {/* Profil kartı */}
-          <Link href={`/profile/${profile.id}`} className="sidebar-card" style={{
-            textDecoration: 'none',
-            background: 'var(--paper-cream)',
-            border: '1px solid var(--border)',
-            borderRadius: '16px',
-            padding: '14px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            transition: 'box-shadow .15s ease',
-          }}>
+          <Link
+            href={`/profile/${profile.id}`}
+            className="flex items-center gap-3 rounded-2xl border border-line bg-white p-[14px] px-4 transition hover:shadow-[0_8px_20px_rgba(23,32,43,.10)]"
+          >
             {profile.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={profile.avatar_url} alt="" style={{
-                width: '46px', height: '46px', borderRadius: '50%', objectFit: 'cover',
-              }} />
+              <img src={profile.avatar_url} alt="" className="h-[46px] w-[46px] rounded-full object-cover" />
             ) : (
-              <span style={{
-                width: '46px', height: '46px', borderRadius: '50%',
-                background: 'var(--paper-soft)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: '15px', fontWeight: 600, color: 'var(--ink)',
-              }}>
+              <span className="grid h-[46px] w-[46px] place-items-center rounded-full border border-line bg-warm text-[15px] font-bold text-ink">
                 {initials}
               </span>
             )}
-            <span style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <span style={{ fontSize: '15.5px', fontWeight: 700, color: 'var(--ink)' }}>
-                {profile.name}
-              </span>
-              <span style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: '12px',
-                color: 'var(--muted)',
-              }}>
-                İstanbul
-              </span>
+            <span className="flex flex-col gap-[2px]">
+              <span className="text-[15.5px] font-bold text-ink">{profile.name}</span>
+              <span className="text-xs text-mute">Profilini gör</span>
             </span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A94A2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-auto">
               <path d="M10 6l6 6-6 6" />
             </svg>
           </Link>
 
           {/* Katıldığın etkinlikler */}
-          <div style={{
-            background: 'var(--paper-cream)',
-            border: '1px solid var(--border)',
-            borderRadius: '16px',
-            padding: '16px',
-          }}>
-            <h2 style={{ margin: '0 0 12px', fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>
-              Gidiyorum
-            </h2>
+          <div className="rounded-2xl border border-line bg-white p-4">
+            <h2 className="mb-3 text-[15px] font-bold text-ink">Gidiyorum</h2>
             {myRsvps.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <div className="flex flex-col gap-[2px]">
                 {myRsvps.map((ev: any) => (
-                  <Link key={ev.id} href={`/event/${ev.id}`} className="sidebar-link" style={{
-                    textDecoration: 'none',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '2px',
-                    padding: '8px',
-                    borderRadius: '10px',
-                  }}>
-                    <span style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: '11px',
-                      color: 'var(--coral)',
-                    }}>
+                  <Link key={ev.id} href={`/event/${ev.id}`} className="flex flex-col gap-[2px] rounded-[10px] p-2 transition hover:bg-warm">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.4px] text-brand">
                       {new Date(ev.event_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
                     </span>
-                    <span className="serif" style={{
-                      fontSize: '14.5px',
-                      fontWeight: 600,
-                      lineHeight: 1.3,
-                      color: 'var(--ink)',
-                    }}>
+                    <span className="text-[14.5px] font-semibold leading-[1.3] text-ink">
                       {ev.title}
                     </span>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '20px 8px 8px' }}>
-                <p style={{ margin: '0 0 16px', fontSize: '14px', color: 'var(--muted)' }}>
-                  Henüz bir etkinliğe katılmadın.
-                </p>
-                <Link href="/kesfet" className="btn-primary" style={{
-                  display: 'inline-flex',
-                  textDecoration: 'none',
-                  fontSize: '13.5px',
-                  padding: '9px 18px',
-                }}>
+              <div className="px-2 pb-2 pt-3 text-center">
+                <p className="mb-4 text-sm text-mute">Henüz bir etkinliğe katılmadın.</p>
+                <Link href="/kesfet" className="inline-flex rounded-full bg-brand px-[18px] py-2 text-[13.5px] font-bold text-white transition hover:bg-brand-dark">
                   Etkinlikleri bul
                 </Link>
               </div>
@@ -273,54 +227,28 @@ export default async function HomePage({
           </div>
 
           {/* Toplulukların */}
-          <div style={{
-            background: 'var(--paper-cream)',
-            border: '1px solid var(--border)',
-            borderRadius: '16px',
-            padding: '16px',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h2 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>
-                Toplulukların
-              </h2>
-              <span style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: '11px',
-                padding: '1px 8px',
-                borderRadius: '999px',
-                background: 'var(--paper-soft)',
-                color: 'var(--muted)',
-              }}>
+          <div className="rounded-2xl border border-line bg-white p-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-[15px] font-bold text-ink">Toplulukların</h2>
+              <span className="rounded-full bg-warm px-2 py-[1px] text-[11px] font-bold text-mute">
                 {myCommunities.length}
               </span>
             </div>
 
             {myCommunities.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '10px' }}>
+              <div className="mt-2.5 flex flex-col gap-[2px]">
                 {myCommunities.map((c: any) => (
-                  <Link key={c.id} href={`/community/${c.id}`} className="sidebar-link" style={{
-                    textDecoration: 'none',
-                    padding: '8px',
-                    borderRadius: '10px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: 'var(--ink)',
-                  }}>
+                  <Link key={c.id} href={`/community/${c.id}`} className="rounded-[10px] p-2 text-sm font-semibold text-ink transition hover:bg-warm">
                     {c.name}
                   </Link>
                 ))}
               </div>
             ) : (
               <>
-                <p style={{ margin: '12px 0 14px', fontSize: '13.5px', lineHeight: 1.5, color: 'var(--muted)' }}>
+                <p className="mb-3.5 mt-3 text-[13.5px] leading-[1.5] text-mute">
                   Tutkularını paylaşan insanlarla aynı masaya otur.
                 </p>
-                <Link href="/kesfet" className="btn-secondary" style={{
-                  display: 'inline-flex',
-                  textDecoration: 'none',
-                  fontSize: '13.5px',
-                  padding: '9px 18px',
-                }}>
+                <Link href="/kesfet" className="inline-flex rounded-full border-[1.5px] border-line px-[18px] py-2 text-[13.5px] font-bold text-ink transition hover:bg-warm">
                   Toplulukları keşfet
                 </Link>
               </>
@@ -329,159 +257,36 @@ export default async function HomePage({
         </aside>
 
         {/* SAĞ ANA ALAN */}
-        <main style={{ flex: '3 1 440px', minWidth: 0 }}>
+        <main className="min-w-0 flex-[3_1_440px]">
           {/* Senin için */}
-          {suggestedEvents.length > 0 && (
-            <section style={{ marginBottom: '40px' }}>
-              <h2 className="serif" style={{
-                margin: '0 0 18px',
-                fontSize: '27px',
-                fontWeight: 600,
-                letterSpacing: '-0.3px',
-                color: 'var(--ink)',
-              }}>
-                Senin için
+          <section className="mb-2">
+            <div className="mb-6 flex items-baseline justify-between">
+              <h2 className="text-[24px] font-extrabold tracking-[-0.8px] text-ink">
+                Senin için <span className="text-brand">yaklaşan etkinlikler</span>
               </h2>
-              <div className="suggest-grid" style={{ display: 'grid', gap: '20px' }}>
-                {suggestedEvents.slice(0, 4).map((ev: any) => (
+              <Link href="/kesfet" className="text-[14px] font-semibold text-brand hover:underline">
+                Tümünü gör →
+              </Link>
+            </div>
+            {events.length > 0 ? (
+              <div className="grid grid-cols-1 gap-5 min-[640px]:grid-cols-2">
+                {events.slice(0, 4).map((ev: any) => (
                   <EventCard key={ev.id} event={ev} showCommunityName={true} />
                 ))}
               </div>
-              <style>{`
-                .suggest-grid { grid-template-columns: 1fr; }
-                @media (min-width: 640px) {
-                  .suggest-grid { grid-template-columns: repeat(2, 1fr); }
-                }
-              `}</style>
-            </section>
-          )}
-
-          {/* Topluluklar */}
-          <section>
-            <h2 className="serif" style={{
-              margin: '0 0 18px',
-              fontSize: '27px',
-              fontWeight: 600,
-              letterSpacing: '-0.3px',
-              color: 'var(--ink)',
-            }}>
-              {activeCity ? `${activeCity} yakınındaki topluluklar` : 'Topluluklar'}
-            </h2>
-
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-              <SearchBox initialQuery={activeQuery ?? ''} />
-              <CityFilter cities={cities} activeCity={activeCity ?? ''} />
-            </div>
-
-            {communities && communities.length > 0 ? (
-              <div className="community-grid" style={{ display: 'grid', gap: '20px' }}>
-                {communities.map((community: any) => {
-                  const cat = findCat(community.category)
-                  const memberCount = community.community_members?.[0]?.count ?? 0
-                  return (
-                    <Link
-                      key={community.id}
-                      href={`/community/${community.id}`}
-                      className="community-card-link"
-                      style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
-                    >
-                      <article style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' }}>
-                        <div style={{
-                          position: 'relative',
-                          aspectRatio: '16 / 9',
-                          overflow: 'hidden',
-                          borderRadius: '14px',
-                          background: community.cover_image_url ? 'transparent' : (cat?.soft ?? DEFAULT_SOFT),
-                        }}>
-                          {community.cover_image_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={community.cover_image_url}
-                              alt=""
-                              loading="lazy"
-                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                            />
-                          ) : (
-                            <div style={{
-                              position: 'absolute',
-                              inset: 0,
-                              display: 'grid',
-                              placeItems: 'center',
-                              color: 'var(--ink)',
-                              opacity: 0.85,
-                            }}>
-                              {cat ? <CatIcon slug={cat.slug} size={72} /> : null}
-                            </div>
-                          )}
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '0 2px' }}>
-                          <h3 className="community-title" style={{
-                            fontSize: '17px',
-                            fontWeight: 800,
-                            lineHeight: 1.25,
-                            color: 'var(--ink)',
-                            margin: 0,
-                            letterSpacing: '-0.01em',
-                          }}>
-                            {community.name}
-                          </h3>
-                          <p style={{
-                            fontSize: '13.5px',
-                            color: 'var(--muted)',
-                            margin: '4px 0 0',
-                            lineHeight: 1.4,
-                          }}>
-                            {cat ? cat.n : ''}{cat && community.city ? ' · ' : ''}{community.city}
-                          </p>
-                          <p style={{
-                            fontSize: '13.5px',
-                            color: 'var(--ink)',
-                            fontWeight: 600,
-                            margin: '6px 0 0',
-                          }}>
-                            {memberCount} üye
-                          </p>
-                        </div>
-                      </article>
-                    </Link>
-                  )
-                })}
-              </div>
             ) : (
-              <p style={{ color: 'var(--muted)', fontSize: '15px' }}>
-                {hasFilter ? 'Bu filtreye uygun topluluk bulunamadı.' : 'Henüz topluluk yok.'}
-              </p>
+              <div className="rounded-2xl border border-dashed border-[#D9D0BE] bg-white px-6 py-12 text-center">
+                <p className="mb-2 text-[16px] font-bold text-ink">Henüz planlanmış etkinlik yok.</p>
+                <p className="text-[14px] text-mute">Toplulukların ilk etkinliği duyurduğunda burada göreceksin.</p>
+              </div>
             )}
-
-            <style>{`
-              .community-grid { grid-template-columns: 1fr; }
-              @media (min-width: 640px) {
-                .community-grid { grid-template-columns: repeat(2, 1fr); }
-              }
-              @media (min-width: 1000px) {
-                .community-grid { grid-template-columns: repeat(3, 1fr); }
-              }
-              .community-card-link:hover .community-title {
-                text-decoration: underline;
-                text-decoration-thickness: 2px;
-                text-underline-offset: 3px;
-              }
-              .sidebar-card:hover {
-                box-shadow: 0 8px 20px rgba(30,58,43,.10);
-              }
-              .sidebar-link:hover {
-                background: var(--paper-soft);
-              }
-              @media (max-width: 780px) {
-                .home-sidebar {
-                  max-width: none !important;
-                  flex: 1 1 100% !important;
-                }
-              }
-            `}</style>
           </section>
         </main>
+
+        {/* Topluluklar — tam genişlik */}
+        <div className="w-full">
+          {communitiesSection}
+        </div>
       </div>
     )
   }
@@ -489,199 +294,228 @@ export default async function HomePage({
   // ===== GİRİŞ YAPMAMIŞ =====
   return (
     <main>
-      {/* Hero */}
-      <section style={{
-        maxWidth: '900px',
-        margin: '0 auto',
-        padding: '64px 24px 48px',
-        textAlign: 'center',
-      }}>
-        <span style={{
-          display: 'inline-block',
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: '13px',
-          color: 'var(--coral)',
-          border: '1px solid var(--coral)',
-          padding: '5px 14px',
-          borderRadius: '999px',
-          marginBottom: '28px',
-        }}>
-          ● her zaman açık · herkese göre
-        </span>
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        {/* süzülen renk lekeleri */}
+        <div className="animate-blob pointer-events-none absolute -top-[140px] right-[-80px] -z-10 h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle,rgba(194,80,31,.14),transparent_65%)] blur-[90px]" />
+        <div className="animate-blob pointer-events-none absolute -left-[100px] bottom-[-120px] -z-10 h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,rgba(233,180,76,.18),transparent_65%)] blur-[90px]" />
 
-        <h1 style={{
-          fontSize: 'clamp(38px, 6vw, 64px)',
-          fontWeight: 800,
-          lineHeight: 1.08,
-          letterSpacing: '-0.03em',
-          color: 'var(--ink)',
-          margin: '0 0 20px',
-        }}>
-          Harflerden kelimeler,<br />
-          insanlardan{' '}
-          <span className="highlight-yellow">topluluklar</span>.
-        </h1>
-
-        <p style={{ fontSize: '17px', color: 'var(--muted)', marginBottom: '32px' }}>
-          Burada bir masa senin adına her zaman ayrılmış.
-        </p>
-
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/community/new" className="btn-primary">Topluluk kur</Link>
-          <Link href="/event/new" className="btn-secondary">Etkinlik paylaş</Link>
-        </div>
-      </section>
-
-      {/* Kategoriler */}
-      <section style={{ maxWidth: '1360px', margin: '0 auto', padding: '0 24px 48px' }}>
-        <h2 className="serif" style={{
-          textAlign: 'center',
-          fontSize: 'clamp(24px, 3vw, 32px)',
-          color: 'var(--ink)',
-          marginBottom: '28px',
-        }}>
-          Ne ilgini çekiyor?
-        </h2>
-        <CategoryStrip cats={CATS} activeCategory={activeCategory ?? undefined} activeCity={activeCity ?? undefined} activeQuery={activeQuery ?? undefined} />
-      </section>
-
-      {/* Topluluklar */}
-      <section style={{ maxWidth: '1360px', margin: '0 auto', padding: '0 24px 64px' }}>
-        <h2 className="serif" style={{
-          fontSize: 'clamp(24px, 3vw, 34px)',
-          color: 'var(--ink)',
-          marginBottom: '24px',
-        }}>
-          <span className="highlight-yellow">{activeCity ?? 'İstanbul'}</span> yakınındaki topluluklar
-        </h2>
-
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
-          <SearchBox initialQuery={activeQuery ?? ''} />
-          <CityFilter cities={cities} activeCity={activeCity ?? ''} />
-        </div>
-
-        {communities && communities.length > 0 ? (
-          <div className="community-grid-guest" style={{ display: 'grid', gap: '20px' }}>
-            {communities.map((community: any) => {
-              const cat = findCat(community.category)
-              const memberCount = community.community_members?.[0]?.count ?? 0
-              return (
-                <Link
-                  key={community.id}
-                  href={`/community/${community.id}`}
-                  className="community-card-link"
-                  style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+        <div className="mx-auto grid max-w-[1120px] items-center gap-14 px-6 pb-[88px] pt-[72px] lg:grid-cols-[1.05fr_.95fr]">
+          <div>
+            <Reveal>
+              <span className="mb-[22px] inline-flex items-center gap-2 rounded-full bg-brand-tint px-[14px] py-[7px] text-[13px] font-semibold text-brand">
+                <span className="h-[7px] w-[7px] rounded-full bg-brand" />
+                Türkiye'nin topluluk platformu
+              </span>
+            </Reveal>
+            <Reveal delay={1}>
+              <h1 className="mb-5 text-[38px] font-extrabold leading-[1.06] tracking-[-1.4px] text-ink min-[640px]:text-[52px] min-[640px]:tracking-[-2px]">
+                İlgini çeken insanlarla{' '}
+                <span className="bg-[linear-gradient(180deg,transparent_62%,rgba(233,180,76,.55)_62%)] px-[2px]">
+                  aynı masaya
+                </span>{' '}
+                otur.
+              </h1>
+            </Reveal>
+            <Reveal delay={2}>
+              <p className="mb-8 max-w-[440px] text-lg leading-[1.6] text-body">
+                Kitap kulüplerinden fotoğraf yürüyüşlerine — şehrindeki toplulukları keşfet, etkinliklere katıl, yeni insanlarla tanış.
+              </p>
+            </Reveal>
+            <Reveal delay={3}>
+              <form
+                action="/kesfet"
+                method="get"
+                className="flex max-w-[520px] items-center rounded-full border border-line bg-white p-1.5 shadow-md"
+              >
+                <div className="flex min-w-0 flex-1 items-center gap-2.5 px-4 text-sm text-mute">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="shrink-0">
+                    <path d="M10.5 18a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15zM16 16l5 5" />
+                  </svg>
+                  <input type="text" name="q" placeholder="Etkinlik ara…" aria-label="Etkinlik ara" className="bare-input text-[14.5px] text-ink" />
+                </div>
+                <div className="hidden min-[560px]:flex min-w-0 flex-1 items-center gap-2.5 border-l border-line px-4 text-sm text-mute">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <input type="text" name="city" defaultValue="İstanbul" aria-label="Şehir" className="bare-input text-[14.5px] text-ink" />
+                </div>
+                <button
+                  type="submit"
+                  aria-label="Ara"
+                  className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-full bg-brand text-white transition hover:bg-brand-dark"
                 >
-                  <article style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' }}>
-                    <div style={{
-                      position: 'relative',
-                      aspectRatio: '16 / 9',
-                      overflow: 'hidden',
-                      borderRadius: '14px',
-                      background: community.cover_image_url ? 'transparent' : (cat?.soft ?? DEFAULT_SOFT),
-                    }}>
-                      {community.cover_image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={community.cover_image_url}
-                          alt=""
-                          loading="lazy"
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                        />
-                      ) : (
-                        <div style={{
-                          position: 'absolute',
-                          inset: 0,
-                          display: 'grid',
-                          placeItems: 'center',
-                          color: 'var(--ink)',
-                          opacity: 0.85,
-                        }}>
-                          {cat ? <CatIcon slug={cat.slug} size={72} /> : null}
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '0 2px' }}>
-                      <h3 className="community-title" style={{
-                        fontSize: '17px',
-                        fontWeight: 800,
-                        lineHeight: 1.25,
-                        color: 'var(--ink)',
-                        margin: 0,
-                        letterSpacing: '-0.01em',
-                      }}>
-                        {community.name}
-                      </h3>
-                      <p style={{
-                        fontSize: '13.5px',
-                        color: 'var(--muted)',
-                        margin: '4px 0 0',
-                        lineHeight: 1.4,
-                      }}>
-                        {cat ? cat.n : ''}{cat && community.city ? ' · ' : ''}{community.city}
-                      </p>
-                      <p style={{
-                        fontSize: '13.5px',
-                        color: 'var(--ink)',
-                        fontWeight: 600,
-                        margin: '6px 0 0',
-                      }}>
-                        {memberCount} üye
-                      </p>
-                    </div>
-                  </article>
-                </Link>
-              )
-            })}
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </button>
+              </form>
+            </Reveal>
           </div>
-        ) : (
-          <p style={{ color: 'var(--muted)', fontSize: '15px' }}>
-            {hasFilter ? 'Bu filtreye uygun topluluk bulunamadı.' : 'Henüz topluluk yok.'}
-          </p>
-        )}
 
-        <style>{`
-          .community-grid-guest { grid-template-columns: 1fr; }
-          @media (min-width: 640px) {
-            .community-grid-guest { grid-template-columns: repeat(2, 1fr); }
-          }
-          @media (min-width: 1000px) {
-            .community-grid-guest { grid-template-columns: repeat(4, 1fr); }
-          }
-          .community-card-link:hover .community-title {
-            text-decoration: underline;
-            text-decoration-thickness: 2px;
-            text-underline-offset: 3px;
-          }
-        `}</style>
+          {/* Görsel kolaj — geniş ekranda */}
+          <div className="relative hidden h-[460px] lg:block">
+            <div className="absolute left-0 top-0 h-[62%] w-[62%] overflow-hidden rounded-[20px] shadow-[0_16px_40px_rgba(23,32,43,.12)]" style={{ background: categoryGradient('kitap') }}>
+              <div className="grid h-full place-items-center">
+                <CategoryIcon slug="kitap" size={52} color="rgba(255,255,255,.92)" />
+              </div>
+            </div>
+            <div className="absolute bottom-0 right-0 h-[52%] w-[52%] overflow-hidden rounded-[20px] shadow-[0_16px_40px_rgba(23,32,43,.12)]" style={{ background: categoryGradient('doğa') }}>
+              <div className="grid h-full place-items-center">
+                <CategoryIcon slug="doğa" size={44} color="rgba(255,255,255,.92)" />
+              </div>
+            </div>
+            <div className="absolute bottom-[8%] left-[6%] h-[38%] w-[38%] overflow-hidden rounded-[20px] shadow-[0_16px_40px_rgba(23,32,43,.12)]" style={{ background: categoryGradient('müzik') }}>
+              <div className="grid h-full place-items-center">
+                <CategoryIcon slug="müzik" size={34} color="rgba(255,255,255,.92)" />
+              </div>
+            </div>
+
+            {/* yüzen kartlar */}
+            <div className="animate-bob absolute right-[4%] top-[12%] flex items-center gap-3 rounded-[14px] bg-white p-[14px] px-[18px] shadow-[0_16px_40px_rgba(23,32,43,.12)]">
+              <div className="grid h-[38px] w-[38px] place-items-center rounded-[10px] bg-brand-tint">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C2501F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <line x1="16" x2="16" y1="2" y2="6" />
+                  <line x1="8" x2="8" y1="2" y2="6" />
+                  <line x1="3" x2="21" y1="10" y2="10" />
+                </svg>
+              </div>
+              <div>
+                <div className="text-sm font-bold text-ink">Haftalık buluşmalar</div>
+                <div className="text-xs text-mute">şehrinde, her hafta</div>
+              </div>
+            </div>
+            <div className="animate-bob-delay absolute bottom-[34%] right-[10%] flex items-center gap-3 rounded-[14px] bg-white p-[14px] px-[18px] shadow-[0_16px_40px_rgba(23,32,43,.12)]">
+              <div className="flex">
+                <i className="not-italic grid h-[30px] w-[30px] place-items-center rounded-full border-[2.5px] border-white bg-brand text-[11px] font-bold text-white">A</i>
+                <i className="not-italic -ml-[9px] grid h-[30px] w-[30px] place-items-center rounded-full border-[2.5px] border-white bg-forest text-[11px] font-bold text-white">M</i>
+                <i className="not-italic -ml-[9px] grid h-[30px] w-[30px] place-items-center rounded-full border-[2.5px] border-white bg-[#2B3A55] text-[11px] font-bold text-white">Z</i>
+              </div>
+              <div>
+                <div className="text-sm font-bold text-ink">Topluluğuna katıl</div>
+                <div className="text-xs text-mute">ilk üyelerden ol</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* KATEGORİLER */}
+      <section className="pb-14 pt-2">
+        <div className="mx-auto max-w-[1120px] px-6">
+          <Reveal>
+            <CategoryStrip cats={CATS} activeCategory={activeCategory ?? undefined} activeCity={activeCity ?? undefined} activeQuery={activeQuery ?? undefined} />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ETKİNLİKLER */}
+      <section className="pb-14">
+        <div className="mx-auto max-w-[1120px] px-6">
+          <Reveal>
+            <div className="mb-7 flex items-baseline justify-between">
+              <h2 className="text-[28px] font-extrabold tracking-[-1px] text-ink">
+                Bu hafta <span className="text-brand">yaklaşan etkinlikler</span>
+              </h2>
+              <Link href="/kesfet" className="text-[14.5px] font-semibold text-brand hover:underline">
+                Tümünü gör →
+              </Link>
+            </div>
+          </Reveal>
+
+          {events.length > 0 ? (
+            <Reveal>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {events.map((ev: any) => (
+                  <EventCard key={ev.id} event={ev} showCommunityName={true} />
+                ))}
+              </div>
+            </Reveal>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-[#D9D0BE] bg-white px-6 py-14 text-center">
+              <p className="mb-2 text-[17px] font-bold text-ink">Henüz planlanmış etkinlik yok.</p>
+              <p className="mb-6 text-[14.5px] text-mute">Takvim ilk etkinlikle dolacak — ilkini sen düzenleyebilirsin.</p>
+              <Link
+                href="/community/new"
+                className="inline-flex rounded-full bg-brand px-6 py-3 text-[15px] font-bold text-white transition hover:-translate-y-px hover:bg-brand-dark"
+              >
+                Topluluk kur, ilk etkinliği sen duyur →
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* TOPLULUKLAR */}
+      <div className="border-y border-line bg-warm">
+        {communitiesSection}
+      </div>
+
+      {/* NASIL ÇALIŞIR */}
+      <section className="py-14">
+        <div className="mx-auto max-w-[1120px] px-6">
+          <Reveal>
+            <h2 className="mb-7 text-[28px] font-extrabold tracking-[-1px] text-ink">
+              Nasıl <span className="text-brand">çalışır?</span>
+            </h2>
+          </Reveal>
+          <Reveal>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              <div className="rounded-2xl border border-line bg-white p-7">
+                <div className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-brand-tint">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2501F" strokeWidth="1.8" strokeLinecap="round">
+                    <path d="M10.5 18a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15zM16 16l5 5" />
+                  </svg>
+                </div>
+                <b className="mb-2 block text-[17px] font-bold tracking-[-0.3px] text-ink">Topluluğunu bul</b>
+                <p className="text-[14.5px] leading-[1.6] text-body">İlgi alanına ve şehrine göre toplulukları keşfet. Herkes için bir masa var.</p>
+              </div>
+              <div className="rounded-2xl border border-line bg-white p-7">
+                <div className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-[#E8F0EA]">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2F6B4F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" x2="16" y1="2" y2="6" />
+                    <line x1="8" x2="8" y1="2" y2="6" />
+                    <line x1="3" x2="21" y1="10" y2="10" />
+                  </svg>
+                </div>
+                <b className="mb-2 block text-[17px] font-bold tracking-[-0.3px] text-ink">Etkinliğe katıl</b>
+                <p className="text-[14.5px] leading-[1.6] text-body">Tek tıkla yerini ayırt. Kontenjan dolarsa bekleme listesi seni sıraya alır.</p>
+              </div>
+              <div className="rounded-2xl border border-line bg-white p-7">
+                <div className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-[#FBF3DF]">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B5641F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" />
+                  </svg>
+                </div>
+                <b className="mb-2 block text-[17px] font-bold tracking-[-0.3px] text-ink">Masaya otur</b>
+                <p className="text-[14.5px] leading-[1.6] text-body">Hatırlatma mailiyle gününü kaçırma. Git, tanış, sohbet et — gerisi kendiliğinden gelir.</p>
+              </div>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* CTA */}
-      <section style={{ maxWidth: '1360px', margin: '0 auto', padding: '0 24px 64px' }}>
-        <div style={{
-          background: 'var(--ink)',
-          borderRadius: '24px',
-          padding: '56px 32px',
-          textAlign: 'center',
-        }}>
-          <h2 className="serif" style={{
-            fontSize: 'clamp(30px, 4vw, 46px)',
-            color: 'var(--paper-cream)',
-            margin: '0 0 12px',
-            lineHeight: 1.2,
-          }}>
-            Bir <em>masa</em> aç.<br />Gerisini birlikte kuralım.
-          </h2>
-          <p style={{
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: '13px',
-            color: 'var(--lime)',
-            marginBottom: '28px',
-          }}>
-            topluluk kurmak 2 dakika sürer · başlaman yeter
-          </p>
-          <Link href="/community/new" className="btn-primary">Topluluk kur</Link>
+      <section className="pb-16">
+        <div className="mx-auto max-w-[1120px] px-6">
+          <Reveal>
+            <div className="flex flex-col items-start gap-8 overflow-hidden rounded-3xl bg-[linear-gradient(120deg,#A84317,#C2501F_55%,#D96A2B)] p-11 text-white min-[760px]:flex-row min-[760px]:items-center min-[760px]:justify-between min-[760px]:px-12 min-[760px]:py-16">
+              <div>
+                <h2 className="mb-3 text-[30px] font-extrabold tracking-[-1.2px] min-[640px]:text-4xl">Kendi masanı kur.</h2>
+                <p className="max-w-[420px] text-base opacity-85">Topluluk kurmak 2 dakika sürer. İlk üyelerin seni bekliyor — başlaman yeter.</p>
+              </div>
+              <Link
+                href="/community/new"
+                className="shrink-0 rounded-full bg-white px-[30px] py-[15px] text-[15px] font-bold text-brand transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,.2)]"
+              >
+                Topluluk kur →
+              </Link>
+            </div>
+          </Reveal>
         </div>
       </section>
     </main>

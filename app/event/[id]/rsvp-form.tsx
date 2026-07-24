@@ -12,6 +12,11 @@ type Props = {
   isFull: boolean
 }
 
+const primaryBtn =
+  'block w-full rounded-full bg-brand py-3 text-center text-[15px] font-bold text-white transition hover:bg-brand-dark disabled:opacity-60 disabled:cursor-not-allowed'
+const secondaryBtn =
+  'inline-flex rounded-full border-[1.5px] border-line px-[18px] py-2 text-[13.5px] font-bold text-ink transition hover:bg-warm disabled:opacity-60 disabled:cursor-not-allowed'
+
 export default function RsvpForm(props: Props) {
   const router = useRouter()
   const supabase = createClient()
@@ -90,52 +95,27 @@ export default function RsvpForm(props: Props) {
       const data = await res.json().catch(function () {
         return {}
       })
-      setError(data.error || 'Bekleme listesinden cikilamadi')
+      setError(data.error || 'Bekleme listesinden çıkılamadı')
       setLoading(false)
       return
     }
     router.refresh()
   }
 
-  // Durum 1: RSVP vermis
+  // Durum 1: RSVP vermiş
   if (props.userHasRsvp) {
     return (
-      <div style={{
-        background: 'var(--paper-cream)',
-        padding: '20px 22px',
-        borderRadius: '18px',
-        border: '1.5px solid var(--border)',
-      }}>
-        <p style={{
-          color: 'var(--ink)',
-          fontSize: '15.5px',
-          fontWeight: 700,
-          marginBottom: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-        }}>
-          <span style={{
-            width: '22px',
-            height: '22px',
-            borderRadius: '50%',
-            background: 'var(--lime)',
-            border: '1.5px solid var(--ink)',
-            display: 'inline-grid',
-            placeItems: 'center',
-            fontSize: '13px',
-          }}>{'\u2713'}</span>
+      <div className="rounded-xl border border-[#D2E3D8] bg-[#EDF5EF] p-4">
+        <p className="mb-3.5 flex items-center gap-2 text-[15px] font-bold text-ink">
+          <span className="grid h-[22px] w-[22px] place-items-center rounded-full bg-forest text-[13px] text-white">
+            {'\u2713'}
+          </span>
           Katılıyorsun. Görüşmek üzere.
         </p>
-        <button
-          onClick={handleCancel}
-          disabled={loading}
-          className="btn-secondary"
-          style={{ fontSize: '13.5px', padding: '8px 18px' }}
-        >
+        <button onClick={handleCancel} disabled={loading} className={secondaryBtn}>
           {loading ? 'İptal ediliyor...' : 'Katılımı iptal et'}
         </button>
-        {error ? <div style={errorStyle}>{error}</div> : null}
+        {error ? <div className={errorClass}>{error}</div> : null}
       </div>
     )
   }
@@ -143,67 +123,32 @@ export default function RsvpForm(props: Props) {
   // Durum 2: Waitlist'te
   if (props.userInWaitlist) {
     return (
-      <div style={{
-        background: 'var(--paper-cream)',
-        padding: '20px 22px',
-        borderRadius: '18px',
-        border: '1.5px solid var(--border)',
-      }}>
-        <p style={{
-          color: 'var(--ink)',
-          fontSize: '15.5px',
-          fontWeight: 700,
-          marginBottom: '8px',
-        }}>
+      <div className="rounded-xl border border-[#EFE3C0] bg-[#FBF3DF] p-4">
+        <p className="mb-2 text-[15px] font-bold text-ink">
           Bekleme listesindesin.
         </p>
-        <p style={{
-          color: 'var(--muted)',
-          fontSize: '13.5px',
-          marginBottom: '16px',
-          lineHeight: 1.5,
-          fontFamily: "'IBM Plex Mono', monospace",
-        }}>
+        <p className="mb-3.5 text-[13.5px] leading-[1.5] text-body">
           Bir kişi katılımı iptal ederse yerine otomatik geçirilirsin.
         </p>
-        <button
-          onClick={handleLeaveWaitlist}
-          disabled={loading}
-          className="btn-secondary"
-          style={{ fontSize: '13.5px', padding: '8px 18px' }}
-        >
+        <button onClick={handleLeaveWaitlist} disabled={loading} className={secondaryBtn}>
           {loading ? 'Çıkılıyor...' : 'Bekleme listesinden çık'}
         </button>
-        {error ? <div style={errorStyle}>{error}</div> : null}
+        {error ? <div className={errorClass}>{error}</div> : null}
       </div>
     )
   }
 
-  // Durum 3: Etkinlik dolu, waitlist'e girme seçenegi
+  // Durum 3: Etkinlik dolu, waitlist'e girme seçeneği
   if (props.isFull) {
     return (
       <div>
-        <div style={{
-          background: 'var(--paper-cream)',
-          border: '1.5px solid var(--border)',
-          padding: '14px 22px',
-          borderRadius: '18px',
-          fontFamily: "'IBM Plex Mono', monospace",
-          color: 'var(--muted)',
-          fontSize: '13.5px',
-          marginBottom: '12px',
-        }}>
+        <div className="mb-3 rounded-xl border border-line bg-warm px-4 py-3 text-[13.5px] text-body">
           Etkinlik dolu. Bekleme listesine girebilirsin.
         </div>
-        <button
-          onClick={handleJoinWaitlist}
-          disabled={loading}
-          className="btn-primary"
-          style={{ fontSize: '15px', padding: '11px 24px' }}
-        >
+        <button onClick={handleJoinWaitlist} disabled={loading} className={primaryBtn}>
           {loading ? 'Ekleniyor...' : 'Bekleme listesine gir'}
         </button>
-        {error ? <div style={errorStyle}>{error}</div> : null}
+        {error ? <div className={errorClass}>{error}</div> : null}
       </div>
     )
   }
@@ -211,26 +156,13 @@ export default function RsvpForm(props: Props) {
   // Durum 4: Normal RSVP
   return (
     <div>
-      <button
-        onClick={handleRsvp}
-        disabled={loading}
-        className="btn-primary"
-        style={{ fontSize: '16px', padding: '13px 28px' }}
-      >
+      <button onClick={handleRsvp} disabled={loading} className={primaryBtn}>
         {loading ? 'Kaydediliyor...' : 'Katılıyorum'}
       </button>
-      {error ? <div style={errorStyle}>{error}</div> : null}
+      {error ? <div className={errorClass}>{error}</div> : null}
     </div>
   )
 }
 
-const errorStyle: React.CSSProperties = {
-  marginTop: '12px',
-  background: 'rgba(176, 67, 48, .1)',
-  border: '1.5px solid rgba(176, 67, 48, .3)',
-  borderRadius: '12px',
-  padding: '10px 14px',
-  color: 'var(--coral-deep)',
-  fontSize: '13.5px',
-  fontWeight: 600,
-}
+const errorClass =
+  'mt-3 rounded-xl border border-[#F5C6C0] bg-[#FDECEA] px-3.5 py-2.5 text-[13.5px] font-semibold text-[#B3261E]'

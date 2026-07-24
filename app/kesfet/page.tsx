@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import EventCard from '@/components/event-card'
+import CommunityCard from '@/components/community-card'
 import KesfetTabs from './kesfet-tabs'
 import KesfetCategoryStrip from './kesfet-category-strip'
 
@@ -9,23 +10,21 @@ export const dynamic = 'force-dynamic'
 const PAGE_SIZE = 12
 
 const CATS = [
-  { n: 'Kitap',      slug: 'kitap',      soft: '#F5E9D0', ink: '#3E6B21' },
-  { n: 'Doğa',       slug: 'doğa',       soft: '#DDE9D5', ink: '#A35A1E' },
-  { n: 'Müzik',      slug: 'müzik',      soft: '#E7DBEB', ink: '#5B3EA6' },
-  { n: 'Lezzet',     slug: 'lezzet',     soft: '#F3D8CE', ink: '#8A6A00' },
-  { n: 'Dil',        slug: 'dil',        soft: '#DCE4EE', ink: '#2A5B8F' },
-  { n: 'Spor',       slug: 'spor',       soft: '#E5E0D2', ink: '#1F6E52' },
-  { n: 'Sanat',      slug: 'sanat',      soft: '#EFD9DC', ink: '#A83A6E' },
-  { n: 'Oyun',       slug: 'oyun',       soft: '#DFE8DE', ink: '#B04330' },
-  { n: 'Tech',       slug: 'tech',       soft: '#DAE0E6', ink: '#33566B' },
-  { n: 'Sinema',     slug: 'sinema',     soft: '#E4DED4', ink: '#544A86' },
-  { n: 'Fotoğraf',   slug: 'fotoğraf',   soft: '#E0DEDC', ink: '#23697A' },
-  { n: 'Gönüllülük', slug: 'gönüllülük', soft: '#E1EBDA', ink: '#A34A22' },
-  { n: 'Kariyer',    slug: 'kariyer',    soft: '#E5DED0', ink: '#46603A' },
-  { n: 'Sosyal',     slug: 'sosyal',     soft: '#EBDFD3', ink: '#A8354F' },
+  { n: 'Kitap',      slug: 'kitap' },
+  { n: 'Doğa',       slug: 'doğa' },
+  { n: 'Müzik',      slug: 'müzik' },
+  { n: 'Lezzet',     slug: 'lezzet' },
+  { n: 'Dil',        slug: 'dil' },
+  { n: 'Spor',       slug: 'spor' },
+  { n: 'Sanat',      slug: 'sanat' },
+  { n: 'Oyun',       slug: 'oyun' },
+  { n: 'Teknoloji',  slug: 'tech' },
+  { n: 'Sinema',     slug: 'sinema' },
+  { n: 'Fotoğraf',   slug: 'fotoğraf' },
+  { n: 'Gönüllülük', slug: 'gönüllülük' },
+  { n: 'Kariyer',    slug: 'kariyer' },
+  { n: 'Sosyal',     slug: 'sosyal' },
 ]
-
-const DEFAULT_SOFT = '#E8E4D8'
 
 // Türkçe karakter/aksan normalize — arama sorgusu için
 function normalizeQuery(q: string): string {
@@ -42,39 +41,9 @@ function buildSearchQuery(q: string): string {
   return normalized.replace(/['":&|!<>()]/g, ' ').split(/\s+/).filter(Boolean).join(' ')
 }
 
-function CatIcon({ slug, size = 72 }: { slug: string; size?: number }) {
-  const common = {
-    width: size, height: size, viewBox: '0 0 24 24',
-    fill: 'none', stroke: 'currentColor', strokeWidth: 1.7,
-    strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
-  }
-  switch (slug) {
-    case 'kitap':      return <svg {...common}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-    case 'doğa':       return <svg {...common}><path d="M8 19v2"/><path d="M8 15v-3"/><path d="M12 21V11"/><path d="M16 21v-4"/><path d="M12 11 6 5l6-2 6 2z"/><path d="M18 12a3 3 0 1 0 3-3"/></svg>
-    case 'müzik':      return <svg {...common}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-    case 'lezzet':     return <svg {...common}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
-    case 'dil':        return <svg {...common}><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
-    case 'spor':       return <svg {...common}><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-    case 'sanat':      return <svg {...common}><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
-    case 'oyun':       return <svg {...common}><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg>
-    case 'tech':       return <svg {...common}><rect width="18" height="12" x="3" y="4" rx="2"/><line x1="2" x2="22" y1="20" y2="20"/></svg>
-    case 'sinema':     return <svg {...common}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></svg>
-    case 'fotoğraf':   return <svg {...common}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-    case 'gönüllülük': return <svg {...common}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-    case 'kariyer':    return <svg {...common}><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-    case 'sosyal':     return <svg {...common}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    default:           return <svg {...common}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-  }
-}
-
 // ilike'da wildcard yorumlanmaması için kullanıcı girdisini escape et
 function escapeIlike(s: string): string {
   return s.replace(/[%_\\]/g, (m) => '\\' + m)
-}
-
-function findCat(s: string | null) {
-  if (!s) return null
-  return CATS.find((c) => c.slug === s) || null
 }
 
 export default async function KesfetPage({
@@ -119,7 +88,7 @@ export default async function KesfetPage({
     if (!activeCategory || (communityIds && communityIds.length > 0)) {
       let query = supabase
         .from('events')
-        .select('id, title, event_date, location, cover_image_url, community:communities!inner(id, name, category, city, status)')
+        .select('id, title, event_date, location, cover_image_url, max_attendees, rsvps(count), community:communities!inner(id, name, category, city, status)')
         .gte('event_date', new Date().toISOString())
         .eq('community.status', 'approved')
         .order('event_date', { ascending: true })
@@ -156,8 +125,11 @@ export default async function KesfetPage({
     }
 
     const { data, error } = await query
-      if (error) console.error('kesfet arama hatasi:', error)
-    communities = data ?? []
+    if (error) console.error('kesfet arama hatasi:', error)
+    communities = (data ?? []).map((c: any) => ({
+      ...c,
+      memberCount: c.community_members?.[0]?.count ?? 0,
+    }))
     hasMore = communities.length === PAGE_SIZE
   }
 
@@ -172,79 +144,41 @@ export default async function KesfetPage({
     return `/kesfet?${p.toString()}`
   }
 
+  const hasFilter = Boolean(activeCategory || searchQuery || params.city)
+
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
+    <div className="min-h-screen">
       {/* Promo bandı */}
-      <div style={{
-        background: '#E9F4C2',
-        borderBottom: '1px solid #D9E8A6',
-      }}>
-        <div style={{
-          maxWidth: '1320px',
-          margin: '0 auto',
-          padding: '9px 24px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-        }}>
-          <span style={{
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: '12px',
-            color: '#54702F',
-          }}>
-            ✳
-          </span>
-          <p style={{ margin: 0, flex: '1 1 auto', fontSize: '14.5px', fontWeight: 500, minWidth: 0, color: 'var(--ink)' }}>
+      <div className="border-b border-[#F3D9C8] bg-brand-tint">
+        <div className="mx-auto flex max-w-[1120px] items-center gap-3.5 px-6 py-[9px]">
+          <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand text-[10px] font-black text-white">✳</span>
+          <p className="min-w-0 flex-1 text-[14.5px] font-medium text-ink">
             Kendi topluluğunu oluştur ve etkinlik düzenlemeye bugün başla!
           </p>
-          <Link href="/community/new" style={{
-            flex: '0 0 auto',
-            display: 'inline-flex',
-            alignItems: 'center',
-            background: 'var(--ink)',
-            color: 'var(--paper-cream)',
-            textDecoration: 'none',
-            fontSize: '13px',
-            fontWeight: 600,
-            padding: '7px 16px',
-            borderRadius: '999px',
-          }}>
+          <Link
+            href="/community/new"
+            className="shrink-0 rounded-full bg-brand px-4 py-[7px] text-[13px] font-bold text-white transition hover:bg-brand-dark"
+          >
             Şimdi başla
           </Link>
         </div>
       </div>
 
       {/* Sekmeler */}
-      <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '28px 24px 0' }}>
+      <div className="mx-auto max-w-[1120px] px-6 pt-7">
         <KesfetTabs activeTab={activeTab} activeCategory={activeCategory} />
       </div>
 
       {/* Başlık */}
-      <div style={{
-        maxWidth: '1320px',
-        margin: '0 auto',
-        padding: '22px 24px 0',
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'flex-end',
-        justifyContent: 'space-between',
-        gap: '18px',
-      }}>
-        <h1 className="serif" style={{
-          margin: 0,
-          fontWeight: 600,
-          fontSize: 'clamp(30px, 4vw, 44px)',
-          lineHeight: 1.12,
-          letterSpacing: '-0.5px',
-          color: 'var(--ink)',
-        }}>
-          <span className="highlight-yellow">{city}</span>{' '}
+      <div className="mx-auto max-w-[1120px] px-6 pt-[22px]">
+        <h1 className="text-[30px] font-extrabold leading-[1.12] tracking-[-0.8px] text-ink min-[640px]:text-[40px] min-[640px]:tracking-[-1.2px]">
+          <span className="text-brand">{city}</span>{' '}
           yakınındaki {activeTab === 'etkinlikler' ? 'etkinlikler' : 'topluluklar'}
         </h1>
       </div>
 
       {/* Kategori şeridi */}
-      <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '24px 24px 0' }}>
+      <div className="mx-auto max-w-[1120px] px-6 pt-6">
         <KesfetCategoryStrip
           cats={CATS}
           activeTab={activeTab}
@@ -253,171 +187,94 @@ export default async function KesfetPage({
       </div>
 
       {/* Kart grid */}
-      <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '28px 24px 64px' }}>
+      <div className="mx-auto max-w-[1120px] px-6 pb-16 pt-7">
         {activeTab === 'etkinlikler' ? (
           events.length > 0 ? (
             <>
-              <div className="kesfet-grid" style={{ display: 'grid', gap: '24px' }}>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {events.map((ev: any) => (
                   <EventCard key={ev.id} event={ev} showCommunityName={true} />
                 ))}
               </div>
               {hasMore && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
-                  <Link href={buildNextPageHref()} style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'var(--lime)',
-                    color: 'var(--ink)',
-                    border: '1.5px solid var(--ink)',
-                    textDecoration: 'none',
-                    fontSize: '15px',
-                    fontWeight: 700,
-                    padding: '12px 24px',
-                    borderRadius: '999px',
-                    boxShadow: '4px 5px 0 var(--ink)',
-                  }}>
+                <div className="mt-10 flex justify-center">
+                  <Link
+                    href={buildNextPageHref()}
+                    className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-[15px] font-bold text-white transition hover:-translate-y-px hover:bg-brand-dark hover:shadow-md"
+                  >
                     Daha fazla göster
                   </Link>
                 </div>
               )}
             </>
           ) : (
-            <p style={{ color: 'var(--muted)', fontSize: '15px', padding: '40px 0' }}>
-              {searchQuery
-                ? `"${searchQuery}" için sonuç bulunamadı.`
-                : activeCategory
-                ? 'Bu kategoride yaklaşan etkinlik yok.'
-                : 'Yaklaşan etkinlik yok.'}
-            </p>
+            <div className="rounded-2xl border border-dashed border-[#D9D0BE] bg-white px-6 py-16 text-center">
+              <p className="mb-2 text-[17px] font-bold text-ink">
+                {searchQuery
+                  ? `"${searchQuery}" için sonuç bulunamadı.`
+                  : activeCategory
+                  ? 'Bu kategoride yaklaşan etkinlik yok.'
+                  : 'Yaklaşan etkinlik yok.'}
+              </p>
+              <p className="mb-6 text-[14.5px] text-mute">
+                {hasFilter
+                  ? 'Filtreyi değiştirerek tekrar dene.'
+                  : 'Takvim ilk etkinlikle dolacak — ilkini sen düzenleyebilirsin.'}
+              </p>
+              {!hasFilter && (
+                <Link
+                  href="/community/new"
+                  className="inline-flex rounded-full bg-brand px-6 py-3 text-[15px] font-bold text-white transition hover:-translate-y-px hover:bg-brand-dark"
+                >
+                  Topluluk kur →
+                </Link>
+              )}
+            </div>
           )
         ) : (
           communities.length > 0 ? (
             <>
-              <div className="kesfet-grid" style={{ display: 'grid', gap: '24px' }}>
-                {communities.map((c: any) => {
-                  const cat = findCat(c.category)
-                  const memberCount = c.community_members?.[0]?.count ?? 0
-                  return (
-                    <Link
-                      key={c.id}
-                      href={`/community/${c.id}`}
-                      className="community-card-link"
-                      style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
-                    >
-                      <article style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' }}>
-                        <div style={{
-                          position: 'relative',
-                          aspectRatio: '16 / 9',
-                          overflow: 'hidden',
-                          borderRadius: '14px',
-                          background: c.cover_image_url ? 'transparent' : (cat?.soft ?? DEFAULT_SOFT),
-                        }}>
-                          {c.cover_image_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={c.cover_image_url}
-                              alt=""
-                              loading="lazy"
-                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                            />
-                          ) : (
-                            <div style={{
-                              position: 'absolute',
-                              inset: 0,
-                              display: 'grid',
-                              placeItems: 'center',
-                              color: 'var(--ink)',
-                              opacity: 0.85,
-                            }}>
-                              {cat ? <CatIcon slug={cat.slug} size={72} /> : null}
-                            </div>
-                          )}
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '0 2px' }}>
-                          <h3 className="community-title" style={{
-                            fontSize: '17px',
-                            fontWeight: 800,
-                            lineHeight: 1.25,
-                            color: 'var(--ink)',
-                            margin: 0,
-                            letterSpacing: '-0.01em',
-                          }}>
-                            {c.name}
-                          </h3>
-                          <p style={{
-                            fontSize: '13.5px',
-                            color: 'var(--muted)',
-                            margin: '4px 0 0',
-                            lineHeight: 1.4,
-                          }}>
-                            {cat ? cat.n : ''}{cat && c.city ? ' · ' : ''}{c.city}
-                          </p>
-                          <p style={{
-                            fontSize: '13.5px',
-                            color: 'var(--ink)',
-                            fontWeight: 600,
-                            margin: '6px 0 0',
-                          }}>
-                            {memberCount} üye
-                          </p>
-                        </div>
-                      </article>
-                    </Link>
-                  )
-                })}
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {communities.map((c: any) => (
+                  <CommunityCard key={c.id} community={c} />
+                ))}
               </div>
               {hasMore && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
-                  <Link href={buildNextPageHref()} style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'var(--lime)',
-                    color: 'var(--ink)',
-                    border: '1.5px solid var(--ink)',
-                    textDecoration: 'none',
-                    fontSize: '15px',
-                    fontWeight: 700,
-                    padding: '12px 24px',
-                    borderRadius: '999px',
-                    boxShadow: '4px 5px 0 var(--ink)',
-                  }}>
+                <div className="mt-10 flex justify-center">
+                  <Link
+                    href={buildNextPageHref()}
+                    className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-[15px] font-bold text-white transition hover:-translate-y-px hover:bg-brand-dark hover:shadow-md"
+                  >
                     Daha fazla göster
                   </Link>
                 </div>
               )}
             </>
           ) : (
-            <p style={{ color: 'var(--muted)', fontSize: '15px', padding: '40px 0' }}>
-              {searchQuery
-                ? `"${searchQuery}" için sonuç bulunamadı.`
-                : activeCategory
-                ? 'Bu kategoride topluluk yok.'
-                : 'Henüz topluluk yok.'}
-            </p>
+            <div className="rounded-2xl border border-dashed border-[#D9D0BE] bg-white px-6 py-16 text-center">
+              <p className="mb-2 text-[17px] font-bold text-ink">
+                {searchQuery
+                  ? `"${searchQuery}" için sonuç bulunamadı.`
+                  : activeCategory
+                  ? 'Bu kategoride topluluk yok.'
+                  : 'Henüz topluluk yok.'}
+              </p>
+              <p className="mb-6 text-[14.5px] text-mute">
+                {hasFilter
+                  ? 'Filtreyi değiştirerek tekrar dene.'
+                  : 'Bu sayfa ilk toplulukla dolmaya başlayacak — o sen olabilirsin.'}
+              </p>
+              {!hasFilter && (
+                <Link
+                  href="/community/new"
+                  className="inline-flex rounded-full bg-brand px-6 py-3 text-[15px] font-bold text-white transition hover:-translate-y-px hover:bg-brand-dark"
+                >
+                  İlk topluluğu sen kur →
+                </Link>
+              )}
+            </div>
           )
         )}
-
-        <style>{`
-          .kesfet-grid { grid-template-columns: 1fr; }
-          @media (min-width: 640px) {
-            .kesfet-grid { grid-template-columns: repeat(2, 1fr); }
-          }
-          @media (min-width: 1000px) {
-            .kesfet-grid { grid-template-columns: repeat(3, 1fr); }
-          }
-          @media (min-width: 1280px) {
-            .kesfet-grid { grid-template-columns: repeat(4, 1fr); }
-          }
-          .community-card-link:hover .community-title {
-            text-decoration: underline;
-            text-decoration-thickness: 2px;
-            text-underline-offset: 3px;
-          }
-        `}</style>
       </div>
     </div>
   )

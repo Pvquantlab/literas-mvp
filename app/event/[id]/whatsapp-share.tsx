@@ -34,46 +34,26 @@ export default function WhatsappShare(props: Props) {
         setCopied(false)
       }, 2000)
     } catch (err) {
-      console.error('kopyalanamadi', err)
+      console.error('kopyalanamadı', err)
     }
   }
 
   return (
-    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+    <div className="flex flex-wrap gap-2.5">
       <button
         type="button"
         onClick={handleWhatsapp}
-        style={{
-          background: '#25D366',
-          color: '#ffffff',
-          padding: '10px 18px',
-          borderRadius: '999px',
-          fontSize: '14px',
-          fontWeight: 600,
-          border: '1.5px solid #1DA851',
-          cursor: 'pointer',
-          fontFamily: "'IBM Plex Mono', monospace",
-        }}
+        className="rounded-full border-[1.5px] border-[#1DA851] bg-[#25D366] px-[18px] py-2.5 text-sm font-semibold text-white transition hover:bg-[#1FB959]"
       >
-        WhatsApp&apos;ta paylas
+        WhatsApp&apos;ta paylaş
       </button>
 
       <button
         type="button"
         onClick={handleCopy}
-        style={{
-          background: 'transparent',
-          color: 'var(--ink)',
-          padding: '10px 18px',
-          borderRadius: '999px',
-          fontSize: '14px',
-          fontWeight: 600,
-          border: '1.5px solid var(--ink)',
-          cursor: 'pointer',
-          fontFamily: "'IBM Plex Mono', monospace",
-        }}
+        className="rounded-full border-[1.5px] border-line bg-white px-[18px] py-2.5 text-sm font-semibold text-ink transition hover:bg-warm"
       >
-        {copied ? 'kopyalandi' : 'linki kopyala'}
+        {copied ? 'Kopyalandı ✓' : 'Linki kopyala'}
       </button>
     </div>
   )

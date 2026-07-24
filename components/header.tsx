@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import Logo from './logo'
 
 type Props = {
   user: { id: string } | null
@@ -40,182 +41,64 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
     : '?'
 
   return (
-    <header style={{
-      background: 'var(--paper)',
-      borderBottom: '1px solid var(--border)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 40,
-    }}>
-      <div style={{
-        maxWidth: '1360px',
-        margin: '0 auto',
-        padding: '10px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '18px',
-      }}>
+    <header className="sticky top-0 z-50 border-b border-line bg-white/90 backdrop-blur-md">
+      <div className="mx-auto flex h-[68px] max-w-[1120px] items-center gap-6 px-6">
         {/* Logo */}
-        <Link href="/" style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '9px',
-          textDecoration: 'none',
-          flex: '0 0 auto',
-        }}>
-          <span style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '8px',
-            background: 'var(--ink)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--lime)',
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontWeight: 600,
-            fontSize: '15px',
-          }}>
-            l
-          </span>
-          <span style={{
-            fontSize: '19px',
-            fontWeight: 700,
-            letterSpacing: '-0.3px',
-            color: 'var(--ink)',
-          }}>
-            literaslab
-          </span>
+        <Link href="/" className="shrink-0" aria-label="literaslab ana sayfa">
+          <Logo markSize={32} fontSize={20} />
         </Link>
 
         {/* Arama çubuğu */}
         <form
           action="/kesfet"
           method="get"
-          className="header-search"
-          style={{
-            flex: '1 1 320px',
-            maxWidth: '560px',
-            minWidth: '220px',
-            display: 'flex',
-            alignItems: 'center',
-            border: '1px solid var(--border-mid)',
-            borderRadius: '999px',
-            background: 'var(--paper-cream)',
-            padding: '3px 3px 3px 16px',
-          }}
+          className="header-search hidden min-[821px]:flex flex-1 max-w-[480px] items-center gap-2 rounded-full border border-line bg-warm py-1 pl-4 pr-1 transition-colors focus-within:border-brand"
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" style={{ flex: '0 0 auto' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A94A2" strokeWidth="1.8" strokeLinecap="round" className="shrink-0">
             <path d="M10.5 18a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15zM16 16l5 5" />
           </svg>
           <input
             type="text"
             name="q"
-            placeholder="Etkinlik ara..."
+            placeholder="Etkinlik, topluluk ara…"
             aria-label="Etkinlik ara"
-            style={{
-              flex: '1 1 auto',
-              minWidth: '60px',
-              border: 'none',
-              background: 'transparent',
-              fontFamily: "'Instrument Sans', sans-serif",
-              fontSize: '14px',
-              color: 'var(--ink)',
-              padding: '9px 10px',
-              outline: 'none',
-            }}
+            className="bare-input min-w-[60px] flex-1 text-sm text-ink"
           />
-          <span style={{
-            width: '1px',
-            height: '22px',
-            background: 'var(--border-mid)',
-            flex: '0 0 auto',
-          }} />
+          <span className="h-[22px] w-px shrink-0 bg-line" />
           <input
             type="text"
             name="city"
             defaultValue="İstanbul"
             aria-label="Şehir"
-            style={{
-              flex: '0 1 110px',
-              minWidth: '80px',
-              border: 'none',
-              background: 'transparent',
-              fontFamily: "'Instrument Sans', sans-serif",
-              fontSize: '14px',
-              color: 'var(--ink)',
-              padding: '9px 10px',
-              outline: 'none',
-            }}
+            className="bare-input w-[104px] shrink-0 text-sm text-ink"
           />
           <button
             type="submit"
             aria-label="Ara"
-            className="header-search-btn"
-            style={{
-              flex: '0 0 auto',
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              border: 'none',
-              background: 'var(--lime)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand text-white transition hover:bg-brand-dark"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round">
-              <path d="M10.5 18a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15zM16 16l5 5" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
           </button>
         </form>
 
         {/* Sağ menü */}
-        <nav style={{
-          marginLeft: 'auto',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          flex: '0 0 auto',
-        }}>
+        <nav className="ml-auto flex shrink-0 items-center gap-2.5">
           {user ? (
             <>
               <Link
                 href="/community/new"
-                className="header-btn-outline"
-                style={{
-                  textDecoration: 'none',
-                  fontSize: '13.5px',
-                  fontWeight: 600,
-                  padding: '8px 16px',
-                  borderRadius: '999px',
-                  border: '1px solid var(--border-mid)',
-                  color: 'var(--ink)',
-                  whiteSpace: 'nowrap',
-                }}
+                className="hidden min-[640px]:inline-flex items-center whitespace-nowrap rounded-full border border-line px-4 py-2 text-[13.5px] font-semibold text-ink transition hover:bg-warm"
               >
-                Yeni topluluk başlat
+                Topluluk kur
               </Link>
 
               {/* Bildirimler */}
               <Link
                 href="/ayarlar/bildirimler"
                 aria-label="Bildirimler"
-                className="header-icon-btn"
-                style={{
-                  position: 'relative',
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '50%',
-                  border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--ink)',
-                }}
+                className="grid h-[38px] w-[38px] place-items-center rounded-full text-ink transition hover:bg-warm"
               >
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6zM10 19a2.2 2.2 0 0 0 4 0" />
@@ -223,56 +106,29 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
               </Link>
 
               {/* Profil dropdown */}
-              <div ref={menuRef} style={{ position: 'relative', display: 'inline-flex' }}>
+              <div ref={menuRef} className="relative inline-flex">
                 <button
                   onClick={() => setMenuOpen((s) => !s)}
                   aria-haspopup="true"
                   aria-expanded={menuOpen}
                   aria-label="Profil menüsü"
-                  className="header-icon-btn"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    border: 'none',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                    padding: '3px',
-                    borderRadius: '999px',
-                  }}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-full p-[3px] transition hover:bg-warm"
                 >
                   {profileAvatar ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={profileAvatar}
                       alt=""
-                      style={{
-                        width: '34px',
-                        height: '34px',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                      }}
+                      className="h-[34px] w-[34px] rounded-full object-cover"
                     />
                   ) : (
-                    <span style={{
-                      width: '34px',
-                      height: '34px',
-                      borderRadius: '50%',
-                      background: 'var(--paper-soft)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      color: 'var(--ink)',
-                    }}>
+                    <span className="grid h-[34px] w-[34px] place-items-center rounded-full border border-line bg-warm text-xs font-bold text-ink">
                       {initials}
                     </span>
                   )}
                   <svg
                     width="12" height="12" viewBox="0 0 24 24"
-                    fill="none" stroke="var(--ink)" strokeWidth="2"
+                    fill="none" stroke="#17202B" strokeWidth="2"
                     strokeLinecap="round" strokeLinejoin="round"
                     style={{
                       transform: menuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -284,44 +140,24 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
                 </button>
 
                 {menuOpen && (
-                  <div role="menu" style={{
-                    position: 'absolute',
-                    top: '46px',
-                    right: 0,
-                    width: '216px',
-                    background: 'var(--paper-cream)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '14px',
-                    boxShadow: '0 14px 34px rgba(30,58,43,.16)',
-                    padding: '6px',
-                    zIndex: 60,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}>
-                    <Link href={`/profile/${user.id}`} role="menuitem" className="menu-item" style={menuItemStyle}>
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-[46px] z-[60] flex w-[216px] flex-col rounded-2xl border border-line bg-white p-1.5 shadow-[0_14px_34px_rgba(23,32,43,.16)]"
+                  >
+                    <Link href={`/profile/${user.id}`} role="menuitem" className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-warm">
                       Profil
                     </Link>
-                    <Link href="/event/new" role="menuitem" className="menu-item" style={menuItemStyle}>
+                    <Link href="/event/new" role="menuitem" className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-warm">
                       Etkinlik oluştur
                     </Link>
-                    <Link href="/ayarlar/profil" role="menuitem" className="menu-item" style={menuItemStyle}>
+                    <Link href="/ayarlar/profil" role="menuitem" className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-warm">
                       Ayarlar
                     </Link>
-                    <span style={{ height: '1px', background: 'var(--border)', margin: '6px 8px' }} />
+                    <span className="mx-2 my-1.5 h-px bg-line" />
                     <button
                       onClick={handleLogout}
                       role="menuitem"
-                      className="menu-item-danger"
-                      style={{
-                        ...menuItemStyle,
-                        color: 'var(--coral-deep)',
-                        border: 'none',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        width: '100%',
-                        fontFamily: 'inherit',
-                      }}
+                      className="w-full cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm font-medium text-brand-dark transition hover:bg-brand-tint"
                     >
                       Çıkış yap
                     </button>
@@ -333,58 +169,20 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
             <>
               <Link
                 href="/login"
-                style={{
-                  color: 'var(--ink)',
-                  textDecoration: 'none',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  padding: '8px 12px',
-                }}
+                className="rounded-full px-4 py-2 text-sm font-semibold text-ink transition hover:bg-warm"
               >
                 Giriş yap
               </Link>
-              <Link href="/signup" className="btn-nav">
+              <Link
+                href="/signup"
+                className="rounded-full bg-brand px-[22px] py-2.5 text-sm font-bold text-white transition hover:-translate-y-px hover:bg-brand-dark hover:shadow-md"
+              >
                 Katıl
               </Link>
             </>
           )}
         </nav>
       </div>
-
-      <style>{`
-        .header-search:focus-within {
-          border-color: var(--ink);
-        }
-        .header-search-btn:hover {
-          background: var(--lime-soft);
-        }
-        .header-btn-outline:hover {
-          background: var(--paper-soft);
-        }
-        .header-icon-btn:hover {
-          background: var(--paper-soft);
-        }
-        .menu-item:hover {
-          background: var(--paper-soft);
-        }
-        .menu-item-danger:hover {
-          background: rgba(190, 81, 39, 0.08);
-        }
-        @media (max-width: 820px) {
-          .header-search {
-            display: none !important;
-          }
-        }
-      `}</style>
     </header>
   )
-}
-
-const menuItemStyle: React.CSSProperties = {
-  textDecoration: 'none',
-  fontSize: '14px',
-  fontWeight: 500,
-  padding: '9px 12px',
-  borderRadius: '9px',
-  color: 'var(--ink)',
 }

@@ -1,68 +1,17 @@
 import Link from 'next/link'
+import Logo from './logo'
 
 export default function Footer() {
   return (
-    <footer style={{ background: 'var(--ink)', marginTop: '64px', padding: '0 24px' }}>
-      <div
-        style={{
-          maxWidth: '1240px',
-          margin: '0 auto',
-          padding: '56px 0 0',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '40px 56px',
-        }}
-      >
+    <footer className="mt-16 border-t border-line bg-warm">
+      <div className="mx-auto grid max-w-[1120px] grid-cols-2 gap-10 px-6 pb-9 pt-14 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
         {/* Logo + tagline */}
-        <div style={{ flex: '1 1 220px', minWidth: '200px' }}>
-          <Link
-            href="/"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              textDecoration: 'none',
-            }}
-          >
-            <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <path
-                d="M4 6a4 4 0 0 1 4-4h16a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-9l-6 5v-5H8a4 4 0 0 1-4-4z"
-                fill="var(--paper-soft)"
-              />
-              <text
-                x="10"
-                y="20"
-                fontFamily="system-ui, sans-serif"
-                fontSize="14"
-                fontWeight="800"
-                fill="var(--ink)"
-              >
-                l
-              </text>
-              <circle cx="22" cy="18" r="2.2" fill="var(--coral)" />
-            </svg>
-            <span
-              style={{
-                fontFamily: 'system-ui, sans-serif',
-                fontWeight: 800,
-                fontSize: '23px',
-                color: 'var(--paper-soft)',
-                letterSpacing: '-0.02em',
-              }}
-            >
-              literaslab
-            </span>
+        <div className="col-span-2 md:col-span-1">
+          <Link href="/" aria-label="literaslab ana sayfa" className="inline-block">
+            <Logo markSize={30} fontSize={20} />
           </Link>
-         <p
-            style={{
-              fontSize: '14px',
-              lineHeight: 1.6,
-              color: 'rgba(250, 244, 232, .6)',
-              margin: '14px 0 0',
-              maxWidth: '240px',
-            }}
-          >
-            İnsanların kendi topluluklarını kurduğu yer. Herkese açık.
+          <p className="mt-3.5 max-w-[260px] text-[13.5px] leading-relaxed text-mute">
+            İnsanların kendi topluluklarını kurduğu yer. Çevrimiçi başlar, çevrimdışı buluşur.
           </p>
         </div>
 
@@ -70,7 +19,6 @@ export default function Footer() {
         <FooterColumn title="Keşfet">
           <FooterLink href="/kesfet?tab=topluluklar">Topluluklar</FooterLink>
           <FooterLink href="/kesfet?tab=etkinlikler">Etkinlikler</FooterLink>
-          <FooterLink href="/kesfet">Şehirler</FooterLink>
           <FooterLink href="/kesfet">Kategoriler</FooterLink>
         </FooterColumn>
 
@@ -88,54 +36,12 @@ export default function Footer() {
           <FooterLink href="/gizlilik">Gizlilik</FooterLink>
           <FooterLink href="/kosullar">Kullanım şartları</FooterLink>
         </FooterColumn>
-
-        {/* Sosyal medya */}
-        <div style={{ flex: '1 1 150px', minWidth: '140px' }}>
-          <div
-            style={{
-              fontSize: '14px',
-              fontWeight: 700,
-              color: 'var(--paper-soft)',
-              marginBottom: '14px',
-            }}
-          >
-            Bizi takip edin
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <SocialIcon href="#" label="Instagram">
-              <rect x="3" y="3" width="18" height="18" rx="5" />
-              <circle cx="12" cy="12" r="4" />
-              <circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" />
-            </SocialIcon>
-            <SocialIcon href="#" label="X">
-              <path
-                d="M4.5 4h4l4.1 5.7L17.4 4H20l-6.1 7.5L20.5 20h-4l-4.4-6.1L7 20H4.4l6.5-8z"
-                fill="currentColor"
-                stroke="none"
-              />
-            </SocialIcon>
-            <SocialIcon href="#" label="YouTube">
-              <rect x="2.5" y="6" width="19" height="13" rx="4" />
-              <path d="M10 9.7v5.6l5.2-2.8z" fill="currentColor" stroke="none" />
-            </SocialIcon>
-          </div>
-        </div>
       </div>
 
       {/* Alt çizgi + copyright */}
-      <div
-        style={{
-          maxWidth: '1240px',
-          borderTop: '1px solid rgba(250, 244, 232, .18)',
-          margin: '44px auto 0',
-          padding: '20px 0 26px',
-          textAlign: 'center',
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: '12.5px',
-          color: 'rgba(250, 244, 232, .55)',
-        }}
-      >
-        © 2026 literaslab · çevrimiçi başlar, çevrimdışı buluşur ✿
+      <div className="mx-auto flex max-w-[1120px] items-center justify-between border-t border-line px-6 pb-8 pt-6 text-[13px] text-mute">
+        <span>© 2026 literaslab</span>
+        <span className="hidden min-[480px]:inline">çevrimiçi başlar, çevrimdışı buluşur</span>
       </div>
     </footer>
   )
@@ -143,17 +49,10 @@ export default function Footer() {
 
 function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ flex: '1 1 140px', minWidth: '130px' }}>
-      <div
-        style={{
-          fontSize: '14px',
-          fontWeight: 700,
-          color: 'var(--paper-soft)',
-          marginBottom: '14px',
-        }}
-      >
+    <div>
+      <h4 className="mb-3.5 text-[13px] font-bold uppercase tracking-[0.6px] text-mute">
         {title}
-      </div>
+      </h4>
       {children}
     </div>
   )
@@ -163,47 +62,9 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
   return (
     <Link
       href={href}
-      style={{
-        display: 'block',
-        fontSize: '14px',
-        color: 'rgba(250, 244, 232, .65)',
-        textDecoration: 'none',
-        marginBottom: '10px',
-        transition: 'color 0.15s ease',
-      }}
+      className="mb-2.5 block text-[14.5px] text-body transition hover:text-brand"
     >
       {children}
-    </Link>
-  )
-}
-
-function SocialIcon({
-  href,
-  label,
-  children,
-}: {
-  href: string
-  label: string
-  children: React.ReactNode
-}) {
-  return (
-    <Link
-      href={href}
-      aria-label={label}
-      style={{
-        width: '38px',
-        height: '38px',
-        borderRadius: '50%',
-        border: '1.5px solid rgba(250, 244, 232, .4)',
-        display: 'grid',
-        placeItems: 'center',
-        color: 'var(--paper-soft)',
-        transition: 'all 0.15s ease',
-      }}
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        {children}
-      </svg>
     </Link>
   )
 }

@@ -15,49 +15,31 @@ export default function KesfetTabs({ activeTab, activeCategory }: Props) {
     return `/kesfet?${p.toString()}`
   }
 
+  const tabBase =
+    'rounded-full px-5 py-[9px] text-[14.5px] transition-colors duration-150'
+
   return (
-    <div style={{ display: 'flex', gap: '8px' }}>
+    <div className="flex gap-2">
       <Link
         href={buildHref('etkinlikler')}
-        style={{
-          border: 'none',
-          cursor: 'pointer',
-          fontSize: '14.5px',
-          fontWeight: activeTab === 'etkinlikler' ? 600 : 500,
-          padding: '9px 20px',
-          borderRadius: '999px',
-          background: activeTab === 'etkinlikler' ? 'var(--ink)' : 'transparent',
-          color: activeTab === 'etkinlikler' ? 'var(--paper-cream)' : 'var(--ink)',
-          textDecoration: 'none',
-          transition: 'background .15s ease',
-        }}
+        className={`${tabBase} ${
+          activeTab === 'etkinlikler'
+            ? 'bg-ink font-semibold text-white'
+            : 'font-medium text-ink hover:bg-warm'
+        }`}
       >
         Etkinlikler
       </Link>
       <Link
         href={buildHref('topluluklar')}
-        className="tab-inactive"
-        style={{
-          border: '1px solid transparent',
-          cursor: 'pointer',
-          fontSize: '14.5px',
-          fontWeight: activeTab === 'topluluklar' ? 600 : 500,
-          padding: '9px 20px',
-          borderRadius: '999px',
-          background: activeTab === 'topluluklar' ? 'var(--ink)' : 'transparent',
-          color: activeTab === 'topluluklar' ? 'var(--paper-cream)' : 'var(--ink)',
-          textDecoration: 'none',
-          transition: 'background .15s ease',
-        }}
+        className={`${tabBase} ${
+          activeTab === 'topluluklar'
+            ? 'bg-ink font-semibold text-white'
+            : 'font-medium text-ink hover:bg-warm'
+        }`}
       >
         Topluluklar
       </Link>
-
-      <style>{`
-        .tab-inactive:hover {
-          background: var(--paper-soft) !important;
-        }
-      `}</style>
     </div>
   )
 }
