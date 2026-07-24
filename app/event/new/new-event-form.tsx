@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
 
 export default function NewEventForm({
   userId,
@@ -12,7 +11,6 @@ export default function NewEventForm({
   communities: { id: string; name: string }[]
 }) {
   const router = useRouter()
-  const supabase = createClient()
   const [communityId, setCommunityId] = useState(communities[0]?.id ?? '')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -27,27 +25,38 @@ export default function NewEventForm({
     setLoading(true)
     setError('')
 
-    const { data, error } = await supabase
-      .from('events')
-      .insert({
+    // API rotası üzerinden oluştur: zod doğrulama, rate limit,
+    // founder/admin yetki kontrolü ve üyelere bildirim e-postası burada çalışır.
+    const res = await fetch('/api/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        community_id: communityId,
         title,
         description: description || null,
         location,
         event_date: new Date(eventDate).toISOString(),
-        organizer_id: userId,
-        community_id: communityId || null,
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
-      })
-      .select()
-      .single()
+      }),
+    })
 
-    if (error) {
-      setError('Etkinlik oluşturulamadı: ' + error.message)
+    const data = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      // zod alan hataları varsa ilkini göster
+      const firstFieldError =
+        data.details && typeof data.details === 'object'
+          ? (Object.values(data.details).flat()[0] as string | undefined)
+          : undefined
+      setError(data.error === 'Geçersiz veri' && firstFieldError
+        ? firstFieldError
+        : data.error ?? 'Etkinlik oluşturulamadı. Lütfen tekrar dene.')
       setLoading(false)
-    } else {
-      router.push(`/event/${data.id}`)
-      router.refresh()
+      return
     }
+
+    router.push(`/event/${data.event.id}`)
+    router.refresh()
   }
 
   return (

@@ -14,8 +14,9 @@ export default async function ProfilePage({
   const { data: { user } } = await supabase.auth.getUser()
   const isOwnProfile = user?.id === id
 
+  // Herkese açık profil vitrini (e-posta vb. özel alanlar bu görünümde yok)
   const { data: profile } = await supabase
-    .from('profiles')
+    .from('public_profiles')
     .select('id, name, bio, avatar_url, created_at')
     .eq('id', id)
     .single()

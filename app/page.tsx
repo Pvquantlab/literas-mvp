@@ -124,7 +124,6 @@ export default async function HomePage({
     .from('communities')
     .select(`
       id, name, description, city, category, cover_image_url, created_at,
-      founder:profiles!founder_id(name),
       community_members(count)
     `)
     .eq('status', 'approved')

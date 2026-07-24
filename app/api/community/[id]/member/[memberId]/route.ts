@@ -108,11 +108,15 @@ export async function POST(
       .eq('id', communityId)
       .single()
 
-    const { data: member } = await supabase
-      .from('profiles')
-      .select('name, email')
-      .eq('id', updated.user_id)
-      .single()
+    // Onaylanan kişinin iletişimi kilitli kasadan: RPC sadece bu topluluğun
+    // founder/admin'ine (yani yukarıda yetkisi doğrulanan bu kullanıcıya) verir.
+    const { data: contactRows, error: contactError } = await supabase.rpc('get_member_contact', {
+      p_membership_id: memberId,
+    })
+    if (contactError) {
+      console.error('[member] üye iletişimi alınamadı:', contactError)
+    }
+    const member = (contactRows as any)?.[0] as { name: string | null; email: string | null } | undefined
 
     if (community && member?.email) {
       // HTML injection fix: kullanıcı verilerini escape et

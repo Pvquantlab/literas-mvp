@@ -51,17 +51,19 @@ async function checkCanManage(
   return { ok: false }
 }
 
-// Katılımcı e-postalarını çek (etkinliği düzenleyen hariç)
+// Katılımcı e-postalarını kilitli kasadan çek (etkinliği düzenleyen hariç).
+// RPC yalnızca organizatöre veya topluluğun founder/admin'ine liste verir;
+// bu fonksiyon zaten checkCanManage'den sonra çağrılır.
 async function getRsvpEmails(supabase: any, eventId: string, excludeUserId: string): Promise<string[]> {
-  const { data: rsvps } = await supabase
-    .from('rsvps')
-    .select('user:profiles!user_id(email)')
-    .eq('event_id', eventId)
-    .neq('user_id', excludeUserId)
-
-  return (rsvps ?? [])
-    .map((r: any) => r.user?.email)
-    .filter(Boolean) as string[]
+  const { data, error } = await supabase.rpc('get_event_rsvp_emails', {
+    p_event_id: eventId,
+    p_exclude: excludeUserId,
+  })
+  if (error) {
+    console.error('[event] katılımcı mailleri alınamadı:', error)
+    return []
+  }
+  return (data ?? []) as string[]
 }
 
 // Tarih formatla (Türkçe)
@@ -100,7 +102,7 @@ export async function PATCH(
   const rl = await checkRateLimit(req, user.id, 'strict')
   if (!rl.ok) {
     return NextResponse.json(
-      { error: 'Cok fazla istek, biraz bekle' },
+      { error: 'Çok fazla istek, biraz bekle' },
       { status: 429, headers: rl.headers }
     )
   }
@@ -209,7 +211,7 @@ export async function DELETE(
   const rlDel = await checkRateLimit(_req, user.id, 'strict')
   if (!rlDel.ok) {
     return NextResponse.json(
-      { error: 'Cok fazla istek, biraz bekle' },
+      { error: 'Çok fazla istek, biraz bekle' },
       { status: 429, headers: rlDel.headers }
     )
   }
@@ -230,7 +232,7 @@ export async function DELETE(
 
   if (deleteError) {
     console.error('[event DELETE] hatası:', deleteError)
-    return NextResponse.json({ error: 'Iptal edilemedi' }, { status: 500 })
+    return NextResponse.json({ error: 'İptal edilemedi' }, { status: 500 })
   }
 
   // Katılımcılara iptal maili

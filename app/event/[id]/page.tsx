@@ -133,7 +133,6 @@ export default async function EventPage({
     .from('events')
     .select(`
       *,
-      organizer:profiles!organizer_id(id, name, avatar_url),
       community:communities!community_id(id, name, city, category)
     `)
     .eq('id', id)
@@ -143,11 +142,32 @@ export default async function EventPage({
     notFound()
   }
 
-  const { data: rsvps } = await supabase
+  // Organizatör bilgisi herkese açık vitrinden (e-posta vb. özel alanlar kapalı)
+  const { data: organizer } = await supabase
+    .from('public_profiles')
+    .select('id, name, avatar_url')
+    .eq('id', event.organizer_id)
+    .maybeSingle()
+
+  const { data: rsvpRows } = await supabase
     .from('rsvps')
-    .select(`id, user:profiles!user_id(id, name, avatar_url)`)
+    .select('id, user_id')
     .eq('event_id', id)
     .order('created_at', { ascending: true })
+
+  // Katılımcı profilleri vitrinden toplu çekilip rsvp satırlarına bağlanır
+  const attendeeIds = (rsvpRows ?? []).map((r: any) => r.user_id).filter(Boolean)
+  const { data: attendeeProfiles } = attendeeIds.length > 0
+    ? await supabase
+        .from('public_profiles')
+        .select('id, name, avatar_url')
+        .in('id', attendeeIds)
+    : { data: [] as any[] }
+  const profileById = new Map((attendeeProfiles ?? []).map((p: any) => [p.id, p]))
+  const rsvps = (rsvpRows ?? []).map((r: any) => ({
+    id: r.id,
+    user: profileById.get(r.user_id) ?? null,
+  }))
 
   let isApprovedMember = false
   let isCommunityModerator = false
@@ -293,18 +313,18 @@ export default async function EventPage({
           </h1>
 
           {/* Düzenleyen */}
-          {event.organizer?.name && (
+          {organizer?.name && (
             <p style={{
               fontSize: '14.5px',
               color: 'var(--muted)',
               marginBottom: '28px',
             }}>
-              <Link href={`/profile/${event.organizer.id}`} style={{
+              <Link href={`/profile/${organizer.id}`} style={{
                 color: 'var(--ink)',
                 fontWeight: 600,
                 textDecoration: 'none',
               }}>
-                {event.organizer.name}
+                {organizer.name}
               </Link>
               {' tarafından'}
             </p>

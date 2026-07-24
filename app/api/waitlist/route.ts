@@ -9,13 +9,13 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Giris yapmalisin' }, { status: 401 })
+    return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
   }
 
   const rl = await checkRateLimit(req, user.id, 'strict')
   if (!rl.ok) {
     return NextResponse.json(
-      { error: 'Cok fazla istek, biraz bekle' },
+      { error: 'Çok fazla istek, biraz bekle' },
       { status: 429, headers: rl.headers }
     )
   }
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const parsed = waitlistSchema.safeParse(await req.json())
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Gecersiz veri', details: parsed.error.flatten().fieldErrors },
+      { error: 'Geçersiz veri', details: parsed.error.flatten().fieldErrors },
       { status: 400 }
     )
   }
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     .maybeSingle()
 
   if (!event) {
-    return NextResponse.json({ error: 'Etkinlik bulunamadi' }, { status: 404 })
+    return NextResponse.json({ error: 'Etkinlik bulunamadı' }, { status: 404 })
   }
 
   const { data: existingRsvp } = await supabase
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
   if (existingRsvp) {
     return NextResponse.json(
-      { error: 'Zaten katiliyorsun, bekleme listesi gerekmiyor' },
+      { error: 'Zaten katılıyorsun, bekleme listesi gerekmiyor' },
       { status: 400 }
     )
   }
@@ -80,13 +80,13 @@ export async function DELETE(req: Request) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Giris yapmalisin' }, { status: 401 })
+    return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
   }
 
   const rl = await checkRateLimit(req, user.id, 'normal')
   if (!rl.ok) {
     return NextResponse.json(
-      { error: 'Cok fazla istek, biraz bekle' },
+      { error: 'Çok fazla istek, biraz bekle' },
       { status: 429, headers: rl.headers }
     )
   }
@@ -98,7 +98,7 @@ export async function DELETE(req: Request) {
   })
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Gecersiz veri', details: parsed.error.flatten().fieldErrors },
+      { error: 'Geçersiz veri', details: parsed.error.flatten().fieldErrors },
       { status: 400 }
     )
   }
@@ -113,7 +113,7 @@ export async function DELETE(req: Request) {
   if (deleteError) {
     console.error('[waitlist] delete hatasi:', deleteError)
     return NextResponse.json(
-      { error: 'Bekleme listesinden cikarilamadi' },
+      { error: 'Bekleme listesinden çıkarılamadı' },
       { status: 500 }
     )
   }

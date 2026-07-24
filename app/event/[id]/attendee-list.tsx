@@ -47,8 +47,9 @@ export default function AttendeeList({
               return [...prev, { id: row.id, user: null }]
             })
             if (row.user_id) {
+              // Herkese açık profil vitrini (anon rol de okuyabilir)
               const { data: profile } = await supabase
-                .from('profiles')
+                .from('public_profiles')
                 .select('id, name, avatar_url')
                 .eq('id', row.user_id)
                 .maybeSingle()

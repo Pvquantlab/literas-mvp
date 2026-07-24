@@ -3,11 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase'
 
 export default function EventActions({ eventId }: { eventId: string }) {
   const router = useRouter()
-  const supabase = createClient()
   const [confirming, setConfirming] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -15,12 +13,18 @@ export default function EventActions({ eventId }: { eventId: string }) {
   async function handleCancel() {
     setLoading(true)
     setError(null)
-    const { error } = await supabase.from('events').delete().eq('id', eventId)
-    if (error) {
-      setError('İptal edilemedi: ' + error.message)
+
+    // API rotası üzerinden sil: yetki kontrolü, rate limit ve
+    // katılımcılara iptal e-postası burada çalışır.
+    const res = await fetch(`/api/event/${eventId}`, { method: 'DELETE' })
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setError(data.error ?? 'İptal edilemedi. Lütfen tekrar dene.')
       setLoading(false)
       return
     }
+
     router.push('/')
     router.refresh()
   }
@@ -67,7 +71,7 @@ export default function EventActions({ eventId }: { eventId: string }) {
         </button>
       ) : (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ color: 'var(--muted)' }}>emin misin?</span>
+          <span style={{ color: 'var(--muted)' }}>emin misin? katılımcılara iptal maili gider</span>
           <button
             onClick={handleCancel}
             disabled={loading}

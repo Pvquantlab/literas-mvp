@@ -97,16 +97,16 @@ export async function POST(req: Request) {
     .eq('id', user.id)
     .single()
 
-  const { data: members } = await supabase
-    .from('community_members')
-    .select('user:profiles!user_id(email, name)')
-    .eq('community_id', community_id)
-    .eq('status', 'approved')
-    .neq('user_id', user.id)
-
-  const emails = (members ?? [])
-    .map((m: any) => m.user?.email)
-    .filter(Boolean) as string[]
+  // Üye mailleri kilitli kasadan: RPC sadece bu topluluğun founder/admin'ine
+  // (yani az önce yetki kontrolünden geçen bu kullanıcıya) mail listesi verir.
+  const { data: emailRows, error: emailError } = await supabase.rpc('get_member_emails', {
+    p_community_id: community_id,
+    p_exclude: user.id,
+  })
+  if (emailError) {
+    console.error('[event] üye mailleri alınamadı:', emailError)
+  }
+  const emails = (emailRows ?? []) as string[]
 
   if (emails.length > 0 && community && organizer) {
     const eventDateStr = new Date(event.event_date).toLocaleDateString('tr-TR', {

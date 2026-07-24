@@ -65,8 +65,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
       cover_image_url,
       created_at,
       status,
-      founder_id,
-      founder:profiles!founder_id(name)
+      founder_id
     `)
     .eq('id', id)
     .single()
@@ -74,6 +73,13 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   if (!community) {
     notFound()
   }
+
+  // Kurucu bilgisi herkese açık vitrinden (e-posta vb. özel alanlar kapalı)
+  const { data: founderProfile } = await supabase
+    .from('public_profiles')
+    .select('name')
+    .eq('id', (community as any).founder_id)
+    .maybeSingle()
 
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -94,16 +100,30 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
     notFound()
   }
 
-  const { data: allMemberships } = await supabase
+  const { data: membershipRows } = await supabase
     .from('community_members')
-    .select('id, role, status, user_id, user:profiles!user_id(name, avatar_url)')
+    .select('id, role, status, user_id')
     .eq('community_id', id)
+
+  // Üye profilleri vitrinden toplu çekilip üyelik satırlarına bağlanır
+  const memberIds = (membershipRows ?? []).map((m: any) => m.user_id).filter(Boolean)
+  const { data: memberProfiles } = memberIds.length > 0
+    ? await supabase
+        .from('public_profiles')
+        .select('id, name, avatar_url')
+        .in('id', memberIds)
+    : { data: [] as any[] }
+  const memberProfileById = new Map((memberProfiles ?? []).map((p: any) => [p.id, p]))
+  const allMemberships = (membershipRows ?? []).map((m: any) => ({
+    ...m,
+    user: memberProfileById.get(m.user_id) ?? null,
+  }))
 
   const approvedMembers = (allMemberships ?? []).filter((m: any) => m.status === 'approved')
   const pendingMembers = (allMemberships ?? []).filter((m: any) => m.status === 'pending')
 
   const memberCount = approvedMembers.length
-  const founderName = (community.founder as any)?.name ?? 'biri'
+  const founderName = founderProfile?.name ?? 'biri'
 
   const currentUserMembership = (allMemberships ?? []).find((m: any) => m.user_id === user?.id)
   const isFounder = currentUserMembership?.role === 'founder' && currentUserMembership?.status === 'approved'
@@ -284,6 +304,7 @@ async function EventsList({ communityId }: { communityId: string }) {
     .from('events')
     .select('id, title, location, event_date, cover_image_url, community:communities(name, category)')
     .eq('community_id', communityId)
+    .gte('event_date', new Date().toISOString())
     .order('event_date', { ascending: true })
 
   if (!events || events.length === 0) {

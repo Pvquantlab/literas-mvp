@@ -31,7 +31,7 @@ export const eventSchema = z.object({
     .string()
     .trim()
     .max(5000, 'Açıklama en fazla 5000 karakter olabilir')
-    .optional()
+    .nullish() // hem undefined hem null kabul — formlar boş açıklamayı null gönderir
     .transform((v) => (v ? v : undefined)),
   location: trimmed(3, 200, 'Konum'),
   event_date: z.coerce
@@ -93,7 +93,7 @@ export const reportSchema = z.object({
 
 export const reportUpdateSchema = z.object({
   status: z.enum(['reviewed', 'dismissed', 'actioned'], {
-    error: 'Gecersiz durum',
+    error: 'Geçersiz durum',
   }),
   admin_note: z
     .string()

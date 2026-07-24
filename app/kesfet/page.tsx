@@ -67,6 +67,11 @@ function CatIcon({ slug, size = 72 }: { slug: string; size?: number }) {
   }
 }
 
+// ilike'da wildcard yorumlanmaması için kullanıcı girdisini escape et
+function escapeIlike(s: string): string {
+  return s.replace(/[%_\\]/g, (m) => '\\' + m)
+}
+
 function findCat(s: string | null) {
   if (!s) return null
   return CATS.find((c) => c.slug === s) || null
@@ -121,6 +126,8 @@ export default async function KesfetPage({
         .range(rangeFrom, rangeTo)
 
       if (communityIds) query = query.in('community_id', communityIds)
+      // Şehir filtresi: yalnızca açıkça city parametresi geldiyse uygula
+      if (params.city) query = query.ilike('community.city', escapeIlike(params.city))
       if (searchQuery) {
         const q = buildSearchQuery(searchQuery)
         if (q) query = query.textSearch('search_vector', q, { config: 'turkish', type: 'websearch' })
@@ -141,6 +148,8 @@ export default async function KesfetPage({
       .range(rangeFrom, rangeTo)
 
     if (activeCategory) query = query.eq('category', activeCategory)
+    // Şehir filtresi (etkinlikler sekmesiyle aynı kural)
+    if (params.city) query = query.ilike('city', escapeIlike(params.city))
     if (searchQuery) {
       const q = buildSearchQuery(searchQuery)
       if (q) query = query.textSearch('search_vector', q, { config: 'turkish', type: 'websearch' })

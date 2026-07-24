@@ -34,7 +34,7 @@ export default function EventMap(props: { location: string; city?: string }) {
     let cancelled = false
 
     async function geocode() {
-      const q = city ? location + ', ' + city + ', Turkiye' : location + ', Turkiye'
+      const q = city ? location + ', ' + city + ', Türkiye' : location + ', Türkiye'
       try {
         const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tr&q=' + encodeURIComponent(q)
         const res = await fetch(url)
@@ -72,7 +72,7 @@ export default function EventMap(props: { location: string; city?: string }) {
       <div style={{ marginTop: '24px' }}>
         <MapTitle />
         <div style={containerStyle}>
-          <div style={loadingStyle}>harita yukleniyor...</div>
+          <div style={loadingStyle}>harita yükleniyor...</div>
         </div>
       </div>
     )
@@ -128,7 +128,7 @@ export default function EventMap(props: { location: string; city?: string }) {
           <Marker position={coords} icon={icon}>
             <Popup>
               <div className="popup-title">{location}</div>
-              <div className="popup-sub">{approx ? 'yaklasik konum' : 'bulusma yeri'}</div>
+              <div className="popup-sub">{approx ? 'yaklaşık konum' : 'buluşma yeri'}</div>
             </Popup>
           </Marker>
         </MapContainer>
@@ -140,7 +140,7 @@ export default function EventMap(props: { location: string; city?: string }) {
           fontSize: '12px',
           color: 'var(--muted)',
         }}>
-          {approx ? '✿ yaklasik konum · tam adres icin yol tarifine tikla' : '✿ tam konum'}
+          {approx ? '✿ yaklaşık konum · tam adres için yol tarifine tıkla' : '✿ tam konum'}
         </span>
         <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={pillButtonStyle}>
           yol tarifi al
@@ -160,7 +160,7 @@ function MapTitle() {
       margin: '0 0 12px',
       letterSpacing: '-0.01em',
     }}>
-      Bulusma <span className="highlight-yellow">yeri</span>
+      Buluşma <span className="highlight-yellow">yeri</span>
     </h3>
   )
 }

@@ -28,10 +28,10 @@ export default function RsvpForm(props: Props) {
 
     if (error) {
       if (error.message && error.message.indexOf('EVENT_FULL') !== -1) {
-        setError('Bu etkinlik az once doldu. Bekleme listesine girebilirsin.')
+        setError('Bu etkinlik az önce doldu. Bekleme listesine girebilirsin.')
         router.refresh()
       } else {
-        setError('Katilim kaydedilemedi. Lutfen tekrar dene.')
+        setError('Katılım kaydedilemedi. Lütfen tekrar dene.')
       }
       setLoading(false)
       return
@@ -50,7 +50,7 @@ export default function RsvpForm(props: Props) {
       .eq('user_id', props.userId)
 
     if (error) {
-      setError('Iptal basarisiz. Lutfen tekrar dene.')
+      setError('İptal başarısız. Lütfen tekrar dene.')
       setLoading(false)
       return
     }
@@ -125,7 +125,7 @@ export default function RsvpForm(props: Props) {
             placeItems: 'center',
             fontSize: '13px',
           }}>{'\u2713'}</span>
-          Katiliyorsun. Gorusmek uzere.
+          Katılıyorsun. Görüşmek üzere.
         </p>
         <button
           onClick={handleCancel}
@@ -133,7 +133,7 @@ export default function RsvpForm(props: Props) {
           className="btn-secondary"
           style={{ fontSize: '13.5px', padding: '8px 18px' }}
         >
-          {loading ? 'Iptal ediliyor...' : 'Katilimi iptal et'}
+          {loading ? 'İptal ediliyor...' : 'Katılımı iptal et'}
         </button>
         {error ? <div style={errorStyle}>{error}</div> : null}
       </div>
@@ -164,7 +164,7 @@ export default function RsvpForm(props: Props) {
           lineHeight: 1.5,
           fontFamily: "'IBM Plex Mono', monospace",
         }}>
-          Bir kisi katilimi iptal ederse yerine otomatik gecirilirsin.
+          Bir kişi katılımı iptal ederse yerine otomatik geçirilirsin.
         </p>
         <button
           onClick={handleLeaveWaitlist}
@@ -172,7 +172,7 @@ export default function RsvpForm(props: Props) {
           className="btn-secondary"
           style={{ fontSize: '13.5px', padding: '8px 18px' }}
         >
-          {loading ? 'Cikiliyor...' : 'Bekleme listesinden cik'}
+          {loading ? 'Çıkılıyor...' : 'Bekleme listesinden çık'}
         </button>
         {error ? <div style={errorStyle}>{error}</div> : null}
       </div>
@@ -217,7 +217,7 @@ export default function RsvpForm(props: Props) {
         className="btn-primary"
         style={{ fontSize: '16px', padding: '13px 28px' }}
       >
-        {loading ? 'Kaydediliyor...' : 'Katiliyorum'}
+        {loading ? 'Kaydediliyor...' : 'Katılıyorum'}
       </button>
       {error ? <div style={errorStyle}>{error}</div> : null}
     </div>

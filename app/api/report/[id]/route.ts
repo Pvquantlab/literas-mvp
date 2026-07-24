@@ -13,7 +13,7 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Giris yapmalisin' }, { status: 401 })
+    return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
   }
 
   // Admin mi?
@@ -30,7 +30,7 @@ export async function PATCH(
   const rl = await checkRateLimit(req, user.id, 'normal')
   if (!rl.ok) {
     return NextResponse.json(
-      { error: 'Cok fazla istek, biraz bekle' },
+      { error: 'Çok fazla istek, biraz bekle' },
       { status: 429, headers: rl.headers }
     )
   }
@@ -38,7 +38,7 @@ export async function PATCH(
   const parsed = reportUpdateSchema.safeParse(await req.json())
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Gecersiz veri', details: parsed.error.flatten().fieldErrors },
+      { error: 'Geçersiz veri', details: parsed.error.flatten().fieldErrors },
       { status: 400 }
     )
   }
@@ -56,7 +56,7 @@ export async function PATCH(
 
   if (updateError) {
     console.error('[report PATCH] hatasi:', updateError)
-    return NextResponse.json({ error: 'Guncellenemedi' }, { status: 500 })
+    return NextResponse.json({ error: 'Güncellenemedi' }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true })
