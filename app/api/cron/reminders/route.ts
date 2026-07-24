@@ -27,13 +27,25 @@ function formatTr(iso: string): string {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
+const SITE = 'https://www.literaslab.com'
+
+function mailShell(inner: string): string {
+  return `
+    <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 2rem;">
+      <p style="font-style: italic; color: #B8541A;">No. 0001</p>
+      ${inner}
+      <p style="font-style: italic; color: #1F2A24; opacity: 0.6; margin-top: 2rem;">
+        literas
+      </p>
+    </div>
+  `
+}
+
 export async function GET(req: Request) {
-  // Yetki: Vercel Cron, CRON_SECRET'i Authorization header'da yollar.
-  // CRON_SECRET tanımlı değilse kapalı başarısız ol — aksi halde template literal
-  // "Bearer undefined" düz metnine dönüşür ve uç herkese açık hale gelir.
+  // Yetki: CRON_SECRET tanimli degilse kapali basarisiz ol.
   const cronSecret = process.env.CRON_SECRET
   if (!cronSecret) {
-    console.error('[cron/reminders] CRON_SECRET tanımlı değil — istek reddedildi')
+    console.error('[cron/reminders] CRON_SECRET tanimli degil - istek reddedildi')
     return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
   }
 
@@ -48,7 +60,8 @@ export async function GET(req: Request) {
     { auth: { persistSession: false } }
   )
 
-  // 24 saat içinde başlayacak + henüz hatırlatılmamış etkinlikler
+  // ---- 1) Yaklasan etkinlik hatirlatmalari --------------------------------
+
   const now = new Date()
   const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000)
 
@@ -60,8 +73,8 @@ export async function GET(req: Request) {
     .lte('event_date', in24h.toISOString())
 
   if (eventsErr) {
-    console.error('[cron/reminders] etkinlik çekme hatası:', eventsErr)
-    return NextResponse.json({ error: 'Etkinlikler çekilemedi' }, { status: 500 })
+    console.error('[cron/reminders] etkinlik cekme hatasi:', eventsErr)
+    return NextResponse.json({ error: 'Etkinlikler cekilemedi' }, { status: 500 })
   }
 
   let processed = 0
@@ -82,51 +95,117 @@ export async function GET(req: Request) {
       const safeLocation = event.location ? escapeHtml(event.location) : null
       const safeCommunity = community.name ? escapeHtml(community.name) : ''
       const dateStr = formatTr(event.event_date)
-      const icsUrl = `https://www.literaslab.com/api/event/${event.id}/ics`
+      const icsUrl = `${SITE}/api/event/${event.id}/ics`
 
-      const htmlBody = `
-        <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 2rem;">
-          <p style="font-style: italic; color: #B8541A;">No. 0001</p>
-          <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
-            Yarın: ${safeTitle}
-          </h1>
-          <p style="color: #1F2A24;">
-            Katıldığın <em>${safeTitle}</em> etkinliği yaklaşıyor.
-          </p>
-          <p style="color: #1F2A24;">
-            <strong>${dateStr}</strong>${safeLocation ? ` · ${safeLocation}` : ''}
-          </p>
-          ${safeCommunity ? `<p style="color: #1F2A24; opacity: 0.75;">${safeCommunity}</p>` : ''}
-          <p style="color: #1F2A24;">
-            <a href="${icsUrl}" style="color: #B8541A;">Takvimine ekle</a>
-          </p>
-          <p style="font-style: italic; color: #1F2A24; opacity: 0.6; margin-top: 2rem;">
-            literas
-          </p>
-        </div>
-      `
+      const htmlBody = mailShell(`
+        <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+          Yarin: ${safeTitle}
+        </h1>
+        <p style="color: #1F2A24;">
+          Katildigin <em>${safeTitle}</em> etkinligi yaklasiyor.
+        </p>
+        <p style="color: #1F2A24;">
+          <strong>${dateStr}</strong>${safeLocation ? ` &middot; ${safeLocation}` : ''}
+        </p>
+        ${safeCommunity ? `<p style="color: #1F2A24; opacity: 0.75;">${safeCommunity}</p>` : ''}
+        <p style="color: #1F2A24;">
+          <a href="${icsUrl}" style="color: #B8541A;">Takvimine ekle</a>
+        </p>
+      `)
 
       for (const email of emails) {
         await sendEmail({
           to: [email],
-          subject: `Yarın: ${event.title}`,
+          subject: `Yarin: ${event.title}`,
           html: htmlBody,
         })
-        await sleep(600) // Resend rate limit
+        await sleep(600)
       }
     }
 
-    // reminder_sent_at'i güvenli RPC ile işaretle (service_role yok)
     const { error: rpcErr } = await supabase.rpc('mark_reminder_sent', {
       p_event_id: event.id,
     })
 
     if (rpcErr) {
-      console.error(`[cron/reminders] ${event.id} işaretlenemedi:`, rpcErr)
+      console.error(`[cron/reminders] ${event.id} isaretlenemedi:`, rpcErr)
     } else {
       processed++
     }
   }
 
-  return NextResponse.json({ ok: true, processed })
+  // ---- 2) Bekleme listesinden terfi edenlere haber -------------------------
+  // rsvp_waitlist_promote trigger'i otomatik terfi ettiriyor ama mail atmiyor.
+  // promoted_at dolu + promotion_email_sent_at bos olanlara burada haber veriyoruz.
+
+  let promoted = 0
+
+  const { data: promotions, error: promoErr } = await supabase
+    .from('waitlist')
+    .select(`
+      id,
+      event:events!event_id(id, title, event_date, location),
+      user:profiles!user_id(email, name)
+    `)
+    .not('promoted_at', 'is', null)
+    .is('promotion_email_sent_at', null)
+
+  if (promoErr) {
+    console.error('[cron/reminders] terfi cekme hatasi:', promoErr)
+  } else {
+    for (const row of promotions ?? []) {
+      const ev = (row as any).event
+      const email = (row as any).user?.email
+
+      // Etkinlik silinmisse ya da e-posta yoksa sadece isaretle, mail atma
+      if (ev && email) {
+        const safeTitle = escapeHtml(ev.title)
+        const safeLocation = ev.location ? escapeHtml(ev.location) : null
+        const dateStr = formatTr(ev.event_date)
+        const icsUrl = `${SITE}/api/event/${ev.id}/ics`
+        const eventUrl = `${SITE}/event/${ev.id}`
+
+        const htmlBody = mailShell(`
+          <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+            Yerin hazir: ${safeTitle}
+          </h1>
+          <p style="color: #1F2A24;">
+            Bekleme listesindeydin. Bir kisi katilimini iptal etti ve
+            <em>${safeTitle}</em> etkinligine kaydin yapildi.
+          </p>
+          <p style="color: #1F2A24;">
+            <strong>${dateStr}</strong>${safeLocation ? ` &middot; ${safeLocation}` : ''}
+          </p>
+          <p style="color: #1F2A24;">
+            <a href="${icsUrl}" style="color: #B8541A;">Takvimine ekle</a>
+            &middot;
+            <a href="${eventUrl}" style="color: #B8541A;">Etkinlige git</a>
+          </p>
+          <p style="color: #1F2A24; opacity: 0.75; font-size: 0.95rem;">
+            Gelemeyeceksen etkinlik sayfasindan katilimini iptal edebilirsin;
+            yerin bekleme listesindeki bir sonraki kisiye gecer.
+          </p>
+        `)
+
+        await sendEmail({
+          to: [email],
+          subject: `Yerin hazir: ${ev.title}`,
+          html: htmlBody,
+        })
+        await sleep(600)
+      }
+
+      const { error: markErr } = await supabase.rpc('mark_promotion_email_sent', {
+        p_waitlist_id: (row as any).id,
+      })
+
+      if (markErr) {
+        console.error(`[cron/reminders] terfi ${(row as any).id} isaretlenemedi:`, markErr)
+      } else {
+        promoted++
+      }
+    }
+  }
+
+  return NextResponse.json({ ok: true, processed, promoted })
 }
