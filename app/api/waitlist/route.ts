@@ -53,6 +53,27 @@ export async function POST(req: Request) {
     )
   }
 
+  // Bekleme listesi yalnızca DOLU etkinlikler için anlamlı:
+  // kontenjan sınırsızsa veya henüz dolmadıysa listeye girmeye gerek yok.
+  if (event.max_attendees == null) {
+    return NextResponse.json(
+      { error: 'Bu etkinlikte kontenjan sınırı yok, bekleme listesi gerekmiyor' },
+      { status: 400 }
+    )
+  }
+
+  const { count: attendeeCount } = await supabase
+    .from('rsvps')
+    .select('id', { count: 'exact', head: true })
+    .eq('event_id', event_id)
+
+  if ((attendeeCount ?? 0) < event.max_attendees) {
+    return NextResponse.json(
+      { error: 'Etkinlik henüz dolmadı, bekleme listesi gerekmiyor' },
+      { status: 400 }
+    )
+  }
+
   const { error: insertError } = await supabase
     .from('waitlist')
     .insert({ event_id, user_id: user.id })

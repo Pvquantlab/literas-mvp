@@ -1,13 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  // ?next=/admin gibi bir hedef geldiyse giriş sonrası oraya dön.
+  // Güvenlik: sadece site içi yollara izin ver (// ile başlayanlar dışarı gider).
+  const nextParam = searchParams.get('next')
+  const safeNext =
+    nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')
+      ? nextParam
+      : '/'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -24,7 +32,7 @@ export default function LoginPage() {
       setError('E-posta veya parola hatalı.')
       setLoading(false)
     } else {
-      router.push('/')
+      router.push(safeNext)
       router.refresh()
     }
   }
@@ -33,7 +41,9 @@ export default function LoginPage() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext)}`,
+      },
     })
     if (error) {
       setError('Google ile giriş başarısız. Tekrar dene.')
@@ -145,7 +155,7 @@ export default function LoginPage() {
         color: 'var(--muted)',
       }}>
         hesabın yok mu?{' '}
-        <Link href="/signup" style={{
+        <Link href={nextParam ? `/signup?next=${encodeURIComponent(safeNext)}` : '/signup'} style={{
           color: 'var(--ink)',
           fontWeight: 700,
           textDecoration: 'underline',

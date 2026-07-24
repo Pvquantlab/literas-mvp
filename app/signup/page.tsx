@@ -1,13 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 
 export default function SignupPage() {
   const router = useRouter()
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  // Giriş sayfasından taşınan ?next= hedefi — kayıt sonrası oraya dön.
+  const nextParam = searchParams.get('next')
+  const safeNext =
+    nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')
+      ? nextParam
+      : '/'
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -39,7 +46,7 @@ export default function SignupPage() {
       }
       setLoading(false)
     } else {
-      router.push('/')
+      router.push(safeNext)
       router.refresh()
     }
   }
@@ -48,7 +55,9 @@ export default function SignupPage() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext)}`,
+      },
     })
     if (error) {
       setError('Google ile kayıt başarısız. Tekrar dene.')
@@ -159,7 +168,7 @@ export default function SignupPage() {
         color: 'var(--muted)',
       }}>
         zaten hesabın var mı?{' '}
-        <Link href="/login" style={{
+        <Link href={nextParam ? `/login?next=${encodeURIComponent(safeNext)}` : '/login'} style={{
           color: 'var(--ink)',
           fontWeight: 700,
           textDecoration: 'underline',

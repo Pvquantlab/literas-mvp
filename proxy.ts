@@ -1,7 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+// Next.js 16: "middleware" dosya adlandırması deprecated oldu, "proxy" kullanılıyor.
+// İşlev aynı: her istekte Supabase oturum çerezini tazeler.
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
