@@ -34,6 +34,7 @@ export async function generateMetadata({
     month: 'long',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Europe/Istanbul',
   })
   const desc = event.description
     ? event.description.slice(0, 160)

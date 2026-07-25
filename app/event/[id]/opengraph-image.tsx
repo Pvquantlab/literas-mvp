@@ -93,7 +93,7 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
 
         <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'IBM Plex Mono', fontSize: 26, color: '#555' }}>
           <div style={{ display: 'flex' }}>{community.name ?? ''}</div>
-          <div style={{ display: 'flex', fontWeight: 700, color: '#1a1a1a' }}>literas</div>
+          <div style={{ display: 'flex', fontWeight: 700, color: '#1a1a1a' }}>literaslab</div>
         </div>
       </div>
     ),
