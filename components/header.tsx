@@ -47,7 +47,7 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
       top: 0,
       zIndex: 40,
     }}>
-      <div style={{
+      <div className="header-inner" style={{
         maxWidth: '1360px',
         margin: '0 auto',
         padding: '10px 24px',
@@ -131,9 +131,10 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
             background: 'var(--border-mid)',
             flex: '0 0 auto',
           }} />
-          <input
+         <input
             type="text"
             name="city"
+            className="search-city"
             defaultValue="İstanbul"
             aria-label="Şehir"
             style={{
@@ -172,7 +173,7 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
         </form>
 
         {/* Sağ menü */}
-        <nav style={{
+        <nav className="header-nav" style={{
           marginLeft: 'auto',
           display: 'flex',
           alignItems: 'center',
@@ -301,6 +302,9 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
                     <Link href={`/profile/${user.id}`} role="menuitem" className="menu-item" style={menuItemStyle}>
                       Profil
                     </Link>
+                    <Link href="/community/new" role="menuitem" className="menu-item menu-item-mobile" style={menuItemStyle}>
+                      Yeni topluluk başlat
+                    </Link>
                     <Link href="/event/new" role="menuitem" className="menu-item" style={menuItemStyle}>
                       Etkinlik oluştur
                     </Link>
@@ -370,9 +374,38 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
         .menu-item-danger:hover {
           background: rgba(190, 81, 39, 0.08);
         }
+       .menu-item-mobile {
+          display: none;
+        }
         @media (max-width: 820px) {
+          .header-inner {
+            flex-wrap: wrap !important;
+            gap: 10px 12px !important;
+            padding: 10px 16px !important;
+          }
+          .header-nav {
+            order: 2;
+          }
           .header-search {
+            order: 3;
+            flex: 1 1 100% !important;
+            max-width: none !important;
+            min-width: 0 !important;
+          }
+          /* iOS 16px altındaki alanlara odaklanınca sayfayı yakınlaştırıyor */
+          .header-search input {
+            font-size: 16px !important;
+          }
+          .header-search .search-city {
+            flex: 0 1 96px !important;
+            min-width: 80px !important;
+            padding: 9px 6px !important;
+          }
+          .header-btn-outline {
             display: none !important;
+          }
+          .menu-item-mobile {
+            display: block;
           }
         }
       `}</style>

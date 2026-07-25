@@ -27,19 +27,22 @@ const CATS = [
 
 const DEFAULT_SOFT = '#E8E4D8'
 
-// Türkçe karakter/aksan normalize — arama sorgusu için
-function normalizeQuery(q: string): string {
-  return q
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
+// Şehir karşılaştırması için: Türkçe harfleri ASCII'ye indir, küçült.
+// DB'deki communities.city_key sütunuyla birebir aynı mantık.
+const TR_MAP: Record<string, string> = {
+  'İ': 'i', 'I': 'i', 'ı': 'i', 'Ş': 's', 'ş': 's', 'Ğ': 'g', 'ğ': 'g',
+  'Ü': 'u', 'ü': 'u', 'Ö': 'o', 'ö': 'o', 'Ç': 'c', 'ç': 'c',
+}
+function cityKey(s: string): string {
+  return s.replace(/[İIıŞşĞğÜüÖöÇç]/g, (m) => TR_MAP[m]).toLowerCase().trim()
 }
 
-// textSearch için websearch formatına çevir — kullanıcı boşlukla ayırırsa AND ile arar
+// textSearch için websearch formatına çevir — kullanıcı boşlukla ayırırsa AND ile arar.
+// DİKKAT: aksan SİLİNMEZ. search_vector orijinal metinden üretiliyor;
+// 'doğa' -> 'dok', 'doga' -> 'dogu' köküne iniyor, eşleşmiyorlar.
 function buildSearchQuery(q: string): string {
-  const normalized = normalizeQuery(q)
   // Postgres websearch operatörlerini escape et (', ", :, &, |, !, <, >, (, ))
-  return normalized.replace(/['":&|!<>()]/g, ' ').split(/\s+/).filter(Boolean).join(' ')
+  return q.replace(/['":&|!<>()]/g, ' ').split(/\s+/).filter(Boolean).join(' ')
 }
 
 function CatIcon({ slug, size = 72 }: { slug: string; size?: number }) {
@@ -127,7 +130,10 @@ export default async function KesfetPage({
 
       if (communityIds) query = query.in('community_id', communityIds)
       // Şehir filtresi: yalnızca açıkça city parametresi geldiyse uygula
-      if (params.city) query = query.ilike('community.city', escapeIlike(params.city))
+     if (params.city) {
+        const ck = cityKey(params.city)
+        if (ck) query = query.ilike('community.city_key', `%${escapeIlike(ck)}%`)
+      }
       if (searchQuery) {
         const q = buildSearchQuery(searchQuery)
         if (q) query = query.textSearch('search_vector', q, { config: 'turkish', type: 'websearch' })
@@ -149,7 +155,10 @@ export default async function KesfetPage({
 
     if (activeCategory) query = query.eq('category', activeCategory)
     // Şehir filtresi (etkinlikler sekmesiyle aynı kural)
-    if (params.city) query = query.ilike('city', escapeIlike(params.city))
+    if (params.city) {
+      const ck = cityKey(params.city)
+      if (ck) query = query.ilike('city_key', `%${escapeIlike(ck)}%`)
+    }
     if (searchQuery) {
       const q = buildSearchQuery(searchQuery)
       if (q) query = query.textSearch('search_vector', q, { config: 'turkish', type: 'websearch' })
