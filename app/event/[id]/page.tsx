@@ -215,15 +215,30 @@ export default async function EventPage({
   const isOrganizer = user?.id === event.organizer_id
   const canManage = isOrganizer || isCommunityModerator
 
-  const date = new Date(event.event_date)
-  const dayNum = date.getDate()
-  const monthShort = MONTHS_TR_SHORT[date.getMonth()]
-  const monthFull = MONTHS_TR_FULL[date.getMonth()]
-  const year = date.getFullYear()
-  const dayName = DAYS_TR_LONG[date.getDay()]
-  const hours = date.getHours().toString().padStart(2, '0')
-  const mins = date.getMinutes().toString().padStart(2, '0')
-  const timeStr = `${hours}:${mins}`
+  // Sunucu UTC'de calisiyor. getDate/getHours sunucunun yerel saatini
+  // kullaniyor ve canlida 3 saat kayma uretiyordu: WhatsApp metninde
+  // 11:17, gorselde 14:17. Parcalari Istanbul saatinden aliyoruz.
+  const _parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Istanbul',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date(event.event_date))
+  const _p = (t: string) => _parts.find((x) => x.type === t)?.value ?? '0'
+
+  const dayNum = Number(_p('day'))
+  const monthIdx = Number(_p('month')) - 1
+  const monthShort = MONTHS_TR_SHORT[monthIdx]
+  const monthFull = MONTHS_TR_FULL[monthIdx]
+  const year = Number(_p('year'))
+  const dayName = new Date(event.event_date).toLocaleDateString('tr-TR', {
+    weekday: 'long',
+    timeZone: 'Europe/Istanbul',
+  })
+  const timeStr = `${_p('hour')}:${_p('minute')}`
   const longDate = `${dayName}, ${dayNum} ${monthFull} ${year}`
 
   const hasImage = !!event.cover_image_url
