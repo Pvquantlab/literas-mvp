@@ -321,7 +321,7 @@ export default async function HomePage({
     <main id="content">
       {/* ---- Hero: sola hizalı, sağda gerçek etkinlikler ---- */}
       <section className="container" style={{ paddingBlock: 0 }}>
-        <div className={events.length >= 2 ? "hero" : "hero hero-solo"}>
+       <div className="hero hero-solo">
           <div>
             <span className="badge-mono" style={{ marginBottom: 'var(--s-5)' }}>
               her zaman açık · herkese göre
@@ -350,48 +350,7 @@ export default async function HomePage({
             </div>
           </div>
 
-          {/* Hero görseli boş bir illüstrasyon değil — sitedeki gerçek etkinlikler.
-              İçerik yoksa bölüm tamamen gizlenir, sahte kart gösterilmez. */}
-          {events.length >= 2 && (
-            <div className="hero-visual stack" style={{ gap: 'var(--s-3)' }}>
-              {events.slice(0, 3).map((ev, i) => (
-                <Link
-                  key={ev.id}
-                  href={`/event/${ev.id}`}
-                  className="card row"
-                  style={{
-                    flexDirection: 'row',
-                    gap: 'var(--s-3)',
-                    padding: 'var(--s-3)',
-                  }}
-                >
-                  <span
-                    className="stack"
-                    style={{
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 48, height: 48, flexShrink: 0,
-                      borderRadius: 'var(--r-sm)',
-                      background: 'var(--paper-soft)',
-                    }}
-                  >
-                    <span className="mono" style={{ fontSize: 'var(--t-2xs)', color: 'var(--coral)' }}>
-                      {new Date(ev.event_date).toLocaleDateString('tr-TR', { month: 'short' }).toLowerCase()}
-                    </span>
-                    <span className="serif" style={{ fontSize: 'var(--t-lg)' }}>
-                      {new Date(ev.event_date).getDate()}
-                    </span>
-                  </span>
-                  <span className="stack" style={{ gap: 2, minWidth: 0 }}>
-                    <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.3 }}>{ev.title}</span>
-                    <span style={{ fontSize: 'var(--t-xs)', color: 'var(--muted)' }}>
-                      {ev.community?.name}
-                    </span>
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
+         
         </div>
       </section>
 
