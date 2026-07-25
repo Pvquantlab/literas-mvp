@@ -102,11 +102,6 @@ export default function UpcomingEvents({ events }: { events: EventSummary[] }) {
                         <p style={{ fontSize: 'var(--t-sm)', color: 'var(--muted)' }}>
                           {[ev.community?.name, ev.location].filter(Boolean).join(' · ')}
                         </p>
-                        {(ev.price ?? 0) === 0 && (
-                          <span className="badge-free" style={{ alignSelf: 'flex-start', marginTop: 2 }}>
-                            Ücretsiz
-                          </span>
-                        )}
                       </div>
 
                       <div

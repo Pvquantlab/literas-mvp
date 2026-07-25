@@ -39,7 +39,16 @@ export async function generateMetadata({
     ? event.description.slice(0, 160)
     : `${communityName} · ${eventDateStr}${event.location ? ' · ' + event.location : ''}`
 
-  const images = event.cover_image_url ? [event.cover_image_url] : []
+  // Bos dizi Next.js'e "gorsel istemiyorum" demek ve dosya tabanli
+  // opengraph-image.tsx'in otomatik eklenmesini bastiriyordu. undefined
+  // olunca Next kendi urettigi gorseli ekliyor.
+  // openGraph nesnesini elle tanimlayinca Next.js dosya tabanli
+  // opengraph-image.tsx'i otomatik EKLEMIYOR — images degeri ne olursa olsun.
+  // Bu yuzden elle veriyoruz. metadataBase layout.tsx'te tanimli oldugu icin
+  // goreli adres mutlak adrese cevriliyor; WhatsApp'in ihtiyaci olan da bu.
+  const images = event.cover_image_url
+    ? [event.cover_image_url]
+    : [`/event/${id}/opengraph-image`]
 
   return {
     title: event.title,
@@ -184,8 +193,10 @@ export default async function EventPage({
       (membership.role === 'founder' || membership.role === 'admin')
   }
 
+  // Ham rsvp satirina bakiyoruz, birlestirilmis profile degil: profil
+  // vitrinden gelmezse kullanici kendi katilimini goremiyordu.
   const userHasRsvp = user
-    ? rsvps?.some((r: any) => r.user?.id === user.id)
+    ? (rsvpRows ?? []).some((r: any) => r.user_id === user.id)
     : false
     // Kullanici waitlist'te mi?
   let userInWaitlist = false
@@ -218,7 +229,10 @@ export default async function EventPage({
   const category = (event.community as any)?.category ?? 'default'
   const bg = CATEGORY_BG[category] ?? CATEGORY_BG.default
 
-  const attendeeCount = rsvps?.length ?? 0
+  // Sayi rsvps dizisinden degil events.attendee_count sutunundan gelir.
+  // rsvps anonim kullaniciya kapali oldugu icin dizi bos donuyor ve
+  // sayac 0 gosteriyordu. Sutun trigger ile guncel tutuluyor.
+  const attendeeCount = (event as any).attendee_count ?? 0
   const isFull = event.max_attendees ? attendeeCount >= event.max_attendees : false
 
   return (
@@ -379,6 +393,8 @@ export default async function EventPage({
           <AttendeeList
             eventId={event.id}
             initialAttendees={(rsvps as any) ?? []}
+            initialCount={attendeeCount}
+            canSeeNames={!!user}
             maxAttendees={event.max_attendees ?? null}
           />
         </div>

@@ -48,7 +48,7 @@
   --t-xl:  21px;
   --t-2xl: 27px;
   --t-3xl: 34px;
-  --t-display: clamp(36px, 5.5vw, 58px);
+  --t-display: clamp(34px, 4.6vw, 52px);
 
   /* --- Boşluk ölçeği (4px tabanlı) --- */
   --s-1: 4px;
@@ -642,7 +642,7 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, .8fr);
   gap: var(--s-8);
   align-items: center;
   padding-block: var(--s-8) var(--s-7);
@@ -650,4 +650,199 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; gap: var(--s-6); padding-block: var(--s-6); }
   .hero-visual { display: none; }
+}
+
+/* Etkinlik yoksa hero tek kolon — sağda boş delik kalmasın. */
+.hero-solo { grid-template-columns: minmax(0, 700px); }
+
+/* Şeridin devamı olduğunu göstermek için sağ kenarda yumuşak geçiş. */
+.cat-strip {
+  mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent 100%);
+}
+/* ==========================================================================
+   Modern katman — globals.css'in sonuna eklenir.
+   Her teknik ilerici geliştirme: desteklenmezse sayfa yine tam çalışır.
+   ========================================================================== */
+
+/* --- İmza: masa ---------------------------------------------------------- */
+
+.seats { display: flex; flex-direction: column; gap: 5px; }
+.seats-svg { display: block; height: auto; }
+.seats-sm .seats-svg { width: 100%; max-width: 178px; }
+.seats-lg .seats-svg { width: 100%; max-width: 260px; }
+
+.seats-label {
+  font-size: var(--t-sm);
+  color: var(--muted);
+  line-height: 1.3;
+}
+.seats-open { color: var(--sticky-green-ink); }
+
+/* Kartın üstüne gelince boş sandalyeler canlanır: "burası senin olabilir".
+   Tek bir mikro-etkileşim, sitede başka yerde yok. */
+.cc-link:hover .seats-svg rect[stroke] {
+  stroke: var(--ink);
+  stroke-dasharray: none;
+}
+.seats-svg rect[stroke] {
+  transition: stroke .2s var(--ease), stroke-dasharray .2s var(--ease);
+}
+
+/* --- Satır kırılması -----------------------------------------------------
+   Başlıkların "Harflerden / kelimeler, / insanlardan / topluluklar" diye
+   dörde bölünmesini font boyutu düşürerek değil, tarayıcıya satırları
+   dengeleterek çözüyoruz. Asıl doğru araç bu. */
+
+h1, h2, h3, .serif, .h-section {
+  text-wrap: balance;
+}
+p, .seats-label {
+  text-wrap: pretty;   /* son satırda tek kelime kalmasın */
+}
+
+/* --- Kart: konteyner sorgusu ---------------------------------------------
+   Kart artık ekran genişliğine değil, İÇİNDE BULUNDUĞU KUTUYA göre
+   uyum sağlıyor. Aynı kart hem 3'lü ızgarada hem dar kenar çubuğunda
+   doğru davranır — medya sorgusuyla bu mümkün değil. */
+
+.grid-communities > * { container-type: inline-size; }
+
+@container (max-width: 240px) {
+  .seats-label { font-size: var(--t-xs); }
+  .cc-title { font-size: var(--t-md); }
+}
+
+/* --- Kaydırmayla beliriş --------------------------------------------------
+   JS yok, kütüphane yok. Desteklenmeyen tarayıcıda içerik zaten görünür
+   durumda kalır — @supports bunu garanti eder. */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 26%;
+    }
+    @keyframes reveal-in {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: none; }
+    }
+  }
+}
+
+/* --- Sayfalar arası geçiş -------------------------------------------------
+   Kart görselinden etkinlik sayfasının kapağına morph. Çalışması için
+   next.config.js'e experimental: { viewTransition: true } eklenmeli —
+   eklenmezse hiçbir şey bozulmaz, geçiş olmaz sadece. */
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: .22s;
+  }
+}
+
+/* --- color-mix: hover renklerini token'dan türet ---------------------------
+   Elle ikinci bir hex tanımlamak yerine mevcut token'ı karıştırıyoruz.
+   Marka rengi değişirse hover'lar kendiliğinden takip eder. */
+
+.cat-chip:hover {
+  background: color-mix(in oklab, var(--ink) 6%, transparent);
+}
+.btn-secondary:hover {
+  background: color-mix(in oklab, var(--ink) 7%, transparent);
+}
+
+/* --- Odak halkası --------------------------------------------------------- */
+
+.cc-link:focus-visible,
+.ue-row:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: var(--r-md);
+}
+/* ==========================================================================
+   MASA v3 — globals.css'in SONUNA ekle. Önceki .seats bloklarının
+   üzerine yazar; eskiyi silmene gerek yok.
+   ========================================================================== */
+
+:root {
+  --seat-empty: #D5D1C5;
+}
+
+.seats { display: flex; flex-direction: column; gap: 9px; }
+
+.seats-svg { display: block; height: auto; width: 100%; }
+.seats-sm .seats-svg { max-width: 270px; }
+.seats-lg .seats-svg { max-width: 360px; }
+
+.seats-label {
+  font-size: var(--t-sm);
+  color: var(--muted);
+  line-height: 1.3;
+}
+.seats-open { color: var(--sticky-green-ink); }
+
+/* Karta gelince boş sandalyeler koyulaşır: "burası senin olabilir".
+   Sitedeki tek mikro-etkileşim — o yüzden anlam taşıyor. */
+.seat-empty rect { transition: stroke .22s var(--ease); }
+.cc-link:hover .seat-empty rect {
+  stroke: color-mix(in oklab, var(--ink) 45%, var(--paper));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat-empty rect { transition: none; }
+}
+/* ==========================================================================
+   MASA v4 — izometrik. globals.css'in SONUNA ekle.
+   Önceki .seats bloklarının üzerine yazar; eskiyi silmene gerek yok.
+   ========================================================================== */
+
+.seats { display: flex; flex-direction: column; gap: 9px; }
+
+.seats-svg { display: block; height: auto; width: 100%; }
+.seats-sm .seats-svg { max-width: 240px; }
+.seats-lg .seats-svg { max-width: 330px; }
+
+.seats-label {
+  font-size: var(--t-sm);
+  color: var(--muted);
+  line-height: 1.3;
+}
+.seats-open { color: var(--sticky-green-ink); }
+
+/* Karta gelince boş sandalyeler ısınır: "burası senin olabilir".
+   Sitedeki tek mikro-etkileşim — o yüzden anlam taşıyor. */
+.chair-empty polygon { transition: fill .24s var(--ease); }
+.cc-link:hover .chair-empty polygon { fill: #C7BFA8; }
+
+@media (prefers-reduced-motion: reduce) {
+  .chair-empty polygon { transition: none; }
+}
+/* ==========================================================================
+   MASA ŞERİDİ v5 — globals.css'in SONUNA ekle.
+   ========================================================================== */
+
+.seats { display: flex; flex-direction: column; gap: 8px; }
+
+.seats-svg { display: block; height: auto; width: 100%; }
+.seats-sm .seats-svg { max-width: 190px; }
+.seats-lg .seats-svg { max-width: 250px; }
+
+.seats-label {
+  font-size: var(--t-sm);
+  color: var(--muted);
+  line-height: 1.3;
+}
+.seats-open { color: var(--sticky-green-ink); }
+
+/* Karta gelince boş halkalar koyulaşır: "burası senin olabilir". */
+.seat-empty circle { transition: stroke .22s var(--ease); }
+.cc-link:hover .seat-empty circle {
+  stroke: color-mix(in oklab, var(--ink) 50%, var(--paper));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat-empty circle { transition: none; }
 }

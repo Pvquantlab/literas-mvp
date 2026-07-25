@@ -96,9 +96,8 @@ export default async function HomePage({
 
   let communityQuery = supabase
     .from('communities')
-    .select('id, name, city, category, cover_image_url, community_members(count)')
+    .select('id, name, city, category, cover_image_url, member_count')
     .eq('status', 'approved')
-    .eq('community_members.status', 'approved')
     .order('created_at', { ascending: false })
     .limit(24)
 
@@ -120,7 +119,7 @@ export default async function HomePage({
   let eventQuery = supabase
     .from('events')
     .select(
-      'id, title, event_date, location, cover_image_url, price, community:communities!inner(name, category, city)'
+      'id, title, event_date, location, cover_image_url, community:communities!inner(name, category, city)'
     )
     .gte('event_date', new Date().toISOString())
     .order('event_date', { ascending: true })
@@ -136,6 +135,12 @@ export default async function HomePage({
     eventQuery,
     supabase.from('communities').select('city').eq('status', 'approved').not('city', 'is', null),
   ])
+
+  // Sorgu hatasini yut ma. Eskiden hata olsa bile bos liste gorunuyordu
+  // ve ekranda "veri yok" yaziyordu — gercekte sorgu patlamis oluyordu.
+  if (communityRes.error) console.error('[anasayfa] topluluk sorgusu:', communityRes.error.message)
+  if (eventRes.error) console.error('[anasayfa] etkinlik sorgusu:', eventRes.error.message)
+  if (cityRes.error) console.error('[anasayfa] sehir sorgusu:', cityRes.error.message)
 
   const communities = (communityRes.data ?? []) as CommunitySummary[]
   const events = (eventRes.data ?? []) as unknown as EventSummary[]
@@ -316,7 +321,7 @@ export default async function HomePage({
     <main id="content">
       {/* ---- Hero: sola hizalı, sağda gerçek etkinlikler ---- */}
       <section className="container" style={{ paddingBlock: 0 }}>
-        <div className="hero">
+        <div className={events.length >= 2 ? "hero" : "hero hero-solo"}>
           <div>
             <span className="badge-mono" style={{ marginBottom: 'var(--s-5)' }}>
               her zaman açık · herkese göre
@@ -358,7 +363,6 @@ export default async function HomePage({
                     flexDirection: 'row',
                     gap: 'var(--s-3)',
                     padding: 'var(--s-3)',
-                    marginLeft: i === 1 ? 'var(--s-5)' : 0,
                   }}
                 >
                   <span
