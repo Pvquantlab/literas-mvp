@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Logo from '@/components/logo'
 
 export default function Footer() {
   return (
@@ -20,38 +21,10 @@ export default function Footer() {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
               textDecoration: 'none',
             }}
           >
-            <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <path
-                d="M4 6a4 4 0 0 1 4-4h16a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-9l-6 5v-5H8a4 4 0 0 1-4-4z"
-                fill="var(--paper-soft)"
-              />
-              <text
-                x="10"
-                y="20"
-                fontFamily="system-ui, sans-serif"
-                fontSize="14"
-                fontWeight="800"
-                fill="var(--ink)"
-              >
-                l
-              </text>
-              <circle cx="22" cy="18" r="2.2" fill="var(--coral)" />
-            </svg>
-            <span
-              style={{
-                fontFamily: 'system-ui, sans-serif',
-                fontWeight: 800,
-                fontSize: '23px',
-                color: 'var(--paper-soft)',
-                letterSpacing: '-0.02em',
-              }}
-            >
-              literaslab
-            </span>
+            <Logo size={34} fontSize={23} tone="plain" color="var(--paper-soft)" />
           </Link>
          <p
             style={{

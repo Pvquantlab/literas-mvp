@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import Logo from '@/components/logo'
 
 type Props = {
   user: { id: string } | null
@@ -55,37 +56,14 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
         alignItems: 'center',
         gap: '18px',
       }}>
-        {/* Logo */}
+       {/* Logo */}
         <Link href="/" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '9px',
           textDecoration: 'none',
           flex: '0 0 auto',
         }}>
-          <span style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '8px',
-            background: 'var(--ink)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--lime)',
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontWeight: 600,
-            fontSize: '15px',
-          }}>
-            l
-          </span>
-          <span style={{
-            fontSize: '19px',
-            fontWeight: 700,
-            letterSpacing: '-0.3px',
-            color: 'var(--ink)',
-          }}>
-            literaslab
-          </span>
+          <Logo />
         </Link>
 
         {/* Arama çubuğu */}
