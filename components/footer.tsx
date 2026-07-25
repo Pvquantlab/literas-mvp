@@ -108,7 +108,7 @@ export default function Footer() {
           color: 'rgba(250, 244, 232, .55)',
         }}
       >
-        © 2026 literaslab · çevrimiçi başlar, çevrimdışı buluşur ✿
+        © 2026 literaslab · çevrimiçi başlar, çevrimdışı buluşur
       </div>
     </footer>
   )

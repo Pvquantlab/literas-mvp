@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import EventCard from '@/components/event-card'
+import { LogoMark } from '@/components/logo'
 
 export default async function ProfilePage({
   params,
@@ -236,7 +237,7 @@ export default async function ProfilePage({
                   {m.community.cover_image_url ? (
                     <img src={m.community.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   ) : (
-                    '✿'
+                    <LogoMark size={44} />
                   )}
                 </div>
                 {/* İsim + bilgi */}

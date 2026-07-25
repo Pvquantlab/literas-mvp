@@ -531,7 +531,7 @@ export default async function EventPage({
                   textAlign: 'center',
                   margin: 0,
                 }}>
-                  ✿ bu etkinliği sen düzenliyorsun
+                   bu etkinliği sen düzenliyorsun
                 </p>
               ) : !isApprovedMember && event.community ? (
                 <>

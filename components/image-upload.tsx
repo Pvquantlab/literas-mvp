@@ -154,7 +154,7 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
             disabled={uploading}
             style={{ display: 'none' }}
           />
-          {uploading ? 'yükleniyor…' : '✿ bir görsel seç'}
+          {uploading ? 'yükleniyor…' : 'bir görsel seç'}
         </label>
       )}
 

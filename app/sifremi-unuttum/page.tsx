@@ -55,9 +55,15 @@ export default function SifremiUnuttumPage() {
             padding: '20px 0',
           }}>
             <div style={{
-              fontSize: '38px',
               marginBottom: '12px',
-            }}>✿</div>
+              display: 'flex',
+              justifyContent: 'center',
+            }}>
+              <svg width="44" height="44" viewBox="0 0 44 44">
+                <circle cx="22" cy="22" r="22" fill="var(--lime)" />
+                <path d="M13 22.5 L19.5 29 L31 17" fill="none" stroke="var(--ink)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
             <h2 className="serif" style={{
               fontSize: '22px',
               color: 'var(--ink)',

@@ -168,7 +168,7 @@ export default function GizlilikPage() {
         color: 'var(--muted)',
         lineHeight: 1.6,
       }}>
-        ✿ soru için: <a href="mailto:bildirimler@literaslab.com" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>bildirimler@literaslab.com</a>
+        soru için: <a href="mailto:bildirimler@literaslab.com" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>bildirimler@literaslab.com</a>
       </div>
     </main>
   )

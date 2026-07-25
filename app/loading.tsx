@@ -11,7 +11,7 @@ export default function Loading() {
         color: 'var(--muted)',
         fontSize: '14px',
       }}>
-        ✿ yükleniyor...
+        yükleniyor...
       </p>
     </main>
   )

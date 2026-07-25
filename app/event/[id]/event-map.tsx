@@ -160,7 +160,7 @@ export default function EventMap(props: { location: string; city?: string }) {
           fontSize: '12px',
           color: 'var(--muted)',
         }}>
-          {approx ? '✿ yaklaşık konum · tam adres için yol tarifine tıkla' : '✿ buluşma noktası'}
+          {approx ? 'yaklaşık konum · tam adres için yol tarifine tıkla' : 'buluşma noktası'}
         </span>
         <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={pillButtonStyle}>
           yol tarifi al
