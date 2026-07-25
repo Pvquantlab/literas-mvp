@@ -4,7 +4,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 
 export const runtime = 'nodejs'
-export const alt = 'literas etkinlik'
+export const alt = 'literaslab etkinlik'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -32,6 +32,10 @@ const CAT_COLORS: Record<string, { bg: string; ink: string }> = {
   sosyal: { bg: '#EBDFD3', ink: '#A8354F' },
 }
 const FALLBACK = { bg: '#E8E4D8', ink: '#1a1a1a' }
+
+function trUpper(s: string) {
+  return s.replace(/i/g, 'İ').replace(/ı/g, 'I').toUpperCase()
+}
 
 function formatTr(d: string) {
   return new Intl.DateTimeFormat('tr-TR', {
@@ -61,7 +65,7 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
 
   const community = (event?.community as any) ?? {}
   const c = CAT_COLORS[(community.category ?? '').toLowerCase()] ?? FALLBACK
-  const title = event?.title ?? 'literas — etkinlik'
+  const title = event?.title ?? 'literaslab — etkinlik'
 
   return new ImageResponse(
     (
@@ -78,8 +82,8 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
           fontFamily: 'IBM Plex Sans',
         }}
       >
-        <div style={{ display: 'flex', fontSize: 26, fontFamily: 'IBM Plex Mono', letterSpacing: 2, textTransform: 'uppercase', color: c.ink }}>
-          etkinlik
+       <div style={{ display: 'flex', fontSize: 26, fontFamily: 'IBM Plex Mono', letterSpacing: 2, color: c.ink }}>
+          ETKİNLİK
         </div>
 
         <div style={{ display: 'flex', fontSize: 64, fontWeight: 700, lineHeight: 1.15, maxHeight: 230, overflow: 'hidden' }}>
@@ -93,7 +97,17 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
 
         <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'IBM Plex Mono', fontSize: 26, color: '#555' }}>
           <div style={{ display: 'flex' }}>{community.name ?? ''}</div>
-          <div style={{ display: 'flex', fontWeight: 700, color: '#1a1a1a' }}>literaslab</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <svg width="36" height="36" viewBox="0 0 32 32">
+              <rect width="32" height="32" rx="9" fill="#1E3A2B" />
+              <rect x="8.4" y="5.5" width="4" height="13.2" rx="2" fill="#C8EB4B" />
+              <rect x="8.4" y="18.5" width="15.2" height="3.8" rx="1.9" fill="#C8EB4B" />
+              <rect x="9.2" y="22.3" width="2.4" height="4" rx="1.2" fill="#C8EB4B" />
+              <rect x="19.6" y="22.3" width="2.4" height="4" rx="1.2" fill="#C8EB4B" />
+              <circle cx="18.4" cy="14.8" r="2.6" fill="#FFFFFF" />
+            </svg>
+            <div style={{ display: 'flex', fontWeight: 700, color: '#1a1a1a' }}>literaslab</div>
+          </div>
         </div>
       </div>
     ),
