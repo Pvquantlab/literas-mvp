@@ -5,15 +5,18 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-// Standart Leaflet marker
-const icon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
+const PIN_SVG = `
+<svg width="38" height="47" viewBox="0 0 38 47" xmlns="http://www.w3.org/2000/svg">
+  <path d="M19 46 C19 46 33.8 26.6 33.8 17 A14.8 14.8 0 1 0 4.2 17 C4.2 26.6 19 46 19 46 Z" fill="#C8EB4B" stroke="#1E3A2B" stroke-width="2.4" stroke-linejoin="round"/>
+  <circle cx="19" cy="17" r="5.6" fill="#1E3A2B"/>
+</svg>`
+
+const icon = L.divIcon({
+  className: 'lit-pin',
+  html: PIN_SVG,
+  iconSize: [38, 47],
+  iconAnchor: [19, 46],
+  popupAnchor: [0, -42],
 })
 
 const CITY_COORDS: Record<string, [number, number]> = {
@@ -32,7 +35,6 @@ export default function EventMap(props: { location: string; city?: string }) {
 
   useEffect(() => {
     let cancelled = false
-
     async function geocode() {
       const q = city ? location + ', ' + city + ', Türkiye' : location + ', Türkiye'
       try {
@@ -40,13 +42,11 @@ export default function EventMap(props: { location: string; city?: string }) {
         const res = await fetch(url)
         const data = await res.json()
         if (cancelled) return
-
         if (data && data.length > 0) {
           setCoords([parseFloat(data[0].lat), parseFloat(data[0].lon)])
           setLoading(false)
           return
         }
-
         const key = city ? city.toLocaleLowerCase('tr') : ''
         if (key && CITY_COORDS[key]) {
           setCoords(CITY_COORDS[key])
@@ -54,13 +54,11 @@ export default function EventMap(props: { location: string; city?: string }) {
           setLoading(false)
           return
         }
-
         setLoading(false)
       } catch (err) {
         if (!cancelled) setLoading(false)
       }
     }
-
     geocode()
     return () => {
       cancelled = true
@@ -85,6 +83,7 @@ export default function EventMap(props: { location: string; city?: string }) {
   return (
     <div style={{ marginTop: '24px' }}>
       <style>{`
+        .lit-pin { background: none; border: none; }
         .leaflet-popup-content-wrapper {
           background: #1E3A2B;
           color: #FAF4E8;
@@ -94,26 +93,48 @@ export default function EventMap(props: { location: string; city?: string }) {
         }
         .leaflet-popup-content {
           margin: 10px 14px;
-          font-family: 'Schibsted Grotesk', system-ui, sans-serif;
+          font-family: 'Instrument Sans', system-ui, sans-serif;
         }
-        .leaflet-popup-tip {
-          background: #1E3A2B;
-        }
+        .leaflet-popup-tip { background: #1E3A2B; }
         .popup-title {
-          font-family: 'Playfair Display', serif;
-          font-weight: 800;
-          font-size: 15px;
+          font-weight: 600;
+          font-size: 14.5px;
           margin: 0 0 2px;
+          letter-spacing: -0.01em;
         }
         .popup-sub {
           font-family: 'IBM Plex Mono', monospace;
           font-size: 11px;
           color: rgba(250,244,232,.7);
         }
+        .leaflet-control-zoom {
+          border: 1px solid rgba(30,58,43,.28) !important;
+          border-radius: 10px !important;
+          overflow: hidden;
+          box-shadow: none !important;
+        }
+        .leaflet-control-zoom a {
+          background: rgba(255,255,255,.94);
+          color: #1E3A2B;
+          border: none !important;
+          font-weight: 600;
+          width: 30px;
+          height: 30px;
+          line-height: 30px;
+        }
+        .leaflet-control-zoom a:first-child {
+          border-bottom: 1px solid rgba(30,58,43,.16) !important;
+        }
+        .leaflet-control-zoom a:hover { background: #FFFFFF; }
+        .leaflet-control-attribution {
+          background: rgba(255,255,255,.72) !important;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 9.5px !important;
+          color: rgba(30,58,43,.5) !important;
+        }
+        .leaflet-control-attribution a { color: rgba(30,58,43,.65) !important; }
       `}</style>
-
       <MapTitle />
-
       <div style={containerStyle}>
         <MapContainer
           center={coords}
@@ -133,14 +154,13 @@ export default function EventMap(props: { location: string; city?: string }) {
           </Marker>
         </MapContainer>
       </div>
-
       <div style={footerStyle}>
         <span style={{
           fontFamily: "'IBM Plex Mono', monospace",
           fontSize: '12px',
           color: 'var(--muted)',
         }}>
-          {approx ? '✿ yaklaşık konum · tam adres için yol tarifine tıkla' : '✿ tam konum'}
+          {approx ? '✿ yaklaşık konum · tam adres için yol tarifine tıkla' : '✿ buluşma noktası'}
         </span>
         <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={pillButtonStyle}>
           yol tarifi al
@@ -152,9 +172,8 @@ export default function EventMap(props: { location: string; city?: string }) {
 
 function MapTitle() {
   return (
-    <h3 style={{
-      fontFamily: "'Playfair Display', serif",
-      fontWeight: 800,
+    <h3 className="serif" style={{
+      fontWeight: 600,
       fontSize: 'clamp(20px, 2.4vw, 26px)',
       color: 'var(--ink)',
       margin: '0 0 12px',
@@ -167,7 +186,7 @@ function MapTitle() {
 
 const containerStyle: React.CSSProperties = {
   width: '100%',
-  height: '320px',
+  height: '340px',
   borderRadius: '22px',
   overflow: 'hidden',
   border: '2px solid var(--ink)',
@@ -199,9 +218,9 @@ const pillButtonStyle: React.CSSProperties = {
   border: '2px solid var(--ink)',
   borderRadius: '999px',
   padding: '8px 20px',
-  fontFamily: "'Schibsted Grotesk', system-ui, sans-serif",
+  fontFamily: "'Instrument Sans', system-ui, sans-serif",
   fontSize: '14px',
-  fontWeight: 800,
+  fontWeight: 600,
   textDecoration: 'none',
   boxShadow: '3px 4px 0 var(--ink)',
   transition: 'transform 0.18s ease',
