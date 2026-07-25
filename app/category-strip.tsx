@@ -1,136 +1,117 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef } from 'react'
-import CategoryDoodle from '@/components/category-doodle'
+import { useEffect, useRef, useState } from 'react'
+import { CATEGORIES } from '@/lib/categories'
+import CategoryIcon from '@/components/category-icon'
 
-type Cat = {
-  n: string
-  slug: string
-  bg: string
-  ink: string
-  pt: string
+type Props = {
+  activeSlug: string | null
+  activeCity?: string | null
+  query?: string | null
 }
 
-export default function CategoryStrip({
-  cats,
-  activeCategory,
-  activeCity,
-  activeQuery,
-}: {
-  cats: Cat[]
-  activeCategory?: string
-  activeCity?: string
-  activeQuery?: string
-}) {
-  const stripRef = useRef<HTMLDivElement>(null)
+export default function CategoryStrip({ activeSlug, activeCity, query }: Props) {
+  const ref = useRef<HTMLElement>(null)
+  const [canLeft, setCanLeft] = useState(false)
+  const [canRight, setCanRight] = useState(false)
 
-  const buildHref = (cat: string | null) => {
-    const params = new URLSearchParams()
-    if (cat) params.set('category', cat)
-    if (activeCity) params.set('city', activeCity)
-    if (activeQuery) params.set('q', activeQuery)
-    const qs = params.toString()
-    return qs ? `/?${qs}` : '/'
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const update = () => {
+      setCanLeft(el.scrollLeft > 4)
+      setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+    }
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      el.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [])
+
+  function scroll(dir: 'left' | 'right') {
+    ref.current?.scrollBy({ left: dir === 'left' ? -320 : 320, behavior: 'smooth' })
   }
 
-  const scrollBack = () => {
-    const el = stripRef.current
-    if (el) el.scrollBy({ left: -el.clientWidth * 0.8, behavior: 'smooth' })
+  const buildHref = (slug: string | null) => {
+    const p = new URLSearchParams()
+    if (slug) p.set('category', slug)
+    if (activeCity) p.set('city', activeCity)
+    if (query) p.set('q', query)
+    const s = p.toString()
+    return s ? `/?${s}` : '/'
   }
-  const scrollForward = () => {
-    const el = stripRef.current
-    if (el) el.scrollBy({ left: el.clientWidth * 0.8, behavior: 'smooth' })
+
+  const btnStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: '36px',
+    height: '36px',
+    borderRadius: '50%',
+    border: '1px solid var(--border-mid)',
+    background: 'var(--paper-cream)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'var(--ink)',
+    boxShadow: '0 2px 8px rgba(30,58,43,.10)',
+    zIndex: 2,
   }
 
   return (
     <div style={{ position: 'relative' }}>
-      <button onClick={scrollBack} aria-label="Kategorileri geri kaydır" style={arrowBtnStyle('left')}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
+      <nav ref={ref} className="cat-strip" aria-label="Kategoriler">
+        <Link href={buildHref(null)} className="cat-chip" aria-current={!activeSlug}>
+          Tümü
+        </Link>
+        {CATEGORIES.map((c) => (
+          <Link
+            key={c.slug}
+            href={buildHref(c.slug)}
+            className="cat-chip"
+            aria-current={activeSlug === c.slug}
+          >
+            <CategoryIcon slug={c.slug} size={21} />
+            {c.label}
+          </Link>
+        ))}
+      </nav>
 
-      <button onClick={scrollForward} aria-label="Kategorileri kaydır" style={arrowBtnStyle('right')}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
+      {canLeft && (
+        <button
+          onClick={() => scroll('left')}
+          aria-label="Kategorileri sola kaydır"
+          className="strip-nav-btn"
+          style={{ ...btnStyle, left: 0 }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 6l-6 6 6 6" />
+          </svg>
+        </button>
+      )}
 
-      <div
-        ref={stripRef}
-        style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: '10px',
-          marginTop: '22px',
-          overflowX: 'auto',
-          scrollSnapType: 'x proximity',
-          padding: '12px 28px 16px',
-          scrollbarWidth: 'none',
-        }}
-      >
-        {cats.map((c) => {
-          const isActive = activeCategory?.toLocaleLowerCase('tr') === c.slug
-          return (
-            <Link
-              key={c.slug}
-              href={buildHref(isActive ? null : c.slug)}
-              className="doodle-item"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '8px',
-                width: '104px',
-                flex: 'none',
-                scrollSnapAlign: 'start',
-                padding: '6px 0',
-                textDecoration: 'none',
-              }}
-            >
-              <CategoryDoodle slug={c.slug} size={68} active={isActive} />
-              <span
-                style={{
-                  fontSize: '13px',
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? 'var(--ink)' : 'var(--muted)',
-                  textAlign: 'center',
-                  lineHeight: 1.3,
-                }}
-              >
-                {c.n}
-              </span>
-            </Link>
-          )
-        })}
-      </div>
+      {canRight && (
+        <button
+          onClick={() => scroll('right')}
+          aria-label="Kategorileri sağa kaydır"
+          className="strip-nav-btn"
+          style={{ ...btnStyle, right: 0 }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 6l6 6-6 6" />
+          </svg>
+        </button>
+      )}
 
       <style>{`
-        .doodle-item:hover .doodle {
-          transform: scale(1.08);
-        }
+        .cat-strip::-webkit-scrollbar { display: none; }
+        .strip-nav-btn:hover { background: var(--paper-soft); }
       `}</style>
     </div>
   )
-}
-
-function arrowBtnStyle(side: 'left' | 'right'): React.CSSProperties {
-  return {
-    position: 'absolute',
-    [side]: '18px',
-    top: '42px',
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    background: '#FFFFFF',
-    border: '1.5px solid rgba(30,58,43,.35)',
-    color: 'var(--ink)',
-    cursor: 'pointer',
-    display: 'grid',
-    placeItems: 'center',
-    boxShadow: '0 4px 12px rgba(30,58,43,.15)',
-    zIndex: 2,
-    transition: 'all .18s',
-  }
 }

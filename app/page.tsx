@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
-import { CATEGORIES, bySlug, sanitizeQuery } from '@/lib/categories'
-import CategoryIcon from '@/components/category-icon'
+import { bySlug, sanitizeQuery } from '@/lib/categories'
+import CategoryStrip from './category-strip'
 import CommunityCard, { type CommunitySummary } from '@/components/community-card'
 import UpcomingEvents, { type EventSummary } from '@/components/upcoming-events'
 import EventCard from '@/components/event-card'
@@ -13,33 +13,6 @@ export const revalidate = 60
 type SearchParams = { category?: string; city?: string; q?: string }
 
 /* ---------------------------------------------------------------------- */
-
-function CategoryStrip({
-  activeSlug,
-  buildHref,
-}: {
-  activeSlug: string | null
-  buildHref: (slug: string | null) => string
-}) {
-  return (
-    <nav className="cat-strip" aria-label="Kategoriler">
-      <Link href={buildHref(null)} className="cat-chip" aria-current={!activeSlug}>
-        Tümü
-      </Link>
-      {CATEGORIES.map((c) => (
-        <Link
-          key={c.slug}
-          href={buildHref(c.slug)}
-          className="cat-chip"
-          aria-current={activeSlug === c.slug}
-        >
-          <CategoryIcon slug={c.slug} size={17} />
-          {c.label}
-        </Link>
-      ))}
-    </nav>
-  )
-}
 
 function SectionHead({
   title,
@@ -356,7 +329,7 @@ export default async function HomePage({
 
       {/* ---- Kategori çipleri ---- */}
       <section className="container section-tight" style={{ paddingBlock: 'var(--s-4)' }}>
-        <CategoryStrip activeSlug={activeSlug} buildHref={buildHref} />
+        <CategoryStrip activeSlug={activeSlug} activeCity={activeCity} query={params.q ?? null} />
       </section>
 
       {/* ---- Yaklaşan etkinlikler: sayfanın asıl işi ---- */}
