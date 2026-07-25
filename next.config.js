@@ -1,8 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Supabase Storage'daki kapak görselleri için. next/image bu izin
+  // olmadan dış adresten görsel yüklemez.
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'gwcanlhrzkvhrlbueakb.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
+
   // Güvenlik başlıkları: tarayıcı seviyesinde ek koruma katmanı.
-  // (CSP bilinçli olarak yok — harita/OSM kaynakları ve inline script'ler
-  // yüzünden dikkatli kurulmazsa siteyi bozabilir; ileride eklenebilir.)
+  // (CSP hâlâ yok — harita kaynakları yüzünden ayrı bir adım olarak ele alacağız.)
   async headers() {
     return [
       {
@@ -14,8 +25,10 @@ const nextConfig = {
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           // Dış bağlantılarda referer bilgisini sınırla
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          // Kamera/mikrofon/konum API'lerini kapat (site bunları kullanmıyor)
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          // Kamera ve mikrofon kapalı. Konum SADECE kendi sitemize açık:
+          // "Konumumu kullan" butonu bunu gerektiriyor. Eski değer
+          // geolocation=() idi ve o butonu sessizce kırıyordu.
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
           // HTTPS'i 2 yıl boyunca zorunlu tut
           {
             key: 'Strict-Transport-Security',
@@ -26,4 +39,5 @@ const nextConfig = {
     ]
   },
 }
+
 module.exports = nextConfig
