@@ -180,7 +180,7 @@ export default async function HomePage({
       .filter(Boolean)
 
     const initials = profile?.name
-      ? profile.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
+      ? profile.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
       : '?'
 
     return (
@@ -278,7 +278,7 @@ export default async function HomePage({
                 <SectionHead title="Senin için" href="/kesfet" linkLabel="Tümünü gör" />
                 <div className="grid-communities">
                   {events.slice(0, 4).map((ev) => (
-                    <EventCard key={ev.id} event={ev} showCommunityName />
+                    <EventCard key={ev.id} event={{ ...ev, location: ev.location || "" }} showCommunityName />
                   ))}
                 </div>
               </section>
