@@ -6,9 +6,8 @@ import { CATEGORIES, byValue, NEUTRAL_COVER } from '@/lib/categories'
  *   <GlossyIcon value />    çıplak parlak ikon
  *   <CategoryCover value /> geniş kapak (kart) / kare kapak (liste thumbnail)
  *
- * NOT: components/category-icon.tsx AYRI bir dosya — filtre şeridi ve
- * upcoming-events onu kullanıyor. İki sistem geçiş boyunca yan yana duruyor.
- * Filtre şeridi buraya geçtiğinde eski dosya silinecek.
+ * Tek kaynak: filtre şeridi, kart kapakları ve liste thumbnail'ları hepsi
+ * buradan besleniyor. Eski category-icon.tsx ve category-doodle.tsx silindi.
  *
  * MİMARÎ: bütün gradyan, sheen ve clipPath tanımları <IconSprite /> içinde
  * BİR KEZ duruyor; kullanım noktaları <use href="#ikon-{slug}"> ile çağırıyor.
@@ -305,9 +304,11 @@ export function CategoryTile({
 
 type CoverProps = {
   value?: string | null
-  /** Kapak oranı. Kart için 400×240, liste thumbnail'ı için 120×120. */
+  /** Kapak oranı. Kart için 400×240, liste thumbnail'ı için 120×90. */
   w?: number
   h?: number
+  /** İkonun kapak içindeki ölçeği. Verilmezse kareye 0.62, geniş kapağa 1.15. */
+  scale?: number
   className?: string
 }
 
@@ -316,10 +317,10 @@ type CoverProps = {
  * Kategori bilinmiyorsa ikon ÇİZİLMEZ — sadece nötr zemin kalır.
  * Uydurma ikon yanlış bilgi verir.
  */
-export function CategoryCover({ value, w = 400, h = 240, className }: CoverProps) {
+export function CategoryCover({ value, w = 400, h = 240, scale, className }: CoverProps) {
   const cat = byValue(value)
-  const scale = w === h ? 0.62 : 1.15
-  const s = 100 * scale
+  const sc = scale ?? (w === h ? 0.62 : 1.15)
+  const s = 100 * sc
   const ox = (w - s) / 2
   const oy = (h - s) / 2
 
@@ -336,7 +337,7 @@ export function CategoryCover({ value, w = 400, h = 240, className }: CoverProps
       {cat && (
         <>
           <ellipse cx={w * 0.24} cy={h * 0.16} rx={w * 0.6} ry={h * 0.5} fill={cat.colors[0]} opacity=".22" />
-          <g transform={`translate(${ox} ${oy}) scale(${scale})`}>
+          <g transform={`translate(${ox} ${oy}) scale(${sc})`}>
             <use href={`#ci-icon-${cat.slug}`} width="100" height="100" x="0" y="0" />
           </g>
         </>
