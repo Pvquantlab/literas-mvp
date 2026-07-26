@@ -254,7 +254,7 @@ export default async function HomePage({
             {events.length > 0 && (
               <section style={{ marginBottom: 'var(--s-8)' }}>
                 <SectionHead title="Senin için" href="/kesfet" linkLabel="Tümünü gör" />
-                <div className="grid-communities">
+               <div className="grid-communities grid-narrow">
                   {events.slice(0, 4).map((ev) => (
                     <EventCard key={ev.id} event={{ ...ev, location: ev.location || "" }} showCommunityName />
                   ))}
@@ -270,8 +270,7 @@ export default async function HomePage({
               </div>
 
               {communities.length > 0 ? (
-                <div className="grid-communities">
-                  {communities.map((c) => <CommunityCard key={c.id} community={c} />)}
+<div className="grid-communities grid-narrow">                  {communities.map((c) => <CommunityCard key={c.id} community={c} />)}
                 </div>
               ) : (
                 <div className="empty-state">

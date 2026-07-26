@@ -450,13 +450,33 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   gap: var(--s-5);
 }
 /* Tek ızgara tanımı. page.tsx içindeki iki ayrı <style> bloğu bunu kullanır. */
+/* Kolon sayısı ekrandan değil KAPTAN türüyor.
+   Sabit 3 kolon, giriş yapmış görünümde kenar çubuğu yüzünden daralan
+   sütunda kartları 155px'e sıkıştırıyordu — başlıklar kesiliyor, buton
+   taşıyordu. 260px yeni kartların rahat durduğu alt sınır. */
+/* Kolon sayısı ekrandan değil ızgaranın kendi genişliğinden türüyor.
+   Sabit 3 kolonluk medya sorgusu, giriş yapmış görünümde kenar çubuğu
+   yüzünden daralan sütunda kartları 155px'e sıkıştırıyordu. */
 .grid-communities {
   display: grid;
   gap: var(--s-5);
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
-@media (min-width: 620px)  { .grid-communities { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1000px) { .grid-communities { grid-template-columns: repeat(3, 1fr); } }
+
+/* Kenar çubuğunun yanındaki dar sütun. Orada auto-fill tek kolona
+   düşüyor; iki kolon istiyoruz, kartlar biraz dar olsa da. */
+.grid-narrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 720px) { .grid-narrow { grid-template-columns: 1fr; } }
+
+/* Dar kartta alt satır yan yana sığmıyor — buton kartın dışına taşıyordu.
+   .grid-communities > * zaten container-type taşıyor, o yüzden kart
+   kendi kabına göre davranabiliyor. */
+@container (max-width: 250px) {
+  .ev-foot, .cm-foot { flex-direction: column; align-items: stretch; gap: 10px; }
+  .ev-go, .cm-go { text-align: center; }
+  .ev-title { font-size: 17px; }
+  .cm-title { font-size: 18px; }
+}
 
 /* --- Yardımcılar -------------------------------------------------------- */
 
