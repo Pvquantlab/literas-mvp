@@ -25,8 +25,24 @@ import { CATEGORIES, byValue, NEUTRAL_COVER } from '@/lib/categories'
  * çizimini yapmaya devam ediyor, buraya bağlanmayacak.
  */
 
+/**
+ * "Tümü" bir kategori DEĞİL, bir filtre anahtarı — o yüzden CATEGORIES
+ * dizisinde yok. Ama filtre satırının ilk karosu olarak ikona ihtiyacı var,
+ * bu yüzden burada özel durum olarak duruyor.
+ */
+export const TUMU_SLUG = 'tumu'
+const TUMU_COLORS: [string, string, string] = ['#5C9E7B', '#2F5B43', '#1A3225']
+
 /** Gövde şekli. viewBox 0 0 100 100. */
 const SHAPES: Record<string, React.ReactNode> = {
+  tumu: (
+    <>
+      <rect x="20" y="20" width="26" height="26" rx="9" />
+      <rect x="54" y="20" width="26" height="26" rx="9" />
+      <rect x="20" y="54" width="26" height="26" rx="9" />
+      <rect x="54" y="54" width="26" height="26" rx="9" />
+    </>
+  ),
   kitap: (
     <>
       <path d="M50 30 L24 24 Q18 22 18 29 V70 Q18 76 24 77 L50 83 Z" />
@@ -170,6 +186,11 @@ function details(slug: string, hi: string, dk: string): React.ReactNode {
 /**
  * Bütün tanımlar. layout.tsx'te BİR KEZ render edilir, görsel çıktısı yok.
  */
+const SPRITE_ITEMS: { slug: string; colors: [string, string, string] }[] = [
+  { slug: TUMU_SLUG, colors: TUMU_COLORS },
+  ...CATEGORIES.map((c) => ({ slug: c.slug, colors: c.colors })),
+]
+
 export function IconSprite() {
   return (
     <svg width="0" height="0" aria-hidden="true" style={{ position: 'absolute' }}>
@@ -182,7 +203,7 @@ export function IconSprite() {
           <feGaussianBlur stdDeviation="6" />
         </filter>
 
-        {CATEGORIES.map(({ slug, colors: [hi, base, dk] }) => (
+        {SPRITE_ITEMS.map(({ slug, colors: [hi, base, dk] }) => (
           <linearGradient key={slug} id={`ci-grad-${slug}`} x1="18%" y1="6%" x2="82%" y2="96%">
             <stop offset="0%" stopColor={hi} />
             <stop offset="52%" stopColor={base} />
@@ -190,7 +211,7 @@ export function IconSprite() {
           </linearGradient>
         ))}
 
-        {CATEGORIES.map(({ slug, colors: [, base, dk] }) => (
+        {SPRITE_ITEMS.map(({ slug, colors: [, base, dk] }) => (
           <linearGradient key={slug} id={`ci-bg-${slug}`} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor={base} />
             <stop offset="100%" stopColor={dk} />
@@ -202,13 +223,13 @@ export function IconSprite() {
           <stop offset="100%" stopColor={NEUTRAL_COVER[1]} />
         </linearGradient>
 
-        {CATEGORIES.map(({ slug }) => (
+        {SPRITE_ITEMS.map(({ slug }) => (
           <clipPath key={slug} id={`ci-clip-${slug}`}>
             <g>{SHAPES[slug]}</g>
           </clipPath>
         ))}
 
-        {CATEGORIES.map(({ slug, colors: [hi, base, dk] }) => (
+        {SPRITE_ITEMS.map(({ slug, colors: [hi, base, dk] }) => (
           <symbol key={slug} id={`ci-icon-${slug}`} viewBox="-6 -6 112 112">
             <ellipse cx="50" cy="90" rx="30" ry="8" fill={base} opacity=".35" filter="url(#ci-softblur)" />
             <g fill={`url(#ci-grad-${slug})`} stroke={dk}>
@@ -229,12 +250,45 @@ type IconProps = { value?: string | null; size?: number; className?: string }
 
 /** Çıplak parlak ikon. Filtre karoları buraya geçince kullanılacak. */
 export function GlossyIcon({ value, size = 47, className }: IconProps) {
-  const cat = byValue(value)
-  if (!cat) return null
+  const slug = value === TUMU_SLUG ? TUMU_SLUG : byValue(value)?.slug
+  if (!slug) return null
   return (
     <svg width={size} height={size} viewBox="-6 -6 112 112" className={className} aria-hidden="true">
-      <use href={`#ci-icon-${cat.slug}`} />
+      <use href={`#ci-icon-${slug}`} />
     </svg>
+  )
+}
+
+/**
+ * Filtre karosu — düz squircle + parlak 3D ikon + etiket.
+ *
+ * Cam (backdrop-filter) BİLİNÇLİ olarak kullanılmadı: cam yalnızca arkasında
+ * renk karmaşası varsa görünür, bizim zeminimiz düz. Camı görünür kılmak için
+ * sayfaya sabit bir mesh katmanı gerekirdi — Safari'de kaydırma maliyeti ve
+ * mobilde backdrop-filter yükü karşılığında görsel kazanç küçüktü.
+ *
+ * Bu bileşen SADECE görünüm. Yönlendirme ve kaydırma mantığı her şeritte
+ * kendi yerinde kalıyor, çünkü ana sayfa ?category=, keşfet ?tab=&kategori=
+ * kullanıyor. Karoyu paylaşmak görsel tekrarı bitiriyor, URL'leri bozmadan.
+ */
+export function CategoryTile({
+  value,
+  label,
+  active = false,
+  size = 72,
+}: {
+  value: string
+  label: string
+  active?: boolean
+  size?: number
+}) {
+  return (
+    <>
+      <span className={active ? 'ct-sq on' : 'ct-sq'} style={{ width: size, height: size }}>
+        <GlossyIcon value={value} size={Math.round(size * 0.66)} />
+      </span>
+      <span className={active ? 'ct-lbl on' : 'ct-lbl'}>{label}</span>
+    </>
   )
 }
 

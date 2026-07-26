@@ -847,3 +847,77 @@ p, .seats-label {
 @media (prefers-reduced-motion: reduce) {
   .seat-empty circle { transition: none; }
 }
+/* ==========================================================================
+   Kategori filtre karosu — düz squircle + 3D ikon.
+   Cam (backdrop-filter) kullanılmadı: düz zeminde görünmez, mesh gerektirir.
+   ========================================================================== */
+
+.ct-strip {
+  display: flex;
+  gap: var(--s-3);
+  overflow-x: auto;
+  padding: 6px 2px 10px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ct-item {
+  flex: 0 0 auto;
+  width: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  padding: 0;
+}
+
+.ct-sq {
+  display: grid;
+  place-items: center;
+  border-radius: 22px;
+  background: var(--paper-cream);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 20px -10px rgba(70, 58, 38, .26);
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease),
+              background .3s var(--ease), border-color .3s var(--ease);
+}
+.ct-item:hover .ct-sq {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 30px -12px rgba(70, 58, 38, .32);
+}
+.ct-sq.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  box-shadow: 0 14px 28px -12px rgba(30, 58, 43, .5);
+}
+
+.ct-lbl {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  transition: color .2s var(--ease);
+}
+.ct-lbl.on { color: var(--ink); font-weight: 600; }
+
+/* Keşfet şeridindeki aktif alt çizgi. */
+.ct-bar {
+  height: 3px;
+  width: 42px;
+  border-radius: 3px 3px 0 0;
+  background: var(--ink);
+  opacity: 0;
+}
+.ct-bar.on { opacity: 1; }
+
+.ct-item:focus-visible { outline: none; }
+.ct-item:focus-visible .ct-sq {
+  outline: 3px solid var(--ink);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ct-sq { transition: none; }
+  .ct-item:hover .ct-sq { transform: none; }
+}

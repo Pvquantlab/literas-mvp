@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { CATEGORIES } from '@/lib/categories'
-import CategoryIcon from '@/components/category-icon'
+import { CategoryTile, TUMU_SLUG } from '@/components/category-art'
 
 type Props = {
   activeSlug: string | null
@@ -47,8 +47,7 @@ export default function CategoryStrip({ activeSlug, activeCity, query }: Props) 
 
   const btnStyle: React.CSSProperties = {
     position: 'absolute',
-    top: '50%',
-    transform: 'translateY(-50%)',
+    top: '36px',
     width: '36px',
     height: '36px',
     borderRadius: '50%',
@@ -65,19 +64,18 @@ export default function CategoryStrip({ activeSlug, activeCity, query }: Props) 
 
   return (
     <div style={{ position: 'relative' }}>
-      <nav ref={ref} className="cat-strip" aria-label="Kategoriler">
-        <Link href={buildHref(null)} className="cat-chip" aria-current={!activeSlug}>
-          Tümü
+      <nav ref={ref} className="cat-strip ct-strip" aria-label="Kategoriler">
+        <Link href={buildHref(null)} className="ct-item" aria-current={!activeSlug}>
+          <CategoryTile value={TUMU_SLUG} label="Tümü" active={!activeSlug} />
         </Link>
         {CATEGORIES.map((c) => (
           <Link
             key={c.slug}
             href={buildHref(c.slug)}
-            className="cat-chip"
+            className="ct-item"
             aria-current={activeSlug === c.slug}
           >
-            <CategoryIcon slug={c.slug} size={21} />
-            {c.label}
+            <CategoryTile value={c.slug} label={c.label} active={activeSlug === c.slug} />
           </Link>
         ))}
       </nav>
