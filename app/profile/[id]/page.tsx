@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import EventCard from '@/components/event-card'
-import { LogoMark } from '@/components/logo'
+import { CategoryCover } from '@/components/category-art'
 
 export default async function ProfilePage({
   params,
@@ -227,6 +227,7 @@ export default async function ProfilePage({
                   height: '96px',
                   flex: 'none',
                   borderRadius: '10px',
+                  border: '1px solid rgba(70,58,38,.14)',
                   overflow: 'hidden',
                   background: 'var(--paper-soft)',
                   display: 'grid',
@@ -236,8 +237,8 @@ export default async function ProfilePage({
                 }}>
                   {m.community.cover_image_url ? (
                     <img src={m.community.cover_image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  ) : (
-                    <LogoMark size={44} />
+                 ) : (
+                    <CategoryCover value={m.community.category} w={96} h={96} />
                   )}
                 </div>
                 {/* İsim + bilgi */}
