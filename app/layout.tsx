@@ -3,6 +3,7 @@ import { Literata, Instrument_Sans, IBM_Plex_Mono } from 'next/font/google'
 import { createClient } from '@/lib/supabase-server'
 import Footer from '@/components/footer'
 import Header from '@/components/header'
+import { IconSprite } from '@/components/category-art'
 import type { Metadata, Viewport } from 'next'
 
 /**
@@ -94,6 +95,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="tr" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
       <body>
         <a href="#content" className="skip-link">İçeriğe atla</a>
+
+        {/**
+          * Kategori ikonlarının SVG tanımları. Görünmez (width=0), sayfada
+          * bir kez duruyor; kartlar <use href="#ci-icon-..."> ile çağırıyor.
+          * Buradan kaldırılırsa kapaklar boş çıkar.
+          */}
+        <IconSprite />
 
         <Header
           user={user ? { id: user.id } : null}
