@@ -10,16 +10,17 @@
   --ink-deep: #0F2117;
   --night: #22301F;
 
-  /* Zemin: sayfa hafif sıcak beyaz, kartlar saf beyaz.
-     İkisi arasındaki 2 derecelik fark kartlara gölgesiz derinlik verir. */
-  --paper: #FDFCF8;
-  --paper-cream: #FFFFFF;
-  --paper-soft: #F4F2EC;
+  /* Zemin: sıcak kâğıt. Saf beyaza yakın zeminde (#FDFCF8) doygun kategori
+     kapakları "yapıştırılmış etiket" gibi duruyordu ve kartların kil gölgesi
+     kayboluyordu. Kâğıt ile kart arasındaki 2 derecelik fark korundu. */
+  --paper: #FAF6EC;
+  --paper-cream: #FFFCF5;
+  --paper-soft: #F2EDE0;
 
-  --muted: #5C5744;          /* beyaz üstünde 6.4:1 — AA geçer */
-  --muted-light: #857F6B;    /* yalnız 15px+ metin için */
-  --border: #E8E5DD;
-  --border-mid: #D5D1C5;
+  --muted: #5C5744;          /* kart üstünde 7.06:1 — AA geçer */
+  --muted-light: #857F6B;    /* yalnız 15px+ metin için (3.91:1) */
+  --border: #E9E2D2;
+  --border-mid: #D8D0BD;
 
   /* --- Vurgu --- */
   --lime: #C8EB4B;
