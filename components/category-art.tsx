@@ -49,7 +49,9 @@ const SHAPES: Record<string, React.ReactNode> = {
       <path d="M50 30 L76 24 Q82 22 82 29 V70 Q82 76 76 77 L50 83 Z" />
     </>
   ),
-  doga: <path d="M50 18 Q84 26 84 52 Q84 80 50 86 Q16 80 16 52 Q16 26 50 18 Z" />,
+  // Sivri uç bilinçli: yuvarlak oval 48px'te Spor'un topundan ayırt
+  // edilemiyordu. Kimlik artık silüette, detayda değil.
+  doga: <path d="M50 8 Q83 32 83 56 Q83 84 50 91 Q17 84 17 56 Q17 32 50 8 Z" />,
   muzik: (
     <>
       <ellipse cx="36" cy="72" rx="17" ry="13" transform="rotate(-18 36 72)" />
@@ -64,7 +66,17 @@ const SHAPES: Record<string, React.ReactNode> = {
     </>
   ),
   dil: <path d="M22 18 H78 Q88 18 88 28 V62 Q88 72 78 72 H46 L26 88 V72 H22 Q12 72 12 62 V28 Q12 18 22 18 Z" />,
-  spor: <circle cx="50" cy="50" r="34" />,
+  // Halter. Daire silueti 48px'te Doğa'dan ayırt edilemiyordu — beş
+  // dikdörtgenlik siluet küçük boyutta da kendini belli ediyor.
+  spor: (
+    <>
+      <rect x="34" y="43" width="32" height="14" rx="7" />
+      <rect x="18" y="30" width="16" height="40" rx="7" />
+      <rect x="66" y="30" width="16" height="40" rx="7" />
+      <rect x="8" y="38" width="10" height="24" rx="5" />
+      <rect x="82" y="38" width="10" height="24" rx="5" />
+    </>
+  ),
   sanat: <path d="M50 14 Q88 14 88 48 Q88 68 70 68 Q60 68 60 76 Q60 86 49 86 Q12 86 12 48 Q12 14 50 14 Z" />,
   oyun: <rect x="10" y="32" width="80" height="40" rx="20" />,
   tech: (
@@ -103,44 +115,43 @@ const SHAPES: Record<string, React.ReactNode> = {
 function details(slug: string, hi: string, dk: string): React.ReactNode {
   switch (slug) {
     case 'kitap':
-      return <rect x="46" y="30" width="8" height="53" rx="4" fill={dk} opacity=".45" />
+      return <rect x="46" y="30" width="8" height="53" rx="4" fill={dk} opacity=".58" />
     case 'doga':
       return (
         <>
-          <path d="M50 24 V80" stroke={dk} strokeWidth="5" opacity=".4" strokeLinecap="round" />
-          <path d="M50 44 L68 34 M50 58 L34 48" stroke={dk} strokeWidth="4.5" opacity=".35" strokeLinecap="round" />
+          <path d="M50 20 V86" stroke={dk} strokeWidth="5.5" opacity=".62" strokeLinecap="round" />
+          <path d="M50 40 L70 30 M50 56 L30 46 M50 70 L66 62" stroke={dk} strokeWidth="4.5" opacity=".52" strokeLinecap="round" />
         </>
       )
     case 'spor':
       return (
         <>
-          <ellipse cx="50" cy="50" rx="14" ry="34" fill="none" stroke={dk} strokeWidth="4.5" opacity=".4" />
-          <path d="M16 50 H84" stroke={dk} strokeWidth="4.5" opacity=".4" />
+          <rect x="34" y="47" width="32" height="5" rx="2.5" fill={dk} opacity=".45" />
         </>
       )
     case 'sanat':
       return (
         <>
-          <circle cx="34" cy="38" r="7.5" fill={dk} opacity=".5" />
-          <circle cx="58" cy="30" r="7.5" fill={dk} opacity=".38" />
-          <circle cx="72" cy="50" r="7.5" fill={dk} opacity=".28" />
+          <circle cx="34" cy="38" r="8" fill={dk} opacity=".66" />
+          <circle cx="58" cy="30" r="8" fill={dk} opacity=".56" />
+          <circle cx="72" cy="50" r="8" fill={dk} opacity=".46" />
         </>
       )
     case 'oyun':
       return (
         <>
-          <rect x="22" y="47" width="22" height="7" rx="3.5" fill={dk} opacity=".5" />
-          <rect x="29.5" y="39.5" width="7" height="22" rx="3.5" fill={dk} opacity=".5" />
-          <circle cx="68" cy="45" r="6.5" fill={dk} opacity=".5" />
-          <circle cx="78" cy="58" r="6.5" fill={dk} opacity=".38" />
+          <rect x="22" y="47" width="22" height="7" rx="3.5" fill={dk} opacity=".68" />
+          <rect x="29.5" y="39.5" width="7" height="22" rx="3.5" fill={dk} opacity=".68" />
+          <circle cx="68" cy="45" r="7" fill={dk} opacity=".68" />
+          <circle cx="78" cy="58" r="7" fill={dk} opacity=".56" />
         </>
       )
     case 'tech':
-      return <rect x="27" y="27" width="46" height="28" rx="5" fill={hi} opacity=".55" />
+      return <rect x="27" y="27" width="46" height="28" rx="5" fill={hi} opacity=".72" />
     case 'sinema':
       return (
         <>
-          <g fill={dk} opacity=".45">
+          <g fill={dk} opacity=".62">
             <rect x="20" y="24" width="9" height="7" rx="3" />
             <rect x="36" y="24" width="9" height="7" rx="3" />
             <rect x="55" y="24" width="9" height="7" rx="3" />
@@ -150,34 +161,34 @@ function details(slug: string, hi: string, dk: string): React.ReactNode {
             <rect x="55" y="71" width="9" height="7" rx="3" />
             <rect x="71" y="71" width="9" height="7" rx="3" />
           </g>
-          <path d="M42 40 L64 51 L42 62 Z" fill={hi} opacity=".85" />
+          <path d="M42 38 L66 51 L42 64 Z" fill={hi} opacity=".95" />
         </>
       )
     case 'fotograf':
       return (
         <>
-          <circle cx="50" cy="58" r="18" fill={dk} opacity=".45" />
-          <circle cx="50" cy="58" r="10" fill={hi} opacity=".65" />
-          <rect x="70" y="41" width="10" height="6" rx="3" fill={hi} opacity=".7" />
+          <circle cx="50" cy="58" r="18" fill={dk} opacity=".62" />
+          <circle cx="50" cy="58" r="10" fill={hi} opacity=".82" />
+          <rect x="70" y="41" width="10" height="6" rx="3" fill={hi} opacity=".85" />
         </>
       )
     case 'kariyer':
       return (
         <>
-          <rect x="12" y="50" width="76" height="8" fill={dk} opacity=".35" />
-          <rect x="41" y="46" width="18" height="15" rx="5" fill={hi} opacity=".6" />
+          <rect x="12" y="50" width="76" height="8" fill={dk} opacity=".52" />
+          <rect x="41" y="46" width="18" height="15" rx="5" fill={hi} opacity=".78" />
         </>
       )
     case 'dil':
       return (
         <>
-          <circle cx="34" cy="45" r="6.5" fill={dk} opacity=".45" />
-          <circle cx="50" cy="45" r="6.5" fill={dk} opacity=".45" />
-          <circle cx="66" cy="45" r="6.5" fill={dk} opacity=".45" />
+          <circle cx="34" cy="45" r="7" fill={dk} opacity=".62" />
+          <circle cx="50" cy="45" r="7" fill={dk} opacity=".62" />
+          <circle cx="66" cy="45" r="7" fill={dk} opacity=".62" />
         </>
       )
     case 'lezzet':
-      return <ellipse cx="46" cy="36" rx="24" ry="6" fill={hi} opacity=".5" />
+      return <ellipse cx="46" cy="36" rx="24" ry="6" fill={hi} opacity=".68" />
     default:
       return null
   }
