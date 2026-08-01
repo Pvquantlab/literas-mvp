@@ -6,8 +6,9 @@ import { CATEGORIES, byValue, NEUTRAL_COVER } from '@/lib/categories'
  *   <GlossyIcon value />    çıplak parlak ikon
  *   <CategoryCover value /> geniş kapak (kart) / kare kapak (liste thumbnail)
  *
- * Tek kaynak: filtre şeridi, kart kapakları ve liste thumbnail'ları hepsi
- * buradan besleniyor. Eski category-icon.tsx ve category-doodle.tsx silindi.
+ * NOT: components/category-icon.tsx AYRI bir dosya — filtre şeridi ve
+ * upcoming-events onu kullanıyor. İki sistem geçiş boyunca yan yana duruyor.
+ * Filtre şeridi buraya geçtiğinde eski dosya silinecek.
  *
  * MİMARÎ: bütün gradyan, sheen ve clipPath tanımları <IconSprite /> içinde
  * BİR KEZ duruyor; kullanım noktaları <use href="#ikon-{slug}"> ile çağırıyor.
@@ -344,4 +345,56 @@ export function CategoryCover({ value, w = 400, h = 240, scale, className }: Cov
       )}
     </svg>
   )
+}
+
+/**
+ * Hero'da yüzen nesneler.
+ *
+ * Sprite'tan besleniyor — şekiller ikinci kez tanımlanmıyor. Üç derinlik
+ * katmanı: uzaktakiler küçük ve soluk, yakındakiler büyük ve gölgeli.
+ * 960px altında tamamen gizleniyor (CSS), dar ekranda metnin üstüne biner.
+ */
+export function HeroObjects() {
+  const far = [
+    { slug: 'muzik', x: 3, y: 8, s: 62, r: -15 },
+    { slug: 'lezzet', x: 89, y: 74, s: 58, r: 12 },
+  ]
+  const near = [
+    { slug: 'kitap', x: 1, y: 34, s: 104, r: -9 },
+    { slug: 'doga', x: 88, y: 30, s: 96, r: 14 },
+  ]
+  return (
+    <div className="hx-objs" aria-hidden="true">
+      {far.map((o) => (
+        <svg
+          key={o.slug}
+          className="hx-obj hx-obj-far"
+          viewBox="-6 -6 112 112"
+          style={{ left: `${o.x}%`, top: `${o.y}%`, width: o.s, transform: `rotate(${o.r}deg)` }}
+        >
+          <use href={`#ci-icon-${o.slug}`} />
+        </svg>
+      ))}
+      {near.map((o) => (
+        <svg
+          key={o.slug}
+          className="hx-obj hx-obj-near"
+          viewBox="-6 -6 112 112"
+          style={{ left: `${o.x}%`, top: `${o.y}%`, width: o.s, transform: `rotate(${o.r}deg)` }}
+        >
+          <use href={`#ci-icon-${o.slug}`} />
+        </svg>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Tel kafes şekil — dolgu yok, yalnızca kontur.
+ *
+ * SHAPES'ten besleniyor, ikinci bir şekil kütüphanesi açılmıyor.
+ * Çağıran taraf sarmalayıcı <g> üzerinde fill="none" stroke="#fff" verir.
+ */
+export function WireShape({ slug }: { slug: string }) {
+  return <>{SHAPES[slug] ?? null}</>
 }

@@ -58,17 +58,9 @@ export default function CommunityCard({ community }: { community: CommunitySumma
               style={{ objectFit: 'cover' }}
             />
           ) : (
-            <>
-              <span
-                className="cm-bg"
-                style={{
-                  background: cat
-                    ? `linear-gradient(135deg, ${cat.colors[1]}, ${cat.colors[2]})`
-                    : 'linear-gradient(135deg, #3C5545, #1E3A2B)',
-                }}
-              />
-              <CommunityEmblem id={community.id} category={community.category} className="cm-em" />
-            </>
+            // Kapağın tamamı tek SVG: mesh zemin + tel kafesler + amblem.
+            // Ayrı .cm-bg katmanı kalktı, zemin artık kapağın içinde.
+            <CommunityEmblem id={community.id} category={community.category} className="cm-art" />
           )}
 
           {cat && <span className="cm-pill">{cat.label}</span>}
@@ -124,16 +116,15 @@ export default function CommunityCard({ community }: { community: CommunitySumma
           display:grid; place-items:center;
           box-shadow:inset 0 0 0 1px rgba(15, 46, 92,.16);
         }
-        .cm-bg { position:absolute; inset:0; }
-        .cm-em {
-          position:relative; width:130px; height:130px;
-          transition:transform .5s var(--ease, cubic-bezier(.2,.8,.3,1));
+        .cm-art {
+          position:absolute; inset:0;
+          transition:transform .6s var(--ease, cubic-bezier(.2,.8,.3,1));
         }
-        .cm-link:hover .cm-em { transform:translateY(-5px) scale(1.05); }
+        .cm-link:hover .cm-art { transform:scale(1.06); }
         .cm-cover::after {
           content:""; position:absolute; inset:0; pointer-events:none;
           background:linear-gradient(180deg,
-            rgba(12, 27, 142,.16) 0%, rgba(12, 27, 142,0) 38%, rgba(12, 27, 142,.40) 100%);
+            rgba(12, 27, 142,.10) 0%, rgba(12, 27, 142,0) 42%, rgba(12, 27, 142,.16) 100%);
         }
         .cm-pill {
           position:absolute; top:12px; left:12px; z-index:3;
@@ -197,8 +188,8 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         }
         .cm-link:hover .cm-go { transform:translateY(-2px); }
         @media (prefers-reduced-motion: reduce) {
-          .cm-card, .cm-go, .cm-em { transition:none; }
-          .cm-link:hover .cm-card, .cm-link:hover .cm-go, .cm-link:hover .cm-em { transform:none; }
+          .cm-card, .cm-go, .cm-art { transition:none; }
+          .cm-link:hover .cm-card, .cm-link:hover .cm-go, .cm-link:hover .cm-art { transform:none; }
         }
       `}</style>
     </Link>

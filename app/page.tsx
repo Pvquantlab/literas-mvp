@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
 import { bySlug, sanitizeQuery } from '@/lib/categories'
 import CategoryStrip from './category-strip'
+import { HeroObjects } from '@/components/category-art'
 import CommunityCard, { type CommunitySummary } from '@/components/community-card'
 import UpcomingEvents, { type EventSummary } from '@/components/upcoming-events'
 import EventCard from '@/components/event-card'
@@ -291,38 +292,44 @@ export default async function HomePage({
 
   return (
     <main id="content">
-      {/* ---- Hero: sola hizalı, sağda gerçek etkinlikler ---- */}
-      <section className="container" style={{ paddingBlock: 0 }}>
-       <div className="hero hero-solo">
-          <div>
-            <span className="badge-mono" style={{ marginBottom: 'var(--s-5)' }}>
-              her zaman açık · herkese göre
-            </span>
+      {/* ---- Hero ----
+           Tam genişlikte, .container DIŞINDA. Cümle ikiye bölündü:
+           üst satır + dev kelime. <h1> ikisini de içeriyor, yani ekran
+           okuyucu tam cümleyi okuyor. Yüzen nesneler sprite'tan geliyor. */}
+      <section className="hx">
+        <HeroObjects />
+        <div className="hx-inner">
+          <nav className="hx-nav" aria-label="Sayfa bölümleri">
+            <Link href="#etkinlikler" className="hx-nav-item on">Etkinlikler</Link>
+            <Link href="#topluluklar" className="hx-nav-item">Topluluklar</Link>
+            <Link href="/kesfet" className="hx-nav-item">Kategoriler</Link>
+          </nav>
 
-            <h1
-              className="serif"
-              style={{
-                fontSize: 'var(--t-display)',
-                color: 'var(--ink)',
-                marginBottom: 'var(--s-4)',
-              }}
-            >
-              Harflerden kelimeler,<br />
-              insanlardan <span className="highlight-yellow">topluluklar</span>.
-            </h1>
+          <h1 className="hx-h1">
+            <span className="hx-eyebrow">Harflerden kelimeler, insanlardan</span>
+            <span className="hx-word">topluluklar</span>
+          </h1>
 
-            <p style={{ fontSize: 'var(--t-lg)', color: 'var(--muted)', marginBottom: 'var(--s-6)', maxWidth: '44ch' }}>
-              {cityLabel}&apos;da bu hafta {events.length > 0 ? `${events.length} buluşma var` : 'buluşmalar başlıyor'}.
-              Katıl ya da kendi masanı kur.
-            </p>
+          <p className="hx-lede">İnsanların kendi masalarını kurduğu yer.</p>
+          <p className="hx-sub">
+            {cityLabel}&apos;da bu hafta {events.length > 0 ? `${events.length} buluşma var` : 'buluşmalar başlıyor'}.
+            Katıl ya da kendi masanı kur.
+          </p>
 
-            <div className="row" style={{ gap: 'var(--s-3)', flexWrap: 'wrap' }}>
-              <Link href="#etkinlikler" className="btn-primary">Etkinlikleri gör</Link>
-              <Link href="/community/new" className="btn-secondary">Topluluk kur</Link>
-            </div>
+          <div className="hx-cta">
+            <Link href="#etkinlikler" className="hx-btn">
+              Etkinlikleri gör<span className="hx-arrow" aria-hidden="true">›</span>
+            </Link>
+            <Link href="/community/new" className="hx-btn">
+              Topluluk kur<span className="hx-arrow" aria-hidden="true">›</span>
+            </Link>
           </div>
 
-         
+          <div className="hx-strip">
+            <span>Bir masa aç</span><i />
+            <span>Buluşmayı planla</span><i />
+            <span>Tanışın</span>
+          </div>
         </div>
       </section>
 
@@ -342,7 +349,7 @@ export default async function HomePage({
       </section>
 
       {/* ---- Topluluklar ---- */}
-      <section className="container section" style={{ paddingTop: 0 }}>
+      <section id="topluluklar" className="container section" style={{ paddingTop: 0 }}>
         <SectionHead title="Topluluklar" />
         <div className="row" style={{ gap: 'var(--s-3)', marginBottom: 'var(--s-5)', flexWrap: 'wrap' }}>
           <SearchBox initialQuery={params.q ?? ''} />

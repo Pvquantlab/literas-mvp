@@ -106,7 +106,16 @@ html {
 }
 
 body {
-  background: var(--paper);
+  /* Çizgili kâğıt dokusu. Zemin defter sayfası, kartlar üstünde yüzüyor.
+     Opaklık çok düşük tutuldu — metin ve kartlarla yarışmamalı. */
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    rgba(15, 46, 92, .065) 31px,
+    rgba(15, 46, 92, .065) 32px
+  );
   color: var(--night);
   font-family: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
   font-size: var(--t-md);
@@ -954,4 +963,189 @@ p, .seats-label {
 @media (prefers-reduced-motion: reduce) {
   .ct-sq { transition: none; }
   .ct-item:hover .ct-sq { transform: none; }
+}
+
+/* ==========================================================================
+   Hero — tam genişlikte, ortalanmış, dev degrade kelime.
+   .container dışında durur; kendi yatay dolgusunu kendi verir.
+   ========================================================================== */
+
+.hx {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: var(--s-6) var(--s-5) var(--s-7);
+}
+.hx-inner { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; }
+
+/* --- Segmentli bölüm çubuğu --- */
+.hx-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px;
+  border-radius: var(--r-pill);
+  background: var(--paper-soft);
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.hx-nav-item {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--muted);
+  padding: 7px 17px;
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+  transition: background .2s var(--ease), color .2s var(--ease);
+}
+.hx-nav-item:hover { color: var(--ink); }
+.hx-nav-item.on { background: var(--ink); color: #fff; font-weight: 600; }
+.hx-nav-item.on:hover { color: #fff; }
+
+/* --- Başlık: üst satır + dev kelime --- */
+.hx-h1 { display: block; margin: var(--s-6) 0 0; }
+
+.hx-eyebrow {
+  display: block;
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(10px, 1.6vw, 13px);
+  font-weight: 600;
+  letter-spacing: .18em;
+  color: var(--grad-2);
+  margin-bottom: 4px;
+}
+
+.hx-word {
+  display: block;
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(44px, 13vw, 118px);
+  line-height: .94;
+  letter-spacing: -.036em;
+  color: var(--ink);
+}
+/* Degrade metin yalnızca destekleniyorsa. Desteklenmezse düz lacivert
+   kalır — background-clip yoksa color:transparent metni yok ederdi. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hx-eyebrow {
+    background: linear-gradient(94deg, var(--grad-1) 2%, var(--grad-2) 48%, var(--grad-4) 98%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hx-word {
+    background: linear-gradient(96deg,
+      var(--grad-1) 3%, var(--grad-2) 32%, var(--grad-3) 58%,
+      var(--grad-4) 80%, var(--grad-5) 99%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* --- Arka plandaki silik ızgara --- */
+.hx-inner::before {
+  content: "";
+  position: absolute;
+  left: -4%; right: -4%;
+  top: 46px; height: 62%;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--grad-2) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grad-2) 1px, transparent 1px);
+  background-size: 46px 46px;
+  opacity: .12;
+  -webkit-mask-image: radial-gradient(72% 58% at 50% 50%, #000 42%, transparent 100%);
+  mask-image: radial-gradient(72% 58% at 50% 50%, #000 42%, transparent 100%);
+}
+
+.hx-lede {
+  font-size: clamp(16px, 2.6vw, 24px);
+  font-weight: 700;
+  color: var(--night);
+  letter-spacing: -.012em;
+  line-height: 1.34;
+  max-width: 26ch;
+  margin: var(--s-6) auto 0;
+}
+.hx-sub {
+  font-size: var(--t-md);
+  color: var(--muted);
+  max-width: 42ch;
+  margin: var(--s-3) auto 0;
+}
+
+/* --- Butonlar: dolu lacivert hap + dairesel ok --- */
+.hx-cta {
+  display: flex;
+  gap: var(--s-4);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--s-6);
+}
+.hx-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+  font-size: var(--t-md);
+  padding: 12px 8px 12px 25px;
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-press);
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+}
+.hx-btn:hover {
+  color: #fff;
+  background: var(--ink-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 32px -14px rgba(12, 27, 142, .8);
+}
+.hx-arrow {
+  display: grid;
+  place-items: center;
+  width: 29px; height: 29px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* --- Üç adım kapsülü --- */
+.hx-strip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: var(--s-7);
+  padding: 15px 12px;
+  background: var(--paper-cream);
+  border-radius: var(--r-pill);
+  box-shadow: 0 14px 34px -18px rgba(15, 46, 92, .4);
+}
+.hx-strip span {
+  padding: 2px clamp(12px, 3vw, 28px);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--night);
+  white-space: nowrap;
+}
+.hx-strip i { width: 1px; height: 16px; background: var(--border); }
+
+/* --- Yüzen nesneler --- */
+.hx-objs { position: absolute; inset: 0; pointer-events: none; }
+.hx-obj { position: absolute; height: auto; }
+.hx-obj-far { opacity: .30; filter: blur(1.4px); }
+.hx-obj-near { filter: drop-shadow(0 8px 12px rgba(15, 46, 92, .22)); }
+
+/* Dar ekranda nesneler metnin üstüne biniyor — tamamen gizle. */
+@media (max-width: 960px) {
+  .hx-objs { display: none; }
+  .hx { padding: var(--s-5) var(--s-4) var(--s-6); }
+  .hx-strip { margin-top: var(--s-6); }
 }
