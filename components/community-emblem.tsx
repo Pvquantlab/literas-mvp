@@ -36,7 +36,7 @@ function safeId(id: string): string {
   return id.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 24) || 'x'
 }
 
-const NEUTRAL: [string, string, string] = ['#7E9A85', '#3C5545', '#1E3A2B']
+const NEUTRAL: [string, string, string] = ['#8A9BD8', '#2C3E8C', '#101B54']
 
 type Props = {
   /** Varyasyon bundan türetilir. */

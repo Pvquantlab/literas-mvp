@@ -105,11 +105,11 @@ export default function CommunityCard({ community }: { community: CommunitySumma
       <style>{`
         .cm-link { display:block; text-decoration:none; color:inherit; height:100%; }
         .cm-card {
-          --clay: 10px 14px 26px rgba(70,58,38,.13),
-                  inset -5px -7px 12px rgba(70,58,38,.14),
+          --clay: 10px 14px 26px rgba(15, 46, 92,.13),
+                  inset -5px -7px 12px rgba(15, 46, 92,.14),
                   inset 5px 7px 14px rgba(255,255,255,.70);
-          --clay-hi: 16px 24px 38px rgba(70,58,38,.19),
-                     inset -5px -7px 12px rgba(70,58,38,.14),
+          --clay-hi: 16px 24px 38px rgba(15, 46, 92,.19),
+                     inset -5px -7px 12px rgba(15, 46, 92,.14),
                      inset 6px 8px 16px rgba(255,255,255,.78);
           position:relative; display:flex; flex-direction:column; height:100%;
           padding:16px; border-radius:30px;
@@ -122,7 +122,7 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         .cm-cover {
           position:relative; height:172px; border-radius:22px; overflow:hidden;
           display:grid; place-items:center;
-          box-shadow:inset 0 0 0 1px rgba(70,58,38,.16);
+          box-shadow:inset 0 0 0 1px rgba(15, 46, 92,.16);
         }
         .cm-bg { position:absolute; inset:0; }
         .cm-em {
@@ -133,7 +133,7 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         .cm-cover::after {
           content:""; position:absolute; inset:0; pointer-events:none;
           background:linear-gradient(180deg,
-            rgba(30,58,43,.16) 0%, rgba(30,58,43,0) 38%, rgba(30,58,43,.40) 100%);
+            rgba(12, 27, 142,.16) 0%, rgba(12, 27, 142,0) 38%, rgba(12, 27, 142,.40) 100%);
         }
         .cm-pill {
           position:absolute; top:12px; left:12px; z-index:3;

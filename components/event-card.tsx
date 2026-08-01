@@ -99,11 +99,11 @@ export default function EventCard({ event, showCommunityName = true }: Props) {
       <style>{`
         .ev-link { display:block; text-decoration:none; color:inherit; height:100%; }
         .ev-card {
-          --clay: 10px 14px 26px rgba(70,58,38,.13),
-                  inset -5px -7px 12px rgba(70,58,38,.14),
+          --clay: 10px 14px 26px rgba(15, 46, 92,.13),
+                  inset -5px -7px 12px rgba(15, 46, 92,.14),
                   inset 5px 7px 14px rgba(255,255,255,.70);
-          --clay-hi: 16px 24px 38px rgba(70,58,38,.19),
-                     inset -5px -7px 12px rgba(70,58,38,.14),
+          --clay-hi: 16px 24px 38px rgba(15, 46, 92,.19),
+                     inset -5px -7px 12px rgba(15, 46, 92,.14),
                      inset 6px 8px 16px rgba(255,255,255,.78);
           position:relative; display:flex; flex-direction:column; height:100%;
           padding:18px; border-radius:30px;
@@ -115,12 +115,12 @@ export default function EventCard({ event, showCommunityName = true }: Props) {
         .ev-link:hover .ev-card { transform:translateY(-6px); box-shadow:var(--clay-hi); }
         .ev-frame {
           position:relative; height:178px; border-radius:22px; overflow:hidden;
-          margin-bottom:16px; box-shadow:inset 0 0 0 1px rgba(70,58,38,.14);
+          margin-bottom:16px; box-shadow:inset 0 0 0 1px rgba(15, 46, 92,.14);
         }
         .ev-frame::after {
           content:""; position:absolute; inset:0; pointer-events:none;
           background:linear-gradient(180deg,
-            rgba(30,58,43,.22) 0%, rgba(30,58,43,0) 40%, rgba(30,58,43,.52) 100%);
+            rgba(12, 27, 142,.22) 0%, rgba(12, 27, 142,0) 40%, rgba(12, 27, 142,.52) 100%);
         }
         .ev-img { width:100%; height:100%; object-fit:cover; display:block; }
         .ev-pill {

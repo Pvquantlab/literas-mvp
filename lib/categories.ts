@@ -31,26 +31,26 @@ export type Category = {
 }
 
 export const CATEGORIES: Category[] = [
-  { slug: 'kitap',       value: 'kitap',       label: 'Kitap',       colors: ['#DEA691', '#BE5127', '#6E2F17'], gradient: ['#BE5127', '#DE7A4A'] },
-  { slug: 'doga',        value: 'doğa',        label: 'Doğa',        colors: ['#D7E89C', '#B6E01F', '#667E11'], gradient: ['#2E6B45', '#63A87E'] },
-  { slug: 'muzik',       value: 'müzik',       label: 'Müzik',       colors: ['#F4E5B0', '#F6C720', '#9F7D07'], gradient: ['#7B4B94', '#B58CC9'] },
-  { slug: 'lezzet',      value: 'lezzet',      label: 'Lezzet',      colors: ['#E2B89D', '#CB6A2A', '#7B4019'], gradient: ['#B5641F', '#E39B4E'] },
-  { slug: 'dil',         value: 'dil',         label: 'Dil',         colors: ['#BFC7C1', '#74887A', '#455148'], gradient: ['#2A5B8F', '#6C9CCB'] },
-  { slug: 'spor',        value: 'spor',        label: 'Spor',        colors: ['#D6EBA8', '#A9E22C', '#658B13'], gradient: ['#1F6E52', '#4C9A78'] },
-  { slug: 'sanat',       value: 'sanat',       label: 'Sanat',       colors: ['#F2D7A0', '#F5A90E', '#8D6106'], gradient: ['#A83A6E', '#D077A2'] },
-  { slug: 'oyun',        value: 'oyun',        label: 'Oyun',        colors: ['#59987E', '#2C5544', '#172C24'], gradient: ['#B04330', '#D97A63'] },
-  { slug: 'tech',        value: 'tech',        label: 'Tech',        colors: ['#B8C1BC', '#6F8176', '#404A44'], gradient: ['#2B3A55', '#5B7BB4'] },
-  { slug: 'sinema',      value: 'sinema',      label: 'Sinema',      colors: ['#538E69', '#274B34', '#122218'], gradient: ['#544A86', '#8A7DC0'] },
-  { slug: 'fotograf',    value: 'fotoğraf',    label: 'Fotoğraf',    colors: ['#F3E8A8', '#F5D517', '#968106'], gradient: ['#23697A', '#5AA3B5'] },
-  { slug: 'gonulluluk',  value: 'gönüllülük',  label: 'Gönüllülük',  colors: ['#DB9685', '#B24024', '#612314'], gradient: ['#A34A22', '#CE7B4E'] },
-  { slug: 'kariyer',     value: 'kariyer',     label: 'Kariyer',     colors: ['#B4BDB5', '#6A7C6D', '#3B453D'], gradient: ['#46603A', '#7D9A6C'] },
-  { slug: 'sosyal',      value: 'sosyal',      label: 'Sosyal',      colors: ['#DBE694', '#BFD81D', '#687610'], gradient: ['#A8354F', '#D06B84'] },
+  { slug: 'kitap',       value: 'kitap',       label: 'Kitap',       colors: ['#E7A7CD', '#DB2492', '#76134F'], gradient: ['#BE5127', '#DE7A4A'] },
+  { slug: 'doga',        value: 'doğa',        label: 'Doğa',        colors: ['#AADAD5', '#41BEB2', '#246A64'], gradient: ['#2E6B45', '#63A87E'] },
+  { slug: 'muzik',       value: 'müzik',       label: 'Müzik',       colors: ['#D2B4E6', '#9033D1', '#4F1A73'], gradient: ['#7B4B94', '#B58CC9'] },
+  { slug: 'lezzet',      value: 'lezzet',      label: 'Lezzet',      colors: ['#EAB1DA', '#DE31AD', '#7E1461'], gradient: ['#B5641F', '#E39B4E'] },
+  { slug: 'dil',         value: 'dil',         label: 'Dil',         colors: ['#A1BBE2', '#296BCC', '#163A6E'], gradient: ['#2A5B8F', '#6C9CCB'] },
+  { slug: 'spor',        value: 'spor',        label: 'Spor',        colors: ['#B3DDDE', '#4CBFC2', '#276F71'], gradient: ['#1F6E52', '#4C9A78'] },
+  { slug: 'sanat',       value: 'sanat',       label: 'Sanat',       colors: ['#D5A5E1', '#A32BC0', '#581768'], gradient: ['#A83A6E', '#D077A2'] },
+  { slug: 'oyun',        value: 'oyun',        label: 'Oyun',        colors: ['#B4ADE3', '#4331C9', '#241B6E'], gradient: ['#B04330', '#D97A63'] },
+  { slug: 'tech',        value: 'tech',        label: 'Tech',        colors: ['#ABBBE5', '#2F5CD5', '#183176'], gradient: ['#2B3A55', '#5B7BB4'] },
+  { slug: 'sinema',      value: 'sinema',      label: 'Sinema',      colors: ['#AC9ADC', '#4F2BB0', '#2B175F'], gradient: ['#544A86', '#8A7DC0'] },
+  { slug: 'fotograf',    value: 'fotoğraf',    label: 'Fotoğraf',    colors: ['#A3D7CA', '#3EB599', '#226555'], gradient: ['#23697A', '#5AA3B5'] },
+  { slug: 'gonulluluk',  value: 'gönüllülük',  label: 'Gönüllülük',  colors: ['#E59DC2', '#CE217B', '#6F1242'], gradient: ['#A34A22', '#CE7B4E'] },
+  { slug: 'kariyer',     value: 'kariyer',     label: 'Kariyer',     colors: ['#AFA6E0', '#462EBF', '#261968'], gradient: ['#46603A', '#7D9A6C'] },
+  { slug: 'sosyal',      value: 'sosyal',      label: 'Sosyal',      colors: ['#9ABFE0', '#277AC1', '#154268'], gradient: ['#A8354F', '#D06B84'] },
 ]
 
 const DEFAULT_GRADIENT: [string, string] = ['#5A6B58', '#8FA28B']
 
 /** Kategorisi olmayan kart için nötr zemin. Bilinçli olarak ikonsuz. */
-export const NEUTRAL_COVER: [string, string] = ['#3C5545', '#1E3A2B']
+export const NEUTRAL_COVER: [string, string] = ['#2C3E8C', '#101B54']
 
 /**
  * Serbest metin girilen kategori alanı için eşanlamlılar.

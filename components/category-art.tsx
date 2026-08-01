@@ -30,7 +30,7 @@ import { CATEGORIES, byValue, NEUTRAL_COVER } from '@/lib/categories'
  * bu yüzden burada özel durum olarak duruyor.
  */
 export const TUMU_SLUG = 'tumu'
-const TUMU_COLORS: [string, string, string] = ['#5C9E7B', '#2F5B43', '#1A3225']
+const TUMU_COLORS: [string, string, string] = ['#A9C4EE', '#2B6FD4', '#14306B']
 
 /** Gövde şekli. viewBox 0 0 100 100. */
 const SHAPES: Record<string, React.ReactNode> = {
