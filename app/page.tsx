@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import { bySlug, sanitizeQuery } from '@/lib/categories'
 import CategoryStrip from './category-strip'
 import { HeroObjects } from '@/components/category-art'
+import HowItWorks from '@/components/how-it-works'
 import CommunityCard, { type CommunitySummary } from '@/components/community-card'
 import UpcomingEvents, { type EventSummary } from '@/components/upcoming-events'
 import EventCard from '@/components/event-card'
@@ -371,36 +372,7 @@ export default async function HomePage({
       {/* ---- Nasıl çalışır ---- */}
       <section className="container section" style={{ paddingTop: 0 }}>
         <SectionHead title="Nasıl çalışır" />
-        <ol
-          style={{
-            display: 'grid',
-            gap: 'var(--s-5)',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            listStyle: 'none',
-          }}
-        >
-          {[
-            ['Bir masa aç', 'Konu, şehir, isim. Topluluk kurmak iki dakika.'],
-            ['Buluşmayı planla', 'Tarih ve yer gir. Bağlantıyı paylaş, katılımı gör.'],
-            ['Tanışın', 'İnsanlar gelir. Gerisi kahvenin işi.'],
-          ].map(([title, body], i) => (
-            <li key={title} className="stack" style={{ gap: 'var(--s-2)' }}>
-              <span
-                className="mono"
-                style={{
-                  width: 30, height: 30, borderRadius: '50%',
-                  border: '1.5px solid var(--ink)',
-                  display: 'grid', placeItems: 'center',
-                  fontSize: 'var(--t-xs)', color: 'var(--ink)',
-                }}
-              >
-                {i + 1}
-              </span>
-              <h3 style={{ fontSize: 'var(--t-lg)', fontWeight: 600, color: 'var(--ink)' }}>{title}</h3>
-              <p style={{ fontSize: 'var(--t-sm)', color: 'var(--muted)' }}>{body}</p>
-            </li>
-          ))}
-        </ol>
+        <HowItWorks />
       </section>
 
       {/* ---- Kapanış CTA ---- */}

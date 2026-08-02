@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { byValue, trLower } from '@/lib/categories'
-import { CategoryCover } from '@/components/category-art'
+import { GlossyIcon } from '@/components/category-art'
 
 type Event = {
   id: string
@@ -8,7 +8,7 @@ type Event = {
   location: string
   event_date: string
   cover_image_url: string | null
-  /** Sorguda çekilmemiş olabilir — o zaman satır gizlenir. */
+  /** Sorguda çekilmemiş olabilir — o zaman sayaç gizlenir. */
   attendee_count?: number | null
   community?: { name: string; category?: string | null } | null
 }
@@ -18,160 +18,240 @@ type Props = {
   showCommunityName?: boolean
 }
 
-/**
- * Tarih parçaları — hepsi Europe/Istanbul.
- *
- * Eski sürüm getDay() / getHours() kullanıyordu. Bunlar sunucunun yerel
- * saatine göre çalışır; Vercel UTC'de koştuğu için canlıda saatler 3 saat
- * geri görünüyordu. Intl'e timeZone verince sunucu nerede olursa olsun
- * sonuç aynı.
- */
-function parts(iso: string) {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return null
-  const f = (o: Intl.DateTimeFormatOptions) =>
-    new Intl.DateTimeFormat('tr-TR', { timeZone: 'Europe/Istanbul', ...o }).format(d)
-  return {
-    day: f({ day: 'numeric' }),
-    month: trLower(f({ month: 'short' })),
-    weekday: trLower(f({ weekday: 'long' })),
-    time: f({ hour: '2-digit', minute: '2-digit', hour12: false }),
-  }
+const TZ = 'Europe/Istanbul'
+
+function fmt(iso: string, o: Intl.DateTimeFormatOptions): string {
+  return new Intl.DateTimeFormat('tr-TR', { timeZone: TZ, ...o }).format(new Date(iso))
 }
 
+/** İstanbul gününe göre YYYY-MM-DD. UTC günü kullanmak gece yarısından
+ *  sonraki etkinlikleri bir önceki güne kaydırıyordu. */
+function dayKey(iso: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date(iso))
+}
+
+function addDays(key: string, n: number): string {
+  const [y, m, d] = key.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10)
+}
+
+/** Türkçe büyük harf. toLocaleUpperCase('tr-TR') ICU eksik ortamda
+ *  sessizce İngilizce davranıyor, o yüzden iki harfi elle çeviriyoruz. */
+function trUpper(s: string): string {
+  return s.replace(/i/g, 'İ').replace(/ı/g, 'I').toUpperCase()
+}
+
+type Status = { label: string; tone: 'now' | 'soon' | 'past' }
+
+function statusOf(iso: string): Status {
+  const now = new Date()
+  const today = dayKey(now.toISOString())
+  const k = dayKey(iso)
+  if (new Date(iso).getTime() < now.getTime()) return { label: 'Geçti', tone: 'past' }
+  if (k === today) return { label: 'Bugün', tone: 'now' }
+  if (k === addDays(today, 1)) return { label: 'Yarın', tone: 'now' }
+  return { label: 'Yaklaşıyor', tone: 'soon' }
+}
+
+/**
+ * Etkinlik kartı — koyu zemin, altıgen kaide üzerinde 3D kategori nesnesi.
+ *
+ * Neden koyu: sayfadaki topluluk kartları beyaz. Etkinlik ile topluluk
+ * bir bakışta ayrılsın diye kart türü zıt zeminde duruyor.
+ *
+ * VERİ NOTLARI:
+ *   · Bitiş saati yok (events tablosunda tek event_date), tek saat gösterilir.
+ *   · Ücret alanı yok; alt satırda konum var.
+ *   · attendee_count sorgularda çekilmiyor — gelmezse sayaç gizleniyor.
+ */
 export default function EventCard({ event, showCommunityName = true }: Props) {
-  const category = event.community?.category ?? null
-  const cat = byValue(category)
-  const p = parts(event.event_date)
+  const cat = byValue(event.community?.category ?? null)
+  const st = statusOf(event.event_date)
   const count = typeof event.attendee_count === 'number' ? event.attendee_count : null
 
-  const host = [
-    showCommunityName && event.community?.name ? event.community.name : null,
-    event.location || null,
-  ]
-    .filter(Boolean)
-    .join(' · ')
+  const day = fmt(event.event_date, { day: 'numeric' })
+  const mon = trUpper(fmt(event.event_date, { month: 'short' }))
+  const full = `${day} ${fmt(event.event_date, { month: 'long' })}, ${fmt(event.event_date, {
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  })}`
+  const weekday = trLower(fmt(event.event_date, { weekday: 'long' }))
+
+  const c1 = cat?.colors[0] ?? '#8AACF5'
+  const c2 = cat?.colors[1] ?? '#2B6FD4'
 
   return (
-    <Link href={`/event/${event.id}`} className="ev-link">
-      <article className="ev-card">
-        <div className="ev-frame">
+    <Link href={`/event/${event.id}`} className="ec-link">
+      <article className="ec">
+        <div className="ec-stage">
+          <span className="ec-glow" style={{ background: c2 }} />
+
           {event.cover_image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={event.cover_image_url} alt="" loading="lazy" className="ev-img" />
+            <img src={event.cover_image_url} alt="" loading="lazy" className="ec-photo" />
           ) : (
-            <CategoryCover value={category} w={400} h={240} />
+            <span className="ec-art">
+              {/* Altıgen kaide: üst yüz, iki yan yüz, altında halka ışık */}
+              <svg viewBox="0 0 200 150" aria-hidden="true">
+                <defs>
+                  <linearGradient id={`ec-top-${event.id}`} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#3A4050" />
+                    <stop offset="100%" stopColor="#22262F" />
+                  </linearGradient>
+                  <linearGradient id={`ec-side-${event.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#272B35" />
+                    <stop offset="100%" stopColor="#14161C" />
+                  </linearGradient>
+                </defs>
+                {/* kaide halkası — kategorinin rengini alır */}
+                <polygon
+                  points="100,58 168,90 168,104 100,136 32,104 32,90"
+                  fill="none"
+                  stroke={c2}
+                  strokeWidth="3"
+                  opacity=".5"
+                />
+                {/* yan yüzler */}
+                <polygon points="46,96 100,124 100,138 46,110" fill={`url(#ec-side-${event.id})`} />
+                <polygon points="154,96 100,124 100,138 154,110" fill={`url(#ec-side-${event.id})`} opacity=".8" />
+                {/* üst yüz */}
+                <polygon points="100,70 154,96 100,124 46,96" fill={`url(#ec-top-${event.id})`} />
+              </svg>
+
+              <span className="ec-icon">
+                <GlossyIcon value={event.community?.category ?? null} size={78} />
+              </span>
+            </span>
           )}
-          {cat && <span className="ev-pill">{cat.label}</span>}
+
+          {count !== null && (
+            <span className="ec-count">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8z" />
+              </svg>
+              {count}
+            </span>
+          )}
         </div>
 
-        {p && (
-          <p className="ev-when">
-            <b>{p.day}</b>
-            <span>
-              {p.month} · {p.weekday} · {p.time}
+        <div className="ec-body">
+          {showCommunityName && event.community?.name && (
+            <span className="ec-chip">
+              {cat && <GlossyIcon value={cat.slug} size={16} />}
+              {event.community.name}
             </span>
-          </p>
-        )}
+          )}
 
-        <h3 className="ev-title">{event.title}</h3>
-        {host && <p className="ev-host">{host}</p>}
+          <h3 className="ec-title">{event.title}</h3>
 
-        <div className="ev-foot">
-          <span className="ev-count">
-            {count !== null ? (
-              <>
-                <b>{count}</b> kişi oturuyor
-              </>
-            ) : (
-              'ilk katılan sen ol'
-            )}
-          </span>
-          {/* <a> içine <button> konmaz — geçersiz HTML, klavye ve ekran
-              okuyucu karışır. Bu görsel bir etiket; tıklama kartı açıyor,
-              katılma işlemi etkinlik sayfasında yapılıyor. */}
-          <span className="ev-go" aria-hidden="true">
-            Katıl
-          </span>
+          <div className="ec-panel">
+            <span className="ec-cal">
+              <b>{mon}</b>
+              <i>{day}</i>
+            </span>
+            <span className="ec-when">
+              <b>{full}</b>
+              <i>{weekday}</i>
+            </span>
+            <span className={`ec-live ${st.tone}`}>{st.label}</span>
+          </div>
+
+          <div className="ec-foot">
+            <span>Konum</span>
+            <b>{event.location || 'Belirtilmedi'}</b>
+          </div>
         </div>
       </article>
 
       <style>{`
-        .ev-link { display:block; text-decoration:none; color:inherit; height:100%; }
-        .ev-card {
-          --clay: 10px 14px 26px rgba(15, 46, 92,.13),
-                  inset -5px -7px 12px rgba(15, 46, 92,.14),
-                  inset 5px 7px 14px rgba(255,255,255,.70);
-          --clay-hi: 16px 24px 38px rgba(15, 46, 92,.19),
-                     inset -5px -7px 12px rgba(15, 46, 92,.14),
-                     inset 6px 8px 16px rgba(255,255,255,.78);
-          position:relative; display:flex; flex-direction:column; height:100%;
-          padding:18px; border-radius:30px;
-          background:var(--paper-cream, #FFF);
-          border:1px solid var(--border, #E8E5DD);
-          box-shadow:var(--clay);
-          transition:transform .4s var(--ease, cubic-bezier(.2,.8,.3,1)), box-shadow .4s ease;
+        .ec-link { display:block; text-decoration:none; height:100%; }
+        .ec {
+          display:flex; flex-direction:column; height:100%;
+          background:#14171F; border:1px solid #232733; border-radius:22px;
+          overflow:hidden; color:#EDF1FA;
+          transition:transform .35s var(--ease, cubic-bezier(.2,.8,.3,1)), border-color .35s ease;
         }
-        .ev-link:hover .ev-card { transform:translateY(-6px); box-shadow:var(--clay-hi); }
-        .ev-frame {
-          position:relative; height:178px; border-radius:22px; overflow:hidden;
-          margin-bottom:16px; box-shadow:inset 0 0 0 1px rgba(15, 46, 92,.14);
+        .ec-link:hover .ec { transform:translateY(-5px); border-color:#394054; }
+
+        .ec-stage { position:relative; height:168px; overflow:hidden; }
+        .ec-glow {
+          position:absolute; right:-14%; top:-42%;
+          width:78%; aspect-ratio:1; border-radius:50%;
+          filter:blur(46px); opacity:.42;
         }
-        .ev-frame::after {
-          content:""; position:absolute; inset:0; pointer-events:none;
-          background:linear-gradient(180deg,
-            rgba(12, 27, 142,.22) 0%, rgba(12, 27, 142,0) 40%, rgba(12, 27, 142,.52) 100%);
+        .ec-art { position:absolute; inset:0; display:block; }
+        .ec-art svg { position:absolute; right:2%; top:14%; width:64%; height:auto; }
+        .ec-icon {
+          position:absolute; right:19%; top:8%;
+          filter:drop-shadow(0 12px 16px rgba(0,0,0,.55));
         }
-        .ev-img { width:100%; height:100%; object-fit:cover; display:block; }
-        .ev-pill {
-          position:absolute; top:12px; left:12px; z-index:2;
+        .ec-photo { width:100%; height:100%; object-fit:cover; display:block; opacity:.9; }
+
+        .ec-count {
+          position:absolute; top:14px; right:14px; z-index:2;
+          display:inline-flex; align-items:center; gap:6px;
           font-family:var(--font-mono), monospace; font-size:11px;
-          color:var(--ink, #1E3A2B); background:rgba(255,255,255,.92);
-          padding:6px 12px; border-radius:var(--r-pill, 999px);
+          color:#C3CBDD; background:rgba(255,255,255,.10);
+          border:1px solid rgba(255,255,255,.14);
+          padding:5px 10px; border-radius:999px;
         }
-        .ev-when {
-          display:flex; align-items:baseline; gap:8px; margin:0 0 6px;
-          font-family:var(--font-mono), monospace; font-size:12px;
-          color:var(--coral, #BE5127);
+
+        .ec-body { display:flex; flex-direction:column; flex:1; padding:0 18px 18px; margin-top:-46px; position:relative; z-index:1; }
+
+        .ec-chip {
+          align-self:flex-start; display:inline-flex; align-items:center; gap:7px;
+          font-size:12px; font-weight:600; color:#D6DDEC;
+          background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.13);
+          padding:5px 12px 5px 6px; border-radius:999px;
+          max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
         }
-        .ev-when b {
+        .ec-title {
           font-family:var(--font-serif), Georgia, serif;
-          font-size:30px; line-height:1; font-weight:600;
-        }
-        .ev-title {
-          font-family:var(--font-serif), Georgia, serif; font-weight:600;
-          font-size:20px; line-height:1.2; margin:0 0 5px;
-          color:var(--ink, #1E3A2B); letter-spacing:-.01em;
+          font-size:22px; font-weight:600; line-height:1.18; letter-spacing:-.015em;
+          color:#FFFFFF; margin:12px 0 0;
           display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
         }
-        .ev-host {
-          font-size:13px; color:var(--muted, #5C5744); margin:0;
-          white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+
+        .ec-panel {
+          display:flex; align-items:center; gap:12px;
+          background:#1B1F29; border-radius:15px; padding:10px 12px;
+          margin-top:16px;
         }
-        .ev-foot {
+        .ec-cal {
+          flex:none; display:grid; place-items:center;
+          width:44px; padding:5px 0; border-radius:10px;
+          background:#272C38; line-height:1.1;
+        }
+        .ec-cal b { font-family:var(--font-mono), monospace; font-size:9px; letter-spacing:.08em; color:#9AA5BE; }
+        .ec-cal i { font-style:normal; font-size:18px; font-weight:700; color:#fff; }
+        .ec-when { display:flex; flex-direction:column; min-width:0; flex:1; }
+        .ec-when b { font-size:13.5px; font-weight:600; color:#EDF1FA; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .ec-when i { font-style:normal; font-size:12px; color:#8B95AD; }
+
+        .ec-live {
+          flex:none; display:inline-flex; align-items:center; gap:6px;
+          font-size:11.5px; font-weight:600; color:#C3CBDD;
+          background:rgba(255,255,255,.07); padding:5px 11px; border-radius:999px;
+        }
+        .ec-live::before { content:""; width:6px; height:6px; border-radius:50%; background:#6B7488; }
+        .ec-live.now::before  { background:#3DDC8A; box-shadow:0 0 0 3px rgba(61,220,138,.22); }
+        .ec-live.soon::before { background:#4FC3B8; }
+
+        .ec-foot {
           display:flex; align-items:center; justify-content:space-between; gap:12px;
-          margin-top:auto; padding-top:15px;
-          border-top:1px solid var(--border, #E8E5DD);
+          margin-top:auto; padding-top:14px;
         }
-        .ev-count {
-          font-family:var(--font-mono), monospace; font-size:12px;
-          color:var(--muted, #5C5744);
+        .ec-foot span { font-size:12.5px; color:#8B95AD; }
+        .ec-foot b {
+          font-size:13px; font-weight:600; color:#EDF1FA;
+          max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
         }
-        .ev-count b {
-          font-family:var(--font-sans), system-ui, sans-serif;
-          color:var(--ink, #1E3A2B); font-weight:600; font-size:13px;
-        }
-        .ev-go {
-          font-weight:600; font-size:13px; padding:9px 18px;
-          border-radius:var(--r-pill, 999px);
-          background:var(--lime, #C8EB4B); color:var(--ink, #1E3A2B);
-          box-shadow:var(--shadow-press-sm, 3px 3px 0 #1E3A2B);
-          transition:transform .3s ease;
-        }
-        .ev-link:hover .ev-go { transform:translateY(-2px); }
+
         @media (prefers-reduced-motion: reduce) {
-          .ev-card, .ev-go { transition:none; }
-          .ev-link:hover .ev-card, .ev-link:hover .ev-go { transform:none; }
+          .ec { transition:none; }
+          .ec-link:hover .ec { transform:none; }
         }
       `}</style>
     </Link>
