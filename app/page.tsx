@@ -4,6 +4,7 @@ import { bySlug, sanitizeQuery } from '@/lib/categories'
 import CategoryStrip from './category-strip'
 import { HeroObjects } from '@/components/category-art'
 import HowItWorks from '@/components/how-it-works'
+import ClosingCta from '@/components/closing-cta'
 import CommunityCard, { type CommunitySummary } from '@/components/community-card'
 import UpcomingEvents, { type EventSummary } from '@/components/upcoming-events'
 import EventCard from '@/components/event-card'
@@ -375,28 +376,10 @@ export default async function HomePage({
         <HowItWorks />
       </section>
 
-      {/* ---- Kapanış CTA ---- */}
-      <section className="container section" style={{ paddingTop: 0 }}>
-        <div
-          style={{
-            background: 'var(--ink)',
-            borderRadius: 'var(--r-lg)',
-            padding: 'var(--s-8) var(--s-5)',
-            textAlign: 'center',
-          }}
-        >
-          <h2
-            className="serif"
-            style={{ fontSize: 'var(--t-3xl)', color: 'var(--paper-cream)', marginBottom: 'var(--s-3)' }}
-          >
-            Bir <em>masa</em> aç.<br />Gerisini birlikte kuralım.
-          </h2>
-          <p className="mono" style={{ fontSize: 'var(--t-sm)', color: 'var(--lime)', marginBottom: 'var(--s-6)' }}>
-            topluluk kurmak 2 dakika sürer · başlaman yeter
-          </p>
-          <Link href="/community/new" className="btn-primary">Topluluk kur</Link>
-        </div>
-      </section>
+      {/* ---- Kapanış: dokunan çizgiler.
+           Eski lacivert bandın yerine geçti — ikisi de topluluk kurmaya
+           çağırıyordu, iki CTA üst üste geliyordu. --- */}
+      <ClosingCta />
     </main>
   )
 }

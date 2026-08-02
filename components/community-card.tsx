@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { byValue } from '@/lib/categories'
-import CommunityEmblem from './community-emblem'
 
 export type CommunitySummary = {
   id: string
@@ -48,8 +47,8 @@ export default function CommunityCard({ community }: { community: CommunitySumma
   return (
     <Link href={`/community/${community.id}`} className="cm-link reveal">
       <article className="cm-card">
-        <div className="cm-cover">
-          {community.cover_image_url ? (
+        {community.cover_image_url && (
+          <div className="cm-cover">
             <Image
               src={community.cover_image_url}
               alt=""
@@ -57,19 +56,28 @@ export default function CommunityCard({ community }: { community: CommunitySumma
               sizes="(max-width: 620px) 100vw, (max-width: 1000px) 50vw, 33vw"
               style={{ objectFit: 'cover' }}
             />
-          ) : (
-            // Kapağın tamamı tek SVG: mesh zemin + tel kafesler + amblem.
-            // Ayrı .cm-bg katmanı kalktı, zemin artık kapağın içinde.
-            <CommunityEmblem id={community.id} category={community.category} className="cm-art" />
-          )}
-
-          {cat && <span className="cm-pill">{cat.label}</span>}
-          {fresh && <span className="cm-new">yeni açıldı</span>}
-        </div>
+            {cat && <span className="cm-pill">{cat.label}</span>}
+            {fresh && <span className="cm-new">yeni açıldı</span>}
+          </div>
+        )}
 
         <div className="cm-body">
+          {/* Kapak yoksa etiketler gövdeye taşınır — kapağın içindeydiler,
+              orada kaybolurlardı. */}
+          {!community.cover_image_url && (cat || fresh) && (
+            <div className="cm-tags">
+              {cat && <span className="cm-tag">{cat.label}</span>}
+              {fresh && <span className="cm-tag on">yeni açıldı</span>}
+            </div>
+          )}
           <h3 className="cm-title">{community.name}</h3>
-          <p className="cm-meta">{[cat?.label, community.city].filter(Boolean).join(' · ')}</p>
+          {/* Kategori üstteki etikette zaten var — burada tekrar etmiyor.
+              Kapak varsa etiket kapağın içinde, o zaman kategori burada kalır. */}
+          <p className="cm-meta">
+            {community.cover_image_url
+              ? [cat?.label, community.city].filter(Boolean).join(' · ')
+              : community.city}
+          </p>
 
           <div className="cm-hero">
             {fresh ? (
@@ -116,15 +124,16 @@ export default function CommunityCard({ community }: { community: CommunitySumma
           display:grid; place-items:center;
           box-shadow:inset 0 0 0 1px rgba(15, 46, 92,.16);
         }
-        .cm-art {
-          position:absolute; inset:0;
-          transition:transform .6s var(--ease, cubic-bezier(.2,.8,.3,1));
+        .cm-tags { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:12px; }
+        .cm-tag {
+          font-family:var(--font-mono), monospace; font-size:11px;
+          color:var(--muted); background:var(--paper-soft);
+          border:1px solid var(--border);
+          padding:5px 11px; border-radius:var(--r-pill);
         }
-        .cm-link:hover .cm-art { transform:scale(1.06); }
-        .cm-cover::after {
-          content:""; position:absolute; inset:0; pointer-events:none;
-          background:linear-gradient(180deg,
-            rgba(12, 27, 142,.10) 0%, rgba(12, 27, 142,0) 42%, rgba(12, 27, 142,.16) 100%);
+        .cm-tag.on {
+          color:var(--ink); background:var(--lime-soft);
+          border-color:transparent; font-weight:600;
         }
         .cm-pill {
           position:absolute; top:12px; left:12px; z-index:3;
@@ -138,7 +147,7 @@ export default function CommunityCard({ community }: { community: CommunitySumma
           color:var(--ink, #1E3A2B); background:var(--yellow-highlight, #FFD84D);
           padding:5px 10px; border-radius:var(--r-pill, 999px);
         }
-        .cm-body { padding:16px 4px 0; display:flex; flex-direction:column; flex:1; }
+        .cm-body { padding:4px 4px 0; display:flex; flex-direction:column; flex:1; }
         .cm-title {
           font-family:var(--font-serif), Georgia, serif; font-weight:600;
           font-size:21px; line-height:1.2; letter-spacing:-.005em;
@@ -188,8 +197,8 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         }
         .cm-link:hover .cm-go { transform:translateY(-2px); }
         @media (prefers-reduced-motion: reduce) {
-          .cm-card, .cm-go, .cm-art { transition:none; }
-          .cm-link:hover .cm-card, .cm-link:hover .cm-go, .cm-link:hover .cm-art { transform:none; }
+          .cm-card, .cm-go { transition:none; }
+          .cm-link:hover .cm-card, .cm-link:hover .cm-go { transform:none; }
         }
       `}</style>
     </Link>

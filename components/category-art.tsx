@@ -355,14 +355,11 @@ export function CategoryCover({ value, w = 400, h = 240, scale, className }: Cov
  * 960px altında tamamen gizleniyor (CSS), dar ekranda metnin üstüne biner.
  */
 export function HeroObjects() {
-  const far = [
-    { slug: 'muzik', x: 3, y: 8, s: 62, r: -15 },
-    { slug: 'lezzet', x: 89, y: 74, s: 58, r: 12 },
-  ]
   const near = [
-    { slug: 'kitap', x: 1, y: 34, s: 104, r: -9 },
-    { slug: 'doga', x: 88, y: 30, s: 96, r: 14 },
+    { slug: 'kitap', x: 6, y: 30, s: 96, r: -9 },
+    { slug: 'doga', x: 82, y: 26, s: 88, r: 14 },
   ]
+  const far: typeof near = []
   return (
     <div className="hx-objs" aria-hidden="true">
       {far.map((o) => (
