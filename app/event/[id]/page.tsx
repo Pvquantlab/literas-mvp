@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
+import { byValue } from '@/lib/categories'
+import { GlossyIcon } from '@/components/category-art'
 import RsvpForm from './rsvp-form'
 import AttendeeList from './attendee-list'
 import EventActions from './event-actions'
@@ -71,63 +73,8 @@ export async function generateMetadata({
 
 export const dynamic = 'force-dynamic'
 
-// Kategori → yumuşak fon rengi (EventCard ile aynı)
-const CATEGORY_BG: Record<string, string> = {
-  kitap:       '#F5E9D0',
-  'doğa':      '#DDE9D5',
-  'müzik':     '#E7DBEB',
-  lezzet:      '#F3D8CE',
-  dil:         '#DCE4EE',
-  spor:        '#E5E0D2',
-  sanat:       '#EFD9DC',
-  oyun:        '#DFE8DE',
-  tech:        '#DAE0E6',
-  sinema:      '#E4DED4',
-  'fotoğraf':  '#E0DEDC',
-  'gönüllülük':'#E1EBDA',
-  kariyer:     '#E5DED0',
-  sosyal:      '#EBDFD3',
-  default:     '#E8E4D8',
-}
-
 const MONTHS_TR_FULL = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
 const MONTHS_TR_SHORT = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
-const DAYS_TR_LONG = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi']
-
-// Kategori ikonu (EventCard'daki ile aynı, sadece burada tek yerde kullanılıyor)
-function CategoryIcon({ slug, size = 120 }: { slug: string; size?: number }) {
-  const color = 'var(--ink, #1E3A2B)'
-  const common = {
-    width: size, height: size, viewBox: '0 0 24 24',
-    fill: 'none', stroke: color, strokeWidth: 1.6,
-    strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
-    opacity: 0.85,
-  }
-  switch (slug) {
-    case 'kitap':
-      return <svg {...common}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-    case 'doğa':
-      return <svg {...common}><path d="M8 19v2"/><path d="M8 15v-3"/><path d="M12 21V11"/><path d="M16 21v-4"/><path d="M12 11 6 5l6-2 6 2z"/><path d="M18 12a3 3 0 1 0 3-3"/></svg>
-    case 'müzik':
-      return <svg {...common}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-    case 'lezzet':
-      return <svg {...common}><path d="M15 11h.01"/><path d="M11 15h.01"/><path d="M16 16h.01"/><path d="m2 16 20 6-6-20A20 20 0 0 0 2 16"/><path d="M5.71 17.11a17.04 17.04 0 0 1 11.4-11.4"/></svg>
-    case 'dil':
-      return <svg {...common}><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
-    case 'spor':
-      return <svg {...common}><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-    case 'tech':
-      return <svg {...common}><rect width="18" height="12" x="3" y="4" rx="2"/><line x1="2" x2="22" y1="20" y2="20"/></svg>
-    case 'sinema':
-      return <svg {...common}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></svg>
-    case 'fotoğraf':
-      return <svg {...common}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-    case 'sosyal':
-      return <svg {...common}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    default:
-      return <svg {...common}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-  }
-}
 
 export default async function EventPage({
   params,
@@ -199,7 +146,7 @@ export default async function EventPage({
   const userHasRsvp = user
     ? (rsvpRows ?? []).some((r: any) => r.user_id === user.id)
     : false
-    // Kullanici waitlist'te mi?
+  // Kullanici waitlist'te mi?
   let userInWaitlist = false
   if (user) {
     const { data: myWaitlist } = await supabase
@@ -214,6 +161,19 @@ export default async function EventPage({
 
   const isOrganizer = user?.id === event.organizer_id
   const canManage = isOrganizer || isCommunityModerator
+
+  // Topluluğun diğer yaklaşan etkinlikleri — kenar kolonundaki liste için
+  // (Luma'daki "Upcoming Events" karşılığı). Bu etkinlik hariç, en yakın 4.
+  const { data: otherEvents } = event.community_id
+    ? await supabase
+        .from('events')
+        .select('id, title, event_date')
+        .eq('community_id', event.community_id)
+        .neq('id', id)
+        .gte('event_date', new Date().toISOString())
+        .order('event_date', { ascending: true })
+        .limit(4)
+    : { data: [] as any[] }
 
   // Sunucu UTC'de calisiyor. getDate/getHours sunucunun yerel saatini
   // kullaniyor ve canlida 3 saat kayma uretiyordu: WhatsApp metninde
@@ -242,374 +202,493 @@ export default async function EventPage({
   const longDate = `${dayName}, ${dayNum} ${monthFull} ${year}`
 
   const hasImage = !!event.cover_image_url
-  const category = (event.community as any)?.category ?? 'default'
-  const bg = CATEGORY_BG[category] ?? CATEGORY_BG.default
+  const cat = byValue((event.community as any)?.category ?? null)
+  const c2 = cat?.colors[1] ?? '#2B6FD4'
 
   // Sayi rsvps dizisinden degil events.attendee_count sutunundan gelir.
   // rsvps anonim kullaniciya kapali oldugu icin dizi bos donuyor ve
   // sayac 0 gosteriyordu. Sutun trigger ile guncel tutuluyor.
   const attendeeCount = (event as any).attendee_count ?? 0
   const isFull = event.max_attendees ? attendeeCount >= event.max_attendees : false
+  const spotsLeft = event.max_attendees ? Math.max(event.max_attendees - attendeeCount, 0) : null
 
   return (
-    <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '24px 24px 80px' }}>
-      {/* Geri linki */}
-      <Link
-        href="/"
-        style={{
-          color: 'var(--muted)',
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: '13px',
-          fontWeight: 500,
-          textDecoration: 'none',
-          display: 'inline-block',
-          marginBottom: '20px',
-        }}
-      >
-        ← tüm etkinlikler
-      </Link>
+    <main id="content">
+      {/* ============ ÜST ŞERİT ============
+          Koyu zemin + ince ızgara. Solda kimlik + tarih/konum, sağda kapak.
+          Kart diliyle aynı koyu tonlar (event-card.tsx). */}
+      <section className="ed-hero">
+        <div className="ed-hero-in">
+          <div className="ed-head">
+            <Link href="/" className="ed-back">← tüm etkinlikler</Link>
 
-      {/* HERO — büyük görsel veya kategori fallback */}
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        aspectRatio: '21 / 9',
-        overflow: 'hidden',
-        borderRadius: '20px',
-        background: hasImage ? 'transparent' : bg,
-        marginBottom: '32px',
-      }}>
-        {hasImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={event.cover_image_url}
-            alt={event.title}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        ) : (
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'grid',
-            placeItems: 'center',
-          }}>
-            <CategoryIcon slug={category} size={140} />
-          </div>
-        )}
-      </div>
-
-      {/* 2 sütun grid */}
-      <div className="event-detail-grid" style={{
-        display: 'grid',
-        gap: '40px',
-        alignItems: 'start',
-      }}>
-        {/* SOL — ana içerik */}
-        <div style={{ minWidth: 0 }}>
-          {/* Topluluk chip'i */}
-          {event.community && (
-            <Link
-              href={`/community/${event.community.id}`}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '5px 12px',
-                borderRadius: '999px',
-                background: 'rgba(30, 58, 43, 0.06)',
-                color: 'var(--ink)',
-                fontSize: '12.5px',
-                fontWeight: 600,
-                fontFamily: "'IBM Plex Mono', monospace",
-                textDecoration: 'none',
-                marginBottom: '16px',
-              }}
-            >
-              {event.community.name}
-            </Link>
-          )}
-
-          {/* Başlık — büyük ve sans, bold */}
-          <h1 style={{
-            fontFamily: "'Schibsted Grotesk', system-ui, -apple-system, sans-serif",
-            fontSize: 'clamp(30px, 4vw, 44px)',
-            fontWeight: 800,
-            lineHeight: 1.15,
-            color: 'var(--ink)',
-            letterSpacing: '-0.02em',
-            margin: '0 0 12px',
-          }}>
-            {event.title}
-          </h1>
-
-          {/* Düzenleyen */}
-          {organizer?.name && (
-            <p style={{
-              fontSize: '14.5px',
-              color: 'var(--muted)',
-              marginBottom: '28px',
-            }}>
-              <Link href={`/profile/${organizer.id}`} style={{
-                color: 'var(--ink)',
-                fontWeight: 600,
-                textDecoration: 'none',
-              }}>
-                {organizer.name}
+            {event.community && (
+              <Link href={`/community/${event.community.id}`} className="ed-chip">
+                {cat && <GlossyIcon value={cat.slug} size={16} />}
+                {event.community.name}
               </Link>
-              {' tarafından'}
-            </p>
-          )}
+            )}
 
-          {/* Açıklama */}
-          {event.description && (
-            <div style={{
-              fontSize: '16px',
-              lineHeight: 1.7,
-              color: 'var(--ink)',
-              whiteSpace: 'pre-wrap',
-              marginBottom: '32px',
-            }}>
-              {event.description}
+            <h1 className="ed-title">{event.title}</h1>
+
+            <div className="ed-meta">
+              <span className="ed-cal" aria-hidden="true">
+                <b>{monthShort}</b>
+                <i>{dayNum}</i>
+              </span>
+              <span className="ed-meta-txt">
+                <b>{longDate}</b>
+                <i>{timeStr}&apos;de başlar · Europe/Istanbul</i>
+              </span>
             </div>
-          )}
 
-          {/* Harita */}
-          {event.location && (
-            <div style={{ marginBottom: '32px' }}>
-              <h3 style={{
-                fontFamily: "'Schibsted Grotesk', system-ui, sans-serif",
-                fontSize: '18px',
-                fontWeight: 700,
-                color: 'var(--ink)',
-                marginBottom: '12px',
-              }}>
-                Konum
-              </h3>
-              <p style={{
-                fontSize: '14.5px',
-                color: 'var(--muted)',
-                marginBottom: '12px',
-              }}>
-                📍 {event.location}
+            {event.location && (
+              <div className="ed-meta">
+                <span className="ed-pin" aria-hidden="true">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </span>
+                <span className="ed-meta-txt">
+                  <b>{event.location}</b>
+                  {(event.community as any)?.city && <i>{(event.community as any).city}</i>}
+                </span>
+              </div>
+            )}
+
+            {organizer?.name && (
+              <p className="ed-org">
+                <Link href={`/profile/${organizer.id}`}>{organizer.name}</Link> tarafından
               </p>
-              <EventMap
-                location={event.location}
-                city={(event.community as any)?.city}
-              />
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Yönetici aksiyonları */}
-          {canManage && (
-            <div style={{ marginBottom: '32px' }}>
-              <EventActions eventId={event.id} />
-            </div>
-          )}
-
-          <AttendeeList
-            eventId={event.id}
-            initialAttendees={(rsvps as any) ?? []}
-            initialCount={attendeeCount}
-            canSeeNames={!!user}
-            maxAttendees={event.max_attendees ?? null}
-          />
+          <div className="ed-cover">
+            {hasImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={event.cover_image_url} alt={event.title} />
+            ) : (
+              <span className="ed-cover-art">
+                <span className="ed-cover-glow" style={{ background: c2 }} />
+                <svg viewBox="0 0 200 150" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="ed-top" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#3A4050" />
+                      <stop offset="100%" stopColor="#22262F" />
+                    </linearGradient>
+                    <linearGradient id="ed-side" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#272B35" />
+                      <stop offset="100%" stopColor="#14161C" />
+                    </linearGradient>
+                  </defs>
+                  <polygon points="100,58 168,90 168,104 100,136 32,104 32,90" fill="none" stroke={c2} strokeWidth="3" opacity=".5" />
+                  <polygon points="46,96 100,124 100,138 46,110" fill="url(#ed-side)" />
+                  <polygon points="154,96 100,124 100,138 154,110" fill="url(#ed-side)" opacity=".8" />
+                  <polygon points="100,70 154,96 100,124 46,96" fill="url(#ed-top)" />
+                </svg>
+                <span className="ed-cover-icon">
+                  <GlossyIcon value={(event.community as any)?.category ?? null} size={92} />
+                </span>
+              </span>
+            )}
+          </div>
         </div>
+      </section>
 
-        {/* SAĞ — sticky sidebar */}
-        <aside className="event-sidebar">
-          <div style={{
-            position: 'sticky',
-            top: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-          }}>
-            {/* Tarih kartı — büyük gün numarası */}
-            <div style={{
-              background: 'var(--paper-cream)',
-              border: '1.5px solid var(--border)',
-              borderRadius: '16px',
-              padding: '20px',
-              display: 'flex',
-              gap: '18px',
-              alignItems: 'center',
-            }}>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                minWidth: '58px',
-                padding: '8px 10px',
-                borderRadius: '10px',
-                border: '1.5px solid var(--ink)',
-                background: 'transparent',
-              }}>
-                <div style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: '10.5px',
-                  fontWeight: 700,
-                  color: 'var(--moss, #3E6B54)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                }}>
-                  {monthShort}
-                </div>
-                <div className="serif" style={{
-                  fontSize: '26px',
-                  fontWeight: 500,
-                  color: 'var(--ink)',
-                  lineHeight: 1,
-                  marginTop: '2px',
-                }}>
-                  {dayNum}
-                </div>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  color: 'var(--ink)',
-                  marginBottom: '2px',
-                }}>
-                  {longDate}
-                </div>
-                <div style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: '12.5px',
-                  color: 'var(--muted)',
-                }}>
-                  {timeStr}'de başlar
-                </div>
-              </div>
-            </div>
-
-            {/* Ücretsiz + katılım */}
-            <div style={{
-              background: 'var(--paper-cream)',
-              border: '1.5px solid var(--border)',
-              borderRadius: '16px',
-              padding: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '14px',
-            }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-                <span style={{
-                  fontSize: '15px',
-                  fontWeight: 700,
-                  color: 'var(--ink)',
-                }}>
-                  Ücretsiz
-                </span>
-                <span style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: '12px',
-                  color: 'var(--muted)',
-                }}>
-                  {attendeeCount} katılımcı
+      {/* ============ GÖVDE: iki kolon ============ */}
+      <div className="ed-body">
+        <div className="ed-grid">
+          {/* ---- SOL: içerik ---- */}
+          <div className="ed-main">
+            {/* Kayıt kartı — Luma düzeni: başlık çubuğu + mesaj + tam genişlik buton */}
+            <section className="ed-reg">
+              <div className="ed-reg-head">
+                <span>Kayıt</span>
+                <span className="ed-reg-count">
+                  Ücretsiz · {attendeeCount} katılımcı
+                  {spotsLeft !== null && !isFull && ` · ${spotsLeft} yer kaldı`}
+                  {isFull && ' · doldu'}
                 </span>
               </div>
+              <div className="ed-reg-body">
+                {!user ? (
+                  <>
+                    <p className="ed-reg-msg">
+                      Hoş geldin! Etkinliğe katılmak için giriş yapman yeterli.
+                    </p>
+                    <Link href="/login" className="btn-primary ed-cta">
+                      Katılmak için giriş yap
+                    </Link>
+                  </>
+                ) : isOrganizer ? (
+                  <p className="ed-note">bu etkinliği sen düzenliyorsun</p>
+                ) : !isApprovedMember && event.community ? (
+                  <>
+                    <p className="ed-reg-msg">
+                      Katılmak için önce <strong>{event.community.name}</strong> topluluğunun
+                      üyesi olmalısın.
+                    </p>
+                    <Link href={`/community/${event.community.id}`} className="btn-primary ed-cta">
+                      Topluluğa git
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <p className="ed-reg-msg">
+                      Hoş geldin! Aşağıdan katılımını işaretleyebilirsin.
+                    </p>
+                    <RsvpForm
+                      eventId={event.id}
+                      userId={user.id}
+                      userHasRsvp={userHasRsvp || false}
+                      userInWaitlist={userInWaitlist}
+                      isFull={isFull}
+                    />
+                  </>
+                )}
+              </div>
+            </section>
 
-              {/* RSVP alanı */}
-              {!user ? (
-                <Link
-                  href="/login"
-                  className="btn-primary"
-                  style={{ textAlign: 'center', textDecoration: 'none', width: '100%' }}
-                >
-                  Katılmak için giriş yap
-                </Link>
-              ) : isOrganizer ? (
-                <p style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  color: 'var(--muted)',
-                  fontSize: '13px',
-                  textAlign: 'center',
-                  margin: 0,
-                }}>
-                   bu etkinliği sen düzenliyorsun
-                </p>
-              ) : !isApprovedMember && event.community ? (
-                <>
-                  <p style={{
-                    fontSize: '13.5px',
-                    color: 'var(--ink)',
-                    lineHeight: 1.5,
-                    margin: 0,
-                  }}>
-                    Katılmak için önce{' '}
-                    <strong>{event.community.name}</strong>{' '}
-                    topluluğunun üyesi olmalısın.
-                  </p>
-                  <Link
-                    href={`/community/${event.community.id}`}
-                    className="btn-primary"
-                    style={{ textAlign: 'center', textDecoration: 'none', width: '100%' }}
-                  >
-                    Topluluğa git
-                  </Link>
-                </>
-              ) : (
-                <RsvpForm
-                  eventId={event.id}
-                  userId={user.id}
-                  userHasRsvp={userHasRsvp || false}
-                  userInWaitlist={userInWaitlist}
-                  isFull={isFull}
+            {event.description && (
+              <section className="ed-block">
+                <h2 className="ed-h2">Etkinlik hakkında</h2>
+                <div className="ed-desc">{event.description}</div>
+              </section>
+            )}
+
+            {event.location && (
+              <section className="ed-block">
+                <h2 className="ed-h2">Konum</h2>
+                <p className="ed-loc">{event.location}</p>
+                <EventMap
+                  location={event.location}
+                  city={(event.community as any)?.city}
                 />
+              </section>
+            )}
+
+            {canManage && (
+              <section className="ed-block">
+                <h2 className="ed-h2">Yönetim</h2>
+                <EventActions eventId={event.id} />
+              </section>
+            )}
+
+            <section className="ed-block">
+              <AttendeeList
+                eventId={event.id}
+                initialAttendees={(rsvps as any) ?? []}
+                initialCount={attendeeCount}
+                canSeeNames={!!user}
+                maxAttendees={event.max_attendees ?? null}
+              />
+            </section>
+          </div>
+
+          {/* ---- SAĞ: yapışkan kenar ---- */}
+          <aside className="ed-side">
+            <div className="ed-sticky">
+              {/* Düzenleyen topluluk */}
+              {event.community && (
+                <Link href={`/community/${event.community.id}`} className="ed-card ed-comm">
+                  <span className="ed-comm-icon">
+                    <GlossyIcon value={(event.community as any)?.category ?? null} size={34} />
+                  </span>
+                  <span className="ed-comm-txt">
+                    <b>{event.community.name}</b>
+                    <i>Topluluğa git →</i>
+                  </span>
+                </Link>
+              )}
+
+              {/* Topluluğun diğer yaklaşan etkinlikleri */}
+              {(otherEvents ?? []).length > 0 && (
+                <div className="ed-card ed-up">
+                  <h2 className="ed-up-h">Topluluğun diğer etkinlikleri</h2>
+                  <ul className="ed-up-list">
+                    {(otherEvents ?? []).map((oe: any) => {
+                      const op = new Intl.DateTimeFormat('en-CA', {
+                        timeZone: 'Europe/Istanbul', month: 'numeric', day: 'numeric',
+                      }).formatToParts(new Date(oe.event_date))
+                      const og = (t: string) => op.find((x) => x.type === t)?.value ?? '0'
+                      const oMon = MONTHS_TR_SHORT[Number(og('month')) - 1]
+                      return (
+                        <li key={oe.id}>
+                          <Link href={`/event/${oe.id}`} className="ed-up-row">
+                            <span className="ed-up-cal" aria-hidden="true">
+                              <b>{oMon}</b>
+                              <i>{Number(og('day'))}</i>
+                            </span>
+                            <span className="ed-up-title">{oe.title}</span>
+                          </Link>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              {/* Paylaşım ve takvim */}
+              <div className="ed-tools">
+                <WhatsappShare
+                  title={event.title}
+                  eventDateStr={`${longDate}, ${timeStr}`}
+                  location={event.location}
+                />
+                <CalendarButton
+                  eventId={event.id}
+                  title={event.title}
+                  description={event.description || ''}
+                  location={event.location}
+                  eventDateIso={event.event_date}
+                />
+              </div>
+
+              {user && user.id !== event.organizer_id && (
+                <div className="ed-report">
+                  <ReportButton targetType="event" targetId={event.id} />
+                </div>
               )}
             </div>
-          </div>
-          <div style={{ marginTop: '20px' }}>
-          <WhatsappShare
-            title={event.title}
-            eventDateStr={`${longDate}, ${timeStr}`}
-            location={event.location}
-          />
-          <div style={{ marginTop: '12px' }}>
-              <CalendarButton
-                eventId={event.id}
-                title={event.title}
-                description={event.description || ''}
-                location={event.location}
-                eventDateIso={event.event_date}
-              />
-            </div>
+          </aside>
         </div>
-        {user && user.id !== event.organizer_id && (
-            <div style={{ marginTop: '16px', textAlign: 'center' }}>
-              <ReportButton targetType="event" targetId={event.id} />
-            </div>
-          )}
-        </aside>
       </div>
 
       <style>{`
-        .event-detail-grid {
+        /* ---------- Üst şerit ---------- */
+        .ed-hero {
+          background-color: #14171F;
+          background-image:
+            linear-gradient(rgba(79, 195, 184, .07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(79, 195, 184, .07) 1px, transparent 1px);
+          background-size: 24px 24px;
+          border-bottom: 1.5px solid rgba(43, 111, 212, .5);
+          color: #EDF1FA;
+        }
+        .ed-hero-in {
+          max-width: var(--w-page);
+          margin: 0 auto;
+          padding: var(--s-6) var(--s-5) var(--s-7);
+          display: grid;
+          grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+          gap: var(--s-7);
+          align-items: center;
+        }
+        .ed-back {
+          display: inline-block;
+          font-family: var(--font-mono), monospace;
+          font-size: var(--t-sm);
+          color: #8B95AD;
+          margin-bottom: var(--s-5);
+        }
+        .ed-back:hover { color: #C3CBDD; }
+        .ed-chip {
+          display: inline-flex; align-items: center; gap: 7px;
+          font-size: var(--t-xs); font-weight: 600; color: #D6DDEC;
+          background: rgba(255,255,255,.09);
+          border: 1px solid rgba(255,255,255,.13);
+          padding: 5px 12px 5px 6px; border-radius: var(--r-pill);
+          max-width: 100%;
+        }
+        .ed-chip:hover { color: #fff; border-color: rgba(255,255,255,.3); }
+        .ed-title {
+          font-family: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
+          font-weight: 700;
+          font-size: clamp(30px, 4.4vw, 52px);
+          line-height: 1.06;
+          letter-spacing: -.032em;
+          color: #FFFFFF;
+          margin: var(--s-4) 0 var(--s-5);
+          text-wrap: balance;
+        }
+        .ed-meta {
+          display: flex; align-items: center; gap: var(--s-3);
+          margin-top: var(--s-3);
+        }
+        .ed-cal {
+          flex: none; display: grid; place-items: center;
+          width: 46px; padding: 6px 0; border-radius: 10px;
+          background: #272C38; line-height: 1.1;
+        }
+        .ed-cal b { font-family: var(--font-mono), monospace; font-size: 9px; letter-spacing: .08em; color: #9AA5BE; text-transform: uppercase; }
+        .ed-cal i { font-style: normal; font-size: 19px; font-weight: 700; color: #fff; }
+        .ed-pin {
+          flex: none; display: grid; place-items: center;
+          width: 46px; height: 46px; border-radius: 10px;
+          background: #272C38; color: #9AA5BE;
+        }
+        .ed-meta-txt { display: flex; flex-direction: column; min-width: 0; }
+        .ed-meta-txt b { font-size: var(--t-md); font-weight: 600; color: #EDF1FA; }
+        .ed-meta-txt i { font-style: normal; font-size: var(--t-xs); color: #8B95AD; }
+        .ed-org { margin-top: var(--s-5); font-size: var(--t-sm); color: #8B95AD; }
+        .ed-org a { color: #D6DDEC; font-weight: 600; }
+        .ed-org a:hover { color: #fff; }
+
+        .ed-cover {
+          border-radius: var(--r-lg);
+          overflow: hidden;
+          aspect-ratio: 4 / 3;
+          position: relative;
+          background: #1B1F29;
+          border: 1px solid #232733;
+        }
+        .ed-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .ed-cover-art { position: absolute; inset: 0; display: block; }
+        .ed-cover-glow {
+          position: absolute; right: -12%; top: -38%;
+          width: 80%; aspect-ratio: 1; border-radius: 50%;
+          filter: blur(52px); opacity: .4;
+        }
+        .ed-cover-art > svg { position: absolute; left: 50%; top: 56%; width: 78%; transform: translate(-50%, -50%); }
+        .ed-cover-icon {
+          position: absolute; left: 50%; top: 34%; transform: translate(-50%, -50%);
+          filter: drop-shadow(0 14px 18px rgba(0,0,0,.55));
+        }
+
+        /* ---------- Gövde ---------- */
+        .ed-body {
+          max-width: var(--w-page);
+          margin: 0 auto;
+          padding: var(--s-7) var(--s-5) var(--s-9);
+        }
+        .ed-grid {
+          display: grid;
           grid-template-columns: 1fr;
+          gap: var(--s-7);
+          align-items: start;
         }
         @media (min-width: 900px) {
-          .event-detail-grid {
-            grid-template-columns: 1fr 340px;
-          }
+          .ed-grid { grid-template-columns: minmax(0, 1fr) 340px; }
+        }
+
+        .ed-block { margin-top: var(--s-7); }
+        .ed-main > .ed-block:first-child { margin-top: 0; }
+
+        /* Luma'daki gibi: başlığın altında bölümü açan ince çizgi. */
+        .ed-h2 {
+          font-family: var(--font-sans), system-ui, sans-serif;
+          font-size: var(--t-lg);
+          font-weight: 700;
+          letter-spacing: -.02em;
+          color: var(--ink);
+          padding-bottom: var(--s-3);
+          border-bottom: 1px solid var(--border-mid);
+          margin-bottom: var(--s-4);
+        }
+
+        /* ---------- Kayıt kartı (Luma düzeni) ---------- */
+        .ed-reg {
+          border: 1px solid var(--border);
+          border-radius: var(--r-lg);
+          overflow: hidden;
+          background: var(--paper-cream);
+          box-shadow: var(--shadow-lift);
+        }
+        .ed-reg-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: var(--s-3);
+          padding: var(--s-3) var(--s-5);
+          background: var(--paper-soft);
+          border-bottom: 1px solid var(--border);
+          font-size: var(--t-sm);
+          font-weight: 600;
+          color: var(--ink);
+        }
+        .ed-reg-count {
+          font-family: var(--font-mono), monospace;
+          font-size: var(--t-xs);
+          font-weight: 500;
+          color: var(--muted);
+          text-align: right;
+        }
+        .ed-reg-body {
+          padding: var(--s-5);
+          display: flex;
+          flex-direction: column;
+          gap: var(--s-4);
+        }
+        .ed-reg-msg {
+          font-size: var(--t-md);
+          color: var(--night);
+          line-height: 1.55;
+          margin: 0;
+        }
+        .ed-desc {
+          font-size: 16px;
+          line-height: 1.7;
+          color: var(--night);
+          white-space: pre-wrap;
+        }
+        .ed-loc { font-size: var(--t-sm); color: var(--muted); margin-bottom: var(--s-3); }
+
+        /* ---------- Kenar ---------- */
+        .ed-sticky {
+          position: sticky; top: var(--s-5);
+          display: flex; flex-direction: column; gap: var(--s-4);
+        }
+        .ed-card {
+          background: var(--paper-cream);
+          border: 1px solid var(--border);
+          border-radius: var(--r-lg);
+          padding: var(--s-5);
+          display: flex; flex-direction: column; gap: var(--s-4);
+        }
+        .ed-cta { text-align: center; width: 100%; }
+        .ed-note { font-family: var(--font-mono), monospace; font-size: var(--t-sm); color: var(--muted); text-align: center; margin: 0; }
+
+        .ed-comm { flex-direction: row; align-items: center; gap: var(--s-3); text-decoration: none; }
+        .ed-comm:hover { border-color: var(--border-mid); }
+        .ed-comm-icon { flex: none; }
+        .ed-comm-txt { display: flex; flex-direction: column; min-width: 0; }
+        .ed-comm-txt b { font-size: var(--t-md); font-weight: 600; color: var(--ink); }
+        .ed-comm-txt i { font-style: normal; font-size: var(--t-xs); color: var(--muted); }
+
+        .ed-tools { display: flex; flex-direction: column; gap: var(--s-3); }
+
+        /* ---------- Diğer etkinlikler ---------- */
+        .ed-up { gap: var(--s-3); }
+        .ed-up-h {
+          font-size: var(--t-sm);
+          font-weight: 600;
+          color: var(--ink);
+          padding-bottom: var(--s-2);
+          border-bottom: 1px solid var(--border);
+        }
+        .ed-up-list { list-style: none; display: flex; flex-direction: column; gap: var(--s-2); }
+        .ed-up-row {
+          display: flex; align-items: center; gap: var(--s-3);
+          padding: 6px 8px; margin: 0 -8px;
+          border-radius: var(--r-md);
+          text-decoration: none;
+          transition: background .15s var(--ease);
+        }
+        .ed-up-row:hover { background: var(--paper-soft); }
+        .ed-up-cal {
+          flex: none; display: grid; place-items: center;
+          width: 40px; padding: 4px 0; border-radius: 9px;
+          background: var(--paper-soft); border: 1px solid var(--border);
+          line-height: 1.1;
+        }
+        .ed-up-cal b { font-family: var(--font-mono), monospace; font-size: 8.5px; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+        .ed-up-cal i { font-style: normal; font-size: 15px; font-weight: 700; color: var(--ink); }
+        .ed-up-title {
+          font-size: var(--t-sm); font-weight: 600; color: var(--ink);
+          overflow: hidden; text-overflow: ellipsis;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        }
+        .ed-report { text-align: center; }
+
+        /* ---------- Mobil ---------- */
+        @media (max-width: 900px) {
+          .ed-hero-in { grid-template-columns: 1fr; gap: var(--s-5); padding-bottom: var(--s-6); }
+          .ed-cover { order: -1; aspect-ratio: 16 / 9; }
+          .ed-back { margin-bottom: var(--s-4); }
+          .ed-title { font-size: clamp(26px, 7.5vw, 38px); }
+          .ed-body { padding-top: var(--s-6); }
         }
       `}</style>
-    </div>
+    </main>
   )
-}
-
-const rsvpChipStyle: React.CSSProperties = {
-  display: 'inline-block',
-  background: 'var(--paper-cream)',
-  padding: '6px 14px',
-  borderRadius: '999px',
-  border: '1.5px solid var(--border-mid)',
-  fontSize: '13.5px',
-  fontWeight: 700,
-  color: 'var(--ink)',
-  textDecoration: 'none',
 }

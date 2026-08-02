@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
+import { byValue } from '@/lib/categories'
+import { GlossyIcon } from '@/components/category-art'
 import MemberActions from './member-actions'
 import JoinButton from './join-button'
-import EventCard from '@/components/event-card'
 import ReportButton from '@/components/report-button'
 import type { Metadata } from 'next'
 
@@ -51,6 +52,30 @@ export async function generateMetadata({
 
 export const dynamic = 'force-dynamic'
 
+const TZ = 'Europe/Istanbul'
+const MONTHS_TR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
+const MONTHS_TR_SHORT = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+
+/** İstanbul gününe göre { y, m (0-11), d } */
+function istParts(date: Date) {
+  const p = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TZ, year: 'numeric', month: 'numeric', day: 'numeric',
+  }).formatToParts(date)
+  const g = (t: string) => Number(p.find((x) => x.type === t)?.value ?? '0')
+  return { y: g('year'), m: g('month') - 1, d: g('day') }
+}
+
+function istDayKey(date: Date): string {
+  const { y, m, d } = istParts(date)
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
+function istTime(date: Date): string {
+  return new Intl.DateTimeFormat('tr-TR', {
+    timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(date)
+}
+
 export default async function CommunityPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
@@ -62,6 +87,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
       name,
       description,
       city,
+      category,
       cover_image_url,
       created_at,
       status,
@@ -131,262 +157,586 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   const isPending = currentUserMembership?.status === 'pending'
   const canModerate = isFounder || isAdmin
 
+  /* --- Etkinlikler: yaklaşanlar + son geçmişler (zaman çizelgesi ve takvim) --- */
+
+  const nowIso = new Date().toISOString()
+  const [upcomingRes, pastRes] = await Promise.all([
+    supabase
+      .from('events')
+      .select('id, title, location, event_date, cover_image_url')
+      .eq('community_id', id)
+      .gte('event_date', nowIso)
+      .order('event_date', { ascending: true }),
+    supabase
+      .from('events')
+      .select('id, title, location, event_date, cover_image_url')
+      .eq('community_id', id)
+      .lt('event_date', nowIso)
+      .order('event_date', { ascending: false })
+      .limit(6),
+  ])
+  const upcoming = upcomingRes.data ?? []
+  const past = pastRes.data ?? []
+
+  /** Tarihe göre grupla: [{ key, label, items }] */
+  function groupByDay(list: any[]) {
+    const groups: { key: string; label: string; items: any[] }[] = []
+    for (const ev of list) {
+      const dt = new Date(ev.event_date)
+      const key = istDayKey(dt)
+      const { m, d } = istParts(dt)
+      const weekday = new Intl.DateTimeFormat('tr-TR', { timeZone: TZ, weekday: 'long' }).format(dt)
+      const label = `${d} ${MONTHS_TR_SHORT[m]} · ${weekday}`
+      const last = groups[groups.length - 1]
+      if (last && last.key === key) last.items.push(ev)
+      else groups.push({ key, label, items: [ev] })
+    }
+    return groups
+  }
+
+  const upcomingGroups = groupByDay(upcoming)
+  const pastGroups = groupByDay(past)
+
+  /* --- Takvim: bu ay (İstanbul), etkinlik olan günlerde nokta --- */
+
+  const nowIst = istParts(new Date())
+  const calY = nowIst.y
+  const calM = nowIst.m
+  const daysInMonth = new Date(Date.UTC(calY, calM + 1, 0)).getUTCDate()
+  // Pazartesi başlangıçlı ofset
+  const firstDow = (new Date(Date.UTC(calY, calM, 1)).getUTCDay() + 6) % 7
+  const eventDays = new Set(
+    [...upcoming, ...past]
+      .map((ev: any) => istParts(new Date(ev.event_date)))
+      .filter((p) => p.y === calY && p.m === calM)
+      .map((p) => p.d)
+  )
+  const todayD = nowIst.d
+
+  const cat = byValue((community as any).category ?? null)
+  const c1 = cat?.colors[0] ?? '#8AACF5'
+  const c2 = cat?.colors[1] ?? '#2B6FD4'
+  const hasCover = !!community.cover_image_url
+
   return (
-    <main style={{ maxWidth: '900px', margin: '0 auto', padding: '32px 24px 64px' }}>
-      <Link
-        href="/"
-        style={{
-          color: 'var(--muted)',
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: '13px',
-          fontWeight: 500,
-          marginBottom: '20px',
-          display: 'inline-block',
-          textDecoration: 'none',
-        }}
-      >
-        ← tüm topluluklar
-      </Link>
-
-      {community.cover_image_url && (
-        <div style={{
-          width: '100%',
-          aspectRatio: '16 / 9',
-          overflow: 'hidden',
-          borderRadius: '18px',
-          border: '1.5px solid var(--border)',
-          background: 'var(--paper-cream)',
-          marginBottom: '28px',
-        }}>
-          <img
-            src={community.cover_image_url}
-            alt=""
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        </div>
-      )}
-
-      <h1 className="serif" style={{
-        fontSize: 'clamp(32px, 4.4vw, 46px)',
-        lineHeight: 1.1,
-        color: 'var(--ink)',
-        margin: '0 0 12px',
-      }}>
-        <span className="highlight-yellow">{community.name}</span>
-      </h1>
-
-      <p style={{
-        fontFamily: "'IBM Plex Mono', monospace",
-        color: 'var(--muted)',
-        fontSize: '13.5px',
-        marginBottom: '20px',
-      }}>
-        📍 {community.city} · 👥 {memberCount} üye · {founderName} kurdu
-      </p>
-
-      {community.description && (
-        <p style={{
-          color: 'var(--ink)',
-          fontSize: '16.5px',
-          lineHeight: 1.65,
-          marginBottom: '28px',
-        }}>
-          {community.description}
-        </p>
-      )}
-
-      {user && !currentUserMembership && (
-        <div style={{ marginBottom: '32px' }}>
-          <JoinButton communityId={community.id} userId={user.id} />
-        </div>
-      )}
-
-      {isPending && (
-        <div style={{
-          background: 'rgba(255, 216, 77, .2)',
-          border: '1.5px solid rgba(176, 67, 48, .35)',
-          borderRadius: '999px',
-          padding: '10px 18px',
-          color: 'var(--coral-deep)',
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: '13px',
-          marginBottom: '32px',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-        }}>
-          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--coral)' }} />
-          isteğin bekliyor · kurucu onaylayınca haberin olur
-        </div>
-      )}
-
-      {canModerate && pendingMembers.length > 0 && (
-        <section style={{ marginTop: '32px', marginBottom: '32px' }}>
-          <h2 style={sectionTitleStyle} className="serif">Bekleyen istekler</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {pendingMembers.map((m: any) => (
-              <div key={m.id} style={memberRowStyle}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-                  {m.user?.avatar_url ? (
-                    <img src={m.user.avatar_url} alt="" style={avatarStyle} />
-                  ) : (
-                    <div style={avatarPlaceholderStyle}>
-                      {m.user?.name?.[0]?.toUpperCase() ?? '?'}
-                    </div>
-                  )}
-                  <Link
-                    href={`/profile/${m.user_id}`}
-                    style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'none' }}
-                  >
-                    {m.user?.name}
-                  </Link>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <MemberActions memberId={m.id} action="approve" />
-                  <MemberActions memberId={m.id} action="reject" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section style={{ marginTop: '40px' }}>
-        <h2 style={sectionTitleStyle} className="serif">Üyeler</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {approvedMembers.map((m: any) => (
-            <div key={m.id} style={memberRowStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-                {m.user?.avatar_url ? (
-                  <img src={m.user.avatar_url} alt="" style={avatarStyle} />
-                ) : (
-                  <div style={avatarPlaceholderStyle}>
-                    {m.user?.name?.[0]?.toUpperCase() ?? '?'}
-                  </div>
-                )}
-                <Link
-                  href={`/profile/${m.user_id}`}
-                  style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'none' }}
-                >
-                  {m.user?.name}
-                </Link>
-                {m.role === 'founder' && <span style={roleBadgeStyle}>kurucu</span>}
-                {m.role === 'admin' && <span style={roleBadgeStyle}>yönetici</span>}
-              </div>
-              {isFounder && m.role !== 'founder' && (
-                <MemberActions
-                  memberId={m.id}
-                  action="toggle-admin"
-                  currentRole={m.role as 'member' | 'admin'}
-                />
-              )}
+    <main id="content" className="cp">
+      {/* ============ BANNER ============ */}
+      <div className="cp-wrap">
+        <div className="cp-banner">
+          {hasCover ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={community.cover_image_url} alt="" className="cp-banner-img" />
+          ) : (
+            <div className="cp-banner-art">
+              <span className="cp-banner-glow" style={{ background: c2 }} />
+              <span className="cp-banner-glow cp-banner-glow2" style={{ background: c1 }} />
             </div>
-          ))}
+          )}
         </div>
-      </section>
 
-      <section style={{ marginTop: '40px' }}>
-        <h2 style={sectionTitleStyle} className="serif">Yaklaşan etkinlikler</h2>
-        <EventsList communityId={id} />
-      </section>
-      {user && !isFounderOfThis && !canModerate && (
-        <div style={{ marginTop: '40px', textAlign: 'center', paddingTop: '20px', borderTop: '1px dashed var(--border)' }}>
-          <ReportButton targetType="community" targetId={community.id} />
+        {/* Amblem + katıl satırı — banner'a biner */}
+        <div className="cp-idrow">
+          <span className="cp-emblem">
+            <GlossyIcon value={(community as any).category ?? null} size={52} />
+          </span>
+          <span className="cp-idrow-spacer" />
+          {user && !currentUserMembership && (
+            <JoinButton communityId={community.id} userId={user.id} />
+          )}
+          {!user && (
+            <Link href="/login" className="btn-primary btn-sm">Katılmak için giriş yap</Link>
+          )}
         </div>
-      )}
+
+        {/* Kimlik */}
+        <header className="cp-head">
+          <h1 className="cp-name">{community.name}</h1>
+          <p className="cp-meta">
+            <span>{community.city}</span>
+            <i aria-hidden="true">·</i>
+            <span>{memberCount} üye</span>
+            <i aria-hidden="true">·</i>
+            <span>{founderName} kurdu</span>
+          </p>
+          {community.description && (
+            <p className="cp-desc">{community.description}</p>
+          )}
+
+          {isPending && (
+            <p className="cp-pending">
+              <span aria-hidden="true" />
+              isteğin bekliyor · kurucu onaylayınca haberin olur
+            </p>
+          )}
+        </header>
+
+        {/* ============ GÖVDE: sol çizelge + sağ takvim ============ */}
+        <div className="cp-grid">
+          {/* ---- SOL ---- */}
+          <div className="cp-main">
+            {canModerate && pendingMembers.length > 0 && (
+              <section className="cp-block">
+                <h2 className="cp-h2">Bekleyen istekler</h2>
+                <div className="cp-rows">
+                  {pendingMembers.map((m: any) => (
+                    <div key={m.id} className="cp-member">
+                      <div className="cp-member-id">
+                        {m.user?.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={m.user.avatar_url} alt="" className="cp-ava" />
+                        ) : (
+                          <span className="cp-ava cp-ava-ph">{m.user?.name?.[0]?.toUpperCase() ?? '?'}</span>
+                        )}
+                        <Link href={`/profile/${m.user_id}`} className="cp-member-name">
+                          {m.user?.name}
+                        </Link>
+                      </div>
+                      <div className="cp-member-acts">
+                        <MemberActions memberId={m.id} action="approve" />
+                        <MemberActions memberId={m.id} action="reject" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <section className="cp-block">
+              <h2 className="cp-h2">Etkinlikler</h2>
+
+              {upcomingGroups.length === 0 && (
+                <div className="cp-empty">
+                  <p>Henüz planlanmış bir buluşma yok.</p>
+                  {(isFounder || isAdmin) && (
+                    <Link href={`/event/new?community=${community.id}`} className="btn-primary btn-sm">
+                      İlk buluşmayı planla
+                    </Link>
+                  )}
+                </div>
+              )}
+
+              {upcomingGroups.map((g) => (
+                <div key={g.key} className="cp-day">
+                  <div className="cp-day-head">
+                    <span className="cp-day-dot" aria-hidden="true" />
+                    <span className="cp-day-label">{g.label}</span>
+                  </div>
+                  <div className="cp-day-items">
+                    {g.items.map((ev: any) => (
+                      <Link key={ev.id} href={`/event/${ev.id}`} className="cp-ev">
+                        <span className="cp-ev-txt">
+                          <i className="cp-ev-time">{istTime(new Date(ev.event_date))}</i>
+                          <b className="cp-ev-title">{ev.title}</b>
+                          {ev.location && <i className="cp-ev-loc">{ev.location}</i>}
+                        </span>
+                        <span className="cp-ev-thumb" style={{ background: hasCoverThumb(ev) ? undefined : `linear-gradient(135deg, ${c1}, ${c2})` }}>
+                          {hasCoverThumb(ev) ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={ev.cover_image_url} alt="" />
+                          ) : (
+                            <GlossyIcon value={(community as any).category ?? null} size={34} />
+                          )}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {pastGroups.length > 0 && (
+                <>
+                  <h3 className="cp-h3">Geçmiş</h3>
+                  {pastGroups.map((g) => (
+                    <div key={g.key} className="cp-day cp-day-past">
+                      <div className="cp-day-head">
+                        <span className="cp-day-dot" aria-hidden="true" />
+                        <span className="cp-day-label">{g.label}</span>
+                      </div>
+                      <div className="cp-day-items">
+                        {g.items.map((ev: any) => (
+                          <Link key={ev.id} href={`/event/${ev.id}`} className="cp-ev">
+                            <span className="cp-ev-txt">
+                              <i className="cp-ev-time">{istTime(new Date(ev.event_date))}</i>
+                              <b className="cp-ev-title">{ev.title}</b>
+                              {ev.location && <i className="cp-ev-loc">{ev.location}</i>}
+                            </span>
+                            <span className="cp-ev-thumb" style={{ background: hasCoverThumb(ev) ? undefined : `linear-gradient(135deg, ${c1}, ${c2})` }}>
+                              {hasCoverThumb(ev) ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={ev.cover_image_url} alt="" />
+                              ) : (
+                                <GlossyIcon value={(community as any).category ?? null} size={34} />
+                              )}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </section>
+
+            <section className="cp-block">
+              <h2 className="cp-h2">Üyeler</h2>
+              <div className="cp-rows">
+                {approvedMembers.map((m: any) => (
+                  <div key={m.id} className="cp-member">
+                    <div className="cp-member-id">
+                      {m.user?.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.user.avatar_url} alt="" className="cp-ava" />
+                      ) : (
+                        <span className="cp-ava cp-ava-ph">{m.user?.name?.[0]?.toUpperCase() ?? '?'}</span>
+                      )}
+                      <Link href={`/profile/${m.user_id}`} className="cp-member-name">
+                        {m.user?.name}
+                      </Link>
+                      {m.role === 'founder' && <span className="cp-role">kurucu</span>}
+                      {m.role === 'admin' && <span className="cp-role">yönetici</span>}
+                    </div>
+                    {isFounder && m.role !== 'founder' && (
+                      <MemberActions
+                        memberId={m.id}
+                        action="toggle-admin"
+                        currentRole={m.role as 'member' | 'admin'}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {user && !isFounderOfThis && !canModerate && (
+              <div className="cp-report">
+                <ReportButton targetType="community" targetId={community.id} />
+              </div>
+            )}
+          </div>
+
+          {/* ---- SAĞ: takvim ---- */}
+          <aside className="cp-side">
+            <div className="cp-sticky">
+              <div className="cp-cal">
+                <div className="cp-cal-head">
+                  <b>{MONTHS_TR[calM]} {calY}</b>
+                </div>
+                <div className="cp-cal-grid" role="grid" aria-label={`${MONTHS_TR[calM]} takvimi`}>
+                  {['P', 'S', 'Ç', 'P', 'C', 'C', 'P'].map((d, i) => (
+                    <span key={`h${i}`} className="cp-cal-dow">{d}</span>
+                  ))}
+                  {Array.from({ length: firstDow }).map((_, i) => (
+                    <span key={`b${i}`} />
+                  ))}
+                  {Array.from({ length: daysInMonth }).map((_, i) => {
+                    const d = i + 1
+                    const has = eventDays.has(d)
+                    const isToday = d === todayD
+                    return (
+                      <span
+                        key={d}
+                        className={`cp-cal-day${isToday ? ' today' : ''}${has ? ' has' : ''}`}
+                      >
+                        {d}
+                        {has && <i aria-hidden="true" />}
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="cp-stat">
+                <b>{upcoming.length}</b>
+                <span>yaklaşan buluşma</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <style>{`
+        .cp-wrap { max-width: var(--w-page); margin: 0 auto; padding: var(--s-5) var(--s-5) var(--s-9); }
+
+        /* ---------- Banner ---------- */
+        .cp-banner {
+          position: relative;
+          border-radius: var(--r-lg);
+          overflow: hidden;
+          aspect-ratio: 32 / 9;
+          background: #14171F;
+          border: 1px solid #232733;
+        }
+        .cp-banner-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .cp-banner-art {
+          position: absolute; inset: 0;
+          background-image:
+            linear-gradient(rgba(79, 195, 184, .07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(79, 195, 184, .07) 1px, transparent 1px);
+          background-size: 24px 24px;
+          overflow: hidden;
+        }
+        .cp-banner-glow {
+          position: absolute; right: -6%; top: -60%;
+          width: 46%; aspect-ratio: 1; border-radius: 50%;
+          filter: blur(58px); opacity: .4;
+        }
+        .cp-banner-glow2 { left: -8%; right: auto; top: auto; bottom: -70%; opacity: .3; }
+
+        /* ---------- Amblem satırı ---------- */
+        .cp-idrow {
+          display: flex; align-items: flex-end; gap: var(--s-4);
+          margin-top: -34px;
+          padding: 0 var(--s-5);
+          position: relative; z-index: 1;
+        }
+        .cp-emblem {
+          display: grid; place-items: center;
+          width: 84px; height: 84px;
+          border-radius: 22px;
+          background: var(--paper-cream);
+          border: 1px solid var(--border);
+          box-shadow: var(--shadow-lift);
+        }
+        .cp-idrow-spacer { flex: 1; }
+
+        /* ---------- Kimlik ---------- */
+        .cp-head { padding: var(--s-4) var(--s-5) 0; }
+        .cp-name {
+          font-family: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
+          font-weight: 700;
+          font-size: clamp(28px, 4vw, 44px);
+          line-height: 1.08;
+          letter-spacing: -.03em;
+          color: var(--ink);
+          text-wrap: balance;
+        }
+        .cp-meta {
+          display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s-2);
+          margin-top: var(--s-3);
+          font-size: var(--t-sm);
+          color: var(--muted);
+        }
+        .cp-meta i { font-style: normal; color: var(--border-mid); }
+        .cp-desc {
+          margin-top: var(--s-4);
+          font-size: 16px;
+          line-height: 1.65;
+          color: var(--night);
+          max-width: 68ch;
+        }
+        .cp-pending {
+          display: inline-flex; align-items: center; gap: var(--s-2);
+          margin-top: var(--s-4);
+          font-family: var(--font-mono), monospace;
+          font-size: var(--t-xs);
+          color: var(--coral-deep);
+          border: 1px solid rgba(155, 47, 208, .3);
+          background: rgba(79, 195, 184, .12);
+          padding: 7px 14px;
+          border-radius: var(--r-pill);
+        }
+        .cp-pending span {
+          width: 7px; height: 7px; border-radius: 50%;
+          background: var(--coral);
+        }
+
+        /* ---------- Gövde ---------- */
+        .cp-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: var(--s-7);
+          align-items: start;
+          margin-top: var(--s-7);
+          padding: 0 var(--s-5);
+        }
+        @media (min-width: 900px) {
+          .cp-grid { grid-template-columns: minmax(0, 1fr) 300px; }
+        }
+
+        .cp-block + .cp-block { margin-top: var(--s-7); }
+        .cp-h2 {
+          font-family: var(--font-sans), system-ui, sans-serif;
+          font-size: var(--t-lg);
+          font-weight: 700;
+          letter-spacing: -.02em;
+          color: var(--ink);
+          padding-bottom: var(--s-3);
+          border-bottom: 1px solid var(--border-mid);
+          margin-bottom: var(--s-4);
+        }
+        .cp-h3 {
+          font-size: var(--t-sm);
+          font-weight: 600;
+          color: var(--muted);
+          margin: var(--s-6) 0 var(--s-3);
+          text-transform: uppercase;
+          letter-spacing: .06em;
+        }
+
+        /* ---------- Zaman çizelgesi ---------- */
+        .cp-day { position: relative; padding-left: 22px; }
+        .cp-day + .cp-day { margin-top: var(--s-5); }
+        /* Dikey çizgi: Luma'daki gibi tarihleri bağlar */
+        .cp-day::before {
+          content: "";
+          position: absolute; left: 5px; top: 8px; bottom: -18px;
+          width: 2px;
+          background: var(--border);
+        }
+        .cp-day:last-child::before { bottom: 0; }
+        .cp-day-head { display: flex; align-items: center; gap: var(--s-3); }
+        .cp-day-dot {
+          position: absolute; left: 0; top: 5px;
+          width: 12px; height: 12px; border-radius: 50%;
+          background: var(--paper);
+          border: 2.5px solid var(--ink);
+        }
+        .cp-day-past .cp-day-dot { border-color: var(--border-mid); }
+        .cp-day-label { font-size: var(--t-sm); font-weight: 600; color: var(--ink); }
+        .cp-day-past .cp-day-label { color: var(--muted); }
+
+        .cp-day-items { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-3); }
+        .cp-ev {
+          display: flex; align-items: center; gap: var(--s-4);
+          background: var(--paper-cream);
+          border: 1px solid var(--border);
+          border-radius: var(--r-md);
+          padding: var(--s-3) var(--s-4);
+          text-decoration: none;
+          transition: transform .15s var(--ease), box-shadow .15s var(--ease), border-color .15s var(--ease);
+        }
+        .cp-ev:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-lift);
+          border-color: var(--border-mid);
+        }
+        .cp-ev-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+        .cp-ev-time { font-style: normal; font-family: var(--font-mono), monospace; font-size: var(--t-xs); color: var(--muted); }
+        .cp-ev-title {
+          font-size: var(--t-md); font-weight: 600; color: var(--ink);
+          overflow: hidden; text-overflow: ellipsis;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        }
+        .cp-ev-loc { font-style: normal; font-size: var(--t-xs); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cp-ev-thumb {
+          flex: none; width: 64px; height: 64px;
+          border-radius: 12px; overflow: hidden;
+          display: grid; place-items: center;
+        }
+        .cp-ev-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .cp-day-past .cp-ev { opacity: .75; }
+        .cp-day-past .cp-ev:hover { opacity: 1; }
+
+        .cp-empty {
+          border: 1.5px dashed var(--border-mid);
+          border-radius: var(--r-lg);
+          background: var(--paper-cream);
+          padding: var(--s-6) var(--s-5);
+          text-align: center;
+          display: flex; flex-direction: column; align-items: center; gap: var(--s-4);
+        }
+        .cp-empty p { color: var(--muted); margin: 0; }
+
+        /* ---------- Üye satırları ---------- */
+        .cp-rows { display: flex; flex-direction: column; gap: var(--s-2); }
+        .cp-member {
+          display: flex; justify-content: space-between; align-items: center;
+          gap: var(--s-3); flex-wrap: wrap;
+          padding: var(--s-3) var(--s-4);
+          background: var(--paper-cream);
+          border: 1px solid var(--border);
+          border-radius: var(--r-md);
+        }
+        .cp-member-id { display: flex; align-items: center; gap: var(--s-3); flex: 1; min-width: 0; }
+        .cp-member-name { font-weight: 600; color: var(--ink); }
+        .cp-member-acts { display: flex; gap: var(--s-2); }
+        .cp-ava {
+          width: 36px; height: 36px; border-radius: 50%;
+          object-fit: cover; border: 1px solid var(--border); flex-shrink: 0;
+        }
+        .cp-ava-ph {
+          display: grid; place-items: center;
+          background: var(--paper-soft); color: var(--ink);
+          font-size: 14px; font-weight: 700;
+        }
+        .cp-role {
+          background: var(--yellow-highlight);
+          border: 1px solid var(--ink);
+          color: var(--ink);
+          font-size: var(--t-2xs); font-weight: 600;
+          padding: 2px 9px; border-radius: var(--r-pill);
+        }
+        .cp-report { margin-top: var(--s-7); text-align: center; padding-top: var(--s-5); border-top: 1px dashed var(--border); }
+
+        /* ---------- Takvim ---------- */
+        .cp-sticky { position: sticky; top: var(--s-5); display: flex; flex-direction: column; gap: var(--s-4); }
+        .cp-cal {
+          background: var(--paper-cream);
+          border: 1px solid var(--border);
+          border-radius: var(--r-lg);
+          padding: var(--s-4);
+        }
+        .cp-cal-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--s-3); }
+        .cp-cal-head b { font-size: var(--t-sm); font-weight: 700; color: var(--ink); }
+        .cp-cal-grid {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 2px;
+          text-align: center;
+        }
+        .cp-cal-dow {
+          font-family: var(--font-mono), monospace;
+          font-size: 10px; color: var(--muted-light);
+          padding-bottom: 4px;
+        }
+        .cp-cal-day {
+          position: relative;
+          font-size: var(--t-xs);
+          color: var(--night);
+          padding: 6px 0 9px;
+          border-radius: 8px;
+        }
+        .cp-cal-day.today {
+          background: var(--ink);
+          color: #fff;
+          font-weight: 700;
+        }
+        .cp-cal-day.has i {
+          position: absolute; left: 50%; bottom: 3px;
+          transform: translateX(-50%);
+          width: 4px; height: 4px; border-radius: 50%;
+          background: var(--coral);
+        }
+        .cp-cal-day.today.has i { background: var(--lime); }
+
+        .cp-stat {
+          background: var(--paper-cream);
+          border: 1px solid var(--border);
+          border-radius: var(--r-lg);
+          padding: var(--s-4) var(--s-5);
+          display: flex; align-items: baseline; gap: var(--s-2);
+        }
+        .cp-stat b {
+          font-family: var(--font-sans), system-ui, sans-serif;
+          font-size: var(--t-2xl); font-weight: 700; color: var(--ink);
+        }
+        .cp-stat span { font-size: var(--t-sm); color: var(--muted); }
+
+        /* ---------- Mobil ---------- */
+        @media (max-width: 640px) {
+          .cp-wrap { padding: var(--s-4) var(--s-4) var(--s-8); }
+          .cp-banner { aspect-ratio: 21 / 9; }
+          .cp-idrow { padding: 0 var(--s-3); margin-top: -28px; }
+          .cp-emblem { width: 68px; height: 68px; border-radius: 18px; }
+          .cp-head { padding: var(--s-3) var(--s-3) 0; }
+          .cp-grid { padding: 0 var(--s-3); }
+          .cp-ev-thumb { width: 52px; height: 52px; }
+        }
+      `}</style>
     </main>
   )
 }
 
-async function EventsList({ communityId }: { communityId: string }) {
-  const supabase = await createClient()
-  const { data: events } = await supabase
-    .from('events')
-    .select('id, title, location, event_date, cover_image_url, community:communities(name, category)')
-    .eq('community_id', communityId)
-    .gte('event_date', new Date().toISOString())
-    .order('event_date', { ascending: true })
-
-  if (!events || events.length === 0) {
-    return (
-      <div style={{
-        fontFamily: "'IBM Plex Mono', monospace",
-        color: 'var(--muted)',
-        fontSize: '13.5px',
-        padding: '14px 0',
-      }}>
-        henüz planlanmış bir buluşma yok
-      </div>
-    )
-  }
-
-  return (
-    <div className="events-grid" style={{ display: 'grid', gap: '20px' }}>
-      {events.map((event: any) => (
-        <EventCard
-          key={event.id}
-          event={event}
-          showCommunityName={false}
-        />
-      ))}
-      <style>{`
-        .events-grid { grid-template-columns: 1fr; }
-        @media (min-width: 640px) {
-          .events-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-      `}</style>
-    </div>
-  )
-}
-
-const sectionTitleStyle: React.CSSProperties = {
-  fontSize: 'clamp(22px, 2.8vw, 28px)',
-  color: 'var(--ink)',
-  marginBottom: '18px',
-}
-
-const memberRowStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: '12px',
-  padding: '12px 16px',
-  background: 'var(--paper-cream)',
-  border: '1.5px solid var(--border)',
-  borderRadius: '14px',
-  flexWrap: 'wrap',
-}
-
-const avatarStyle: React.CSSProperties = {
-  width: '36px',
-  height: '36px',
-  borderRadius: '50%',
-  objectFit: 'cover',
-  border: '1.5px solid var(--border)',
-  flexShrink: 0,
-}
-
-const avatarPlaceholderStyle: React.CSSProperties = {
-  width: '36px',
-  height: '36px',
-  borderRadius: '50%',
-  background: 'var(--paper-soft)',
-  color: 'var(--ink)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '14px',
-  fontWeight: 800,
-  flexShrink: 0,
-}
-
-const roleBadgeStyle: React.CSSProperties = {
-  background: 'var(--lime-soft)',
-  border: '1.5px solid var(--ink)',
-  color: 'var(--ink)',
-  fontSize: '11px',
-  fontWeight: 700,
-  padding: '2px 9px',
-  borderRadius: '999px',
-  letterSpacing: '0.02em',
+function hasCoverThumb(ev: any): boolean {
+  return !!ev.cover_image_url
 }

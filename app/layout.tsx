@@ -25,7 +25,7 @@ const serif = Literata({
 
 const sans = Instrument_Sans({
   subsets: ['latin-ext'],
-  weight: ['400', '500', '600'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-sans',
   display: 'swap',
 })

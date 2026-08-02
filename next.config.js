@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  allowedDevOrigins: ['192.168.1.104'],
   // Supabase Storage'daki kapak görselleri için. next/image bu izin
   // olmadan dış adresten görsel yüklemez.
   images: {
