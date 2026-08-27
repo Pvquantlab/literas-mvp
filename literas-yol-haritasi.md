@@ -65,10 +65,12 @@ Geniş tarama yapıldı (güvenlik / kod kalitesi / doküman tutarlılığı). B
         ve `account_active` artık gerçekten etkili.
       - `community_members_guard`: admin rolünü yalnızca kurucu verebilir
         (API bunu zorluyordu, RLS zorlamıyordu).
-- [ ] **Güvenlik paketi 4** (migration `20260827120100`) — DEPLOY İLE BİRLİKTE
-      `mark_reminder_sent` / `mark_promotion_email_sent` sır kontrolü alıyor.
-      İmza değiştiği için kod deploy'undan ÖNCE uygulanmamalı.
-- [ ] **CRON_SECRET rotasyonu** — kullanıcıda. Gerçek değer `.env.example` ile
+- [x] **Güvenlik paketi 4** (migration `20260827120100`) — UYGULANDI 28.08.2026
+      `mark_reminder_sent` / `mark_promotion_email_sent` artık sır kontrolü
+      yapıyor. PR #1 merge edilip production deploy'u tamamlandıktan SONRA
+      uygulandı (imza değiştiği için sıra buydu). Doğrulandı: anonim çağrı
+      yanlış sırla `yetkisiz` dönüyor, imzalar `(uuid, text)`.
+- [ ] **CRON_SECRET rotasyonu** — HÂLÂ BEKLİYOR, kullanıcıda. Gerçek değer `.env.example` ile
       public repoya commit edilmişti; örnek dosya boşaltıldı ama git geçmişi
       açık, o yüzden değer yakılmış sayılır.
 - [x] **Kapak görseli veri kaybı** — düzenleme her kaydetmede kapağı siliyordu.
