@@ -197,8 +197,24 @@ olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
 - [x] **Canlı manuel testler geçti** — kayıttaki "Postanı kontrol et" ekranı
       ve avatar yükleme kullanıcı tarafından denendi, ikisi de çalışıyor.
 
+- [x] **ESLint kuruldu ve yeşil** (28.08.2026)
+      `next lint` Next 16'da kaldırıldığı için `npm run lint` kırıktı ve ESLint
+      hiç kurulu değildi — koddaki `eslint-disable` yorumları da bu yüzden
+      hiçbir şey yapmıyordu. ESLint 9 + `eslint-config-next` flat config.
+      NOT: ESLint 10 denendi, `eslint-config-next`'in içindeki
+      `eslint-plugin-react` ile uyumsuz (kaldırılmış API kullanıyor) — 9'da
+      kalındı. `@eslint/eslintrc` FlatCompat da çakışıyor; config doğrudan
+      yayılımla (spread) kuruluyor.
+      İlk çalıştırmada 66 hata / 86 uyarı. Hataların 55'i tek bir kuraldandı
+      (`react-hooks/static-components`) ve hepsi iki ÖLÜ dosyadaydı:
+      `iso-cover.tsx` ve `community-emblem.tsx` hiçbir yerden kullanılmıyordu
+      (tasarım "sadece gerçek fotoğraf"a geçince arafta kalmışlar). 544 satır
+      silindi. Kalanlar düzeltildi; `no-unescaped-entities` bilinçli olarak
+      kapatıldı (Türkçe kesme işareti her cümlede geçiyor, faydası yok).
+      `npm run typecheck` de eklendi.
+
 **Kalan işler** (hiçbiri kullanıcıyı doğrudan etkilemiyor):
-ESLint kurulumu · `NEXT_PUBLIC_SITE_URL` (domain 7 dosyada sabit) · README ·
+`NEXT_PUBLIC_SITE_URL` (domain 7 dosyada sabit) · README ·
 baseline migration (`supabase db pull` — migration klasörü hâlâ tam şema
 kaynağı değil) · `community/new` action'larında zod (`communitySchema` yazılı
 ama bağlı değil) · RSVP'nin istemciden değil API'den yapılması.

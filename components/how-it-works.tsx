@@ -96,36 +96,37 @@ function IconPlan() {
     </svg>
   )
 }
+/** Silindir fincan: alt kenar + gövde + kulp + ağız. */
+function Mug({ cx, top, rx, h, id }: { cx: number; top: number; rx: number; h: number; id: string }) {
+  const ry = rx * 0.34
+  return (
+    <g>
+      <path
+        d={`M${cx + rx - 1} ${top + h * 0.26} q${rx * 0.85} ${h * 0.04} ${rx * 0.8} ${h * 0.28} q0 ${h * 0.24} -${rx * 0.8} ${h * 0.26}`}
+        fill="none"
+        stroke={`url(#${id}-side)`}
+        strokeWidth={rx * 0.30}
+        strokeLinecap="round"
+      />
+      <ellipse cx={cx} cy={top + h} rx={rx} ry={ry} fill={`url(#${id}-edge)`} />
+      <rect x={cx - rx} y={top} width={rx * 2} height={h} fill={`url(#${id}-side)`} />
+      <ellipse cx={cx} cy={top} rx={rx} ry={ry} fill={`url(#${id}-top)`} />
+      <ellipse cx={cx} cy={top} rx={rx * 0.7} ry={ry * 0.68} fill="#5C0F42" opacity=".5" />
+      <ellipse cx={cx} cy={top} rx={rx} ry={ry} fill="none" stroke="#fff" strokeWidth="1.3" opacity=".55" />
+    </g>
+  )
+}
+
 /** 3 — İki fincan. "Gerisi kahvenin işi" — masa, takvim, kahve. */
 function IconTanis() {
   const id = 'hw-tanis'
-  /** Silindir fincan: alt kenar + gövde + kulp + ağız. */
-  const Mug = ({ cx, top, rx, h }: { cx: number; top: number; rx: number; h: number }) => {
-    const ry = rx * 0.34
-    return (
-      <g>
-        <path
-          d={`M${cx + rx - 1} ${top + h * 0.26} q${rx * 0.85} ${h * 0.04} ${rx * 0.8} ${h * 0.28} q0 ${h * 0.24} -${rx * 0.8} ${h * 0.26}`}
-          fill="none"
-          stroke={`url(#${id}-side)`}
-          strokeWidth={rx * 0.30}
-          strokeLinecap="round"
-        />
-        <ellipse cx={cx} cy={top + h} rx={rx} ry={ry} fill={`url(#${id}-edge)`} />
-        <rect x={cx - rx} y={top} width={rx * 2} height={h} fill={`url(#${id}-side)`} />
-        <ellipse cx={cx} cy={top} rx={rx} ry={ry} fill={`url(#${id}-top)`} />
-        <ellipse cx={cx} cy={top} rx={rx * 0.7} ry={ry * 0.68} fill="#5C0F42" opacity=".5" />
-        <ellipse cx={cx} cy={top} rx={rx} ry={ry} fill="none" stroke="#fff" strokeWidth="1.3" opacity=".55" />
-      </g>
-    )
-  }
   return (
     <svg viewBox="0 0 100 100" aria-hidden="true">
       <Defs id={id} light="#F5A9D8" mid="#E040A0" deep="#7A1259" />
       <g filter={`url(#${id}-sh)`}>
         <ellipse cx="52" cy="84" rx="34" ry="8" fill="#0B1470" opacity=".16" />
-        <Mug cx={64} top={40} rx={16} h={26} />
-        <Mug cx={38} top={32} rx={20} h={34} />
+        <Mug id={id} cx={64} top={40} rx={16} h={26} />
+        <Mug id={id} cx={38} top={32} rx={20} h={34} />
       </g>
     </svg>
   )
