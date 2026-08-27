@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
 import ReviewButtons from './review-buttons'
+import { formatDateTimeShort } from '@/lib/date'
 
 export const dynamic = 'force-dynamic'
 
@@ -93,7 +94,7 @@ export default async function AdminTopluluklarPage() {
               }}>
                 📍 {c.location_name ?? '—'} ({c.location_type}) · kurucu: {(c.founder as any)?.name ?? '—'} ({(c.founder as any)?.email ?? '—'})
                 {' · '}
-                {new Date(c.created_at).toLocaleString('tr-TR')}
+                {formatDateTimeShort(c.created_at)}
               </div>
 
               {c.community_topics?.length > 0 && (
@@ -181,7 +182,7 @@ export default async function AdminTopluluklarPage() {
                   fontSize: '11px',
                   color: 'var(--muted)',
                 }}>
-                  {c.reviewed_at ? new Date(c.reviewed_at).toLocaleString('tr-TR') : '—'}
+                  {c.reviewed_at ? formatDateTimeShort(c.reviewed_at) : '—'}
                 </span>
               </div>
             ))}

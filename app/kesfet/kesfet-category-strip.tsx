@@ -12,15 +12,28 @@ type Props = {
   cats: Cat[]
   activeTab: 'etkinlikler' | 'topluluklar'
   activeCategory: string | null
+  /** Kategori değişince arama ve şehir korunur; sayfa numarası bilinçli sıfırlanır. */
+  query?: string | null
+  city?: string | null
 }
 
-export default function KesfetCategoryStrip({ cats, activeTab, activeCategory }: Props) {
+export default function KesfetCategoryStrip({
+  cats,
+  activeTab,
+  activeCategory,
+  query = null,
+  city = null,
+}: Props) {
   const stripRef = useRef<HTMLDivElement>(null)
 
   const buildHref = (slug: string | null) => {
     const p = new URLSearchParams()
     p.set('tab', activeTab)
     if (slug) p.set('kategori', slug)
+    // Eskiden bunlar düşüyordu: aradıktan sonra kategoriye tıklayan
+    // kullanıcının araması sessizce siliniyordu.
+    if (query) p.set('q', query)
+    if (city) p.set('city', city)
     return `/kesfet?${p.toString()}`
   }
 

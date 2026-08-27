@@ -1,8 +1,14 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { updateSosyalMedya } from "./actions";
+import AyarlarDurum from "@/components/ayarlar-durum";
 
-export default async function SosyalMedyaPage() {
+export default async function SosyalMedyaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ durum?: string; hata?: string }>;
+}) {
+  const { durum, hata } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -24,6 +30,8 @@ export default async function SosyalMedyaPage() {
       <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 28px", maxWidth: "56ch" }}>
         Hesaplarınızı ekleyin; topluluk profillerinizde bağlantı olarak gösterilir.
       </p>
+
+      <AyarlarDurum durum={durum} hata={hata} />
 
       <form action={updateSosyalMedya}>
         <SocialField label="Instagram" name="instagram_url" icon="📷" defaultValue={profile?.instagram_url} placeholder="https://instagram.com/kullaniciadiniz" />

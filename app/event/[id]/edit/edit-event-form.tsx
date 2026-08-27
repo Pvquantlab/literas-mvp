@@ -2,19 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-
-function toLocalInputValue(iso: string) {
-  const d = new Date(iso)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
+import { isoToLocalInput, localInputToISO } from '@/lib/date'
 
 export default function EditEventForm({ event }: { event: any }) {
   const router = useRouter()
   const [title, setTitle] = useState(event.title)
   const [description, setDescription] = useState(event.description ?? '')
   const [location, setLocation] = useState(event.location)
-  const [eventDate, setEventDate] = useState(toLocalInputValue(event.event_date))
+  const [eventDate, setEventDate] = useState(isoToLocalInput(event.event_date))
   const [maxAttendees, setMaxAttendees] = useState(
     event.max_attendees ? String(event.max_attendees) : ''
   )
@@ -34,7 +29,7 @@ export default function EditEventForm({ event }: { event: any }) {
         title,
         description: description || null,
         location,
-        event_date: new Date(eventDate).toISOString(),
+        event_date: localInputToISO(eventDate),
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
       }),
     })
@@ -164,7 +159,7 @@ export default function EditEventForm({ event }: { event: any }) {
             background: 'none',
             border: 'none',
             padding: 0,
-            fontFamily: 'Newsreader, serif',
+            fontFamily: 'var(--font-serif), Georgia, serif',
             fontStyle: 'italic',
             fontSize: '0.95rem',
             color: 'var(--ink)',

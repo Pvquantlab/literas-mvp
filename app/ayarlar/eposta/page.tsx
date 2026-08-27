@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { updateEposta, disableAllEmails } from "./actions";
+import AyarlarDurum from "@/components/ayarlar-durum";
 
 const TOGGLES = [
   { name: "email_messages", label: "Mesajlar", desc: "Bana mesaj gönderildiğinde e-postayla bilgilendir" },
@@ -12,7 +13,12 @@ const TOGGLES = [
   { name: "email_connections", label: "Bağlantılar", desc: "Yeni bağlantılar kurduğunuzda haber ver" },
 ];
 
-export default async function EpostaPage() {
+export default async function EpostaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ durum?: string; hata?: string }>;
+}) {
+  const { durum, hata } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -35,6 +41,8 @@ export default async function EpostaPage() {
         Aktiviteniz, etkinlikleriniz ve topluluklarınız hakkında hangi e-postaları alacağınızı seçin.
       </p>
 
+      <AyarlarDurum durum={durum} hata={hata} />
+
       <form action={updateEposta}>
         {TOGGLES.map((t) => (
           <Toggle key={t.name} name={t.name} label={t.label} desc={t.desc} defaultChecked={(profile as any)?.[t.name] ?? true} />
@@ -50,7 +58,12 @@ export default async function EpostaPage() {
       <section>
         <h2 style={{ fontSize: 18, fontWeight: 800, margin: "0 0 8px", letterSpacing: "-0.01em" }}>Tüm e-postaları kapat</h2>
         <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 16px" }}>
-          Size e-posta güncellemesi göndermeyi durdururuz. Yasal duyurular gibi zorunlu iletileri almaya devam edersiniz.
+          Bu sayfadaki tercihlerin yanı sıra etkinlik hatırlatmaları, katılım
+          istekleri ve topluluk duyurularını da kapatırız.
+          Yalnızca sizi doğrudan ilgilendiren iletiler gelmeye devam eder:
+          katıldığınız bir etkinlik iptal edilir veya saati değişirse, ya da
+          bekleme listesinden yeriniz açılırsa. Bunları da durdurmak için
+          hesabınızı dondurabilirsiniz.
         </p>
         <form action={disableAllEmails}>
           <button type="submit" style={{

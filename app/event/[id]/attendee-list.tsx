@@ -70,7 +70,7 @@ export default function AttendeeList({
     <div style={{ marginTop: '40px' }}>
       <h3
         style={{
-          fontFamily: "'Schibsted Grotesk', system-ui, sans-serif",
+          fontFamily: 'var(--font-sans), system-ui, sans-serif',
           fontSize: '18px',
           fontWeight: 700,
           color: 'var(--ink)',

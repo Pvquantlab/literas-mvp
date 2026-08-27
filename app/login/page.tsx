@@ -19,21 +19,62 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+
+  // auth/callback başarısız olduğunda buraya ?error=... ile dönüyor. Eskiden
+  // bu parametre hiç okunmuyordu: kullanıcı boş bir forma düşüp ne olduğunu
+  // anlamıyordu.
+  const CALLBACK_HATALARI: Record<string, string> = {
+    auth_failed: 'Giriş tamamlanamadı. Bağlantı süresi dolmuş olabilir — tekrar dene.',
+    link_expired: 'Bağlantının süresi dolmuş. Yeni bir doğrulama maili iste.',
+    no_code: 'Giriş bağlantısı eksik ya da bozuk görünüyor. Tekrar dene.',
+  }
+  const [error, setError] = useState(
+    CALLBACK_HATALARI[searchParams.get('error') ?? ''] ?? ''
+  )
+  // Doğrulanmamış hesapla giriş denendiyse tekrar gönderme teklif et.
+  const [dogrulanmamis, setDogrulanmamis] = useState(false)
+  const [tekrarDurumu, setTekrarDurumu] = useState<'bos' | 'gonderiliyor' | 'gonderildi'>('bos')
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setDogrulanmamis(false)
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError('E-posta veya parola hatalı.')
+      // Supabase doğrulanmamış hesabı ayrı bir kodla bildiriyor; bunu
+      // "parola hatalı" diye göstermek kullanıcıyı yanlış yere yönlendirirdi.
+      if (error.code === 'email_not_confirmed' || error.message.includes('not confirmed')) {
+        setError('Hesabın henüz doğrulanmamış. Postana gönderdiğimiz bağlantıya tıkla.')
+        setDogrulanmamis(true)
+      } else {
+        setError('E-posta veya parola hatalı.')
+      }
       setLoading(false)
     } else {
       router.push(safeNext)
       router.refresh()
+    }
+  }
+
+  async function handleTekrarGonder() {
+    setTekrarDurumu('gonderiliyor')
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext)}`,
+      },
+    })
+    if (error) {
+      setError('Mail tekrar gönderilemedi. Birkaç dakika sonra dene.')
+      setTekrarDurumu('bos')
+    } else {
+      setTekrarDurumu('gonderildi')
+      setError('')
+      setDogrulanmamis(false)
     }
   }
 
@@ -134,6 +175,39 @@ export default function LoginPage() {
             }}>
               {error}
             </div>
+          )}
+
+          {dogrulanmamis && tekrarDurumu !== 'gonderildi' && (
+            <button
+              type="button"
+              onClick={handleTekrarGonder}
+              disabled={tekrarDurumu === 'gonderiliyor'}
+              style={{
+                background: 'none',
+                border: '1.5px solid var(--ink)',
+                borderRadius: '999px',
+                padding: '10px 18px',
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: '13px',
+                fontWeight: 600,
+                color: 'var(--ink)',
+                cursor: tekrarDurumu === 'gonderiliyor' ? 'wait' : 'pointer',
+              }}
+            >
+              {tekrarDurumu === 'gonderiliyor' ? 'gönderiliyor...' : 'doğrulama mailini tekrar gönder'}
+            </button>
+          )}
+
+          {tekrarDurumu === 'gonderildi' && (
+            <p role="status" style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: '13px',
+              color: 'var(--ink)',
+              textAlign: 'center',
+              margin: 0,
+            }}>
+              yeni doğrulama bağlantısı gönderildi
+            </p>
           )}
 
           <button

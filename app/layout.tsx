@@ -3,6 +3,7 @@ import { Literata, Instrument_Sans, IBM_Plex_Mono } from 'next/font/google'
 import { createClient } from '@/lib/supabase-server'
 import Footer from '@/components/footer'
 import Header from '@/components/header'
+import RegisterSW from '@/components/register-sw'
 import { IconSprite } from '@/components/category-art'
 import type { Metadata, Viewport } from 'next'
 
@@ -112,28 +113,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {children}
 
         <Footer />
+        <RegisterSW />
       </body>
     </html>
   )
 }
 
 /**
- * Service worker kaydı buradan kaldırıldı.
- *
- * dangerouslySetInnerHTML ile inline script, katı bir CSP kurmanı engelliyor:
- * 'unsafe-inline' vermek zorunda kalırsın ve CSP'nin XSS koruması çöker.
- * Bunun yerine components/register-sw.tsx adında bir client component yap:
- *
- *   'use client'
- *   import { useEffect } from 'react'
- *   export default function RegisterSW() {
- *     useEffect(() => {
- *       if ('serviceWorker' in navigator) {
- *         navigator.serviceWorker.register('/sw.js').catch(() => {})
- *       }
- *     }, [])
- *     return null
- *   }
- *
- * ve <Footer /> altına <RegisterSW /> ekle.
+ * Service worker kaydı <RegisterSW /> bileşeninde (components/register-sw.tsx).
+ * Inline script kullanılmıyor: dangerouslySetInnerHTML katı bir CSP kurmayı
+ * engelliyor ('unsafe-inline' vermek zorunda kalırsın).
  */

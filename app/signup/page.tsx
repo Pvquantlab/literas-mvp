@@ -20,6 +20,12 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  // Doğrulama maili gönderildiyse formu bırakıp "postanı kontrol et" ekranına geç.
+  const [dogrulamaBekliyor, setDogrulamaBekliyor] = useState(false)
+  const [tekrarDurumu, setTekrarDurumu] = useState<'bos' | 'gonderiliyor' | 'gonderildi'>('bos')
+
+  const dogrulamaDonusU = () =>
+    `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext)}`
 
   async function handleEmailSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -32,10 +38,15 @@ export default function SignupPage() {
       return
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } },
+      options: {
+        data: { name },
+        // Doğrulama bağlantısı buraya dönsün; yoksa Supabase'in varsayılan
+        // Site URL'ine gider ve ?next hedefi kaybolur.
+        emailRedirectTo: dogrulamaDonusU(),
+      },
     })
 
     if (error) {
@@ -45,9 +56,43 @@ export default function SignupPage() {
         setError('Kayıt başarısız. Tekrar dene.')
       }
       setLoading(false)
+      return
+    }
+
+    // Supabase, kullanıcı sayımını sızdırmamak için var olan bir e-postada da
+    // "başarılı" döner; ayırt etmenin yolu boş identities dizisi.
+    if (data.user && data.user.identities?.length === 0) {
+      setError('Bu e-posta zaten kayıtlı. Giriş yapmayı denersin.')
+      setLoading(false)
+      return
+    }
+
+    // Doğrulama açıkken session gelmez: kullanıcı HENÜZ giriş yapmadı.
+    // Eskiden burada doğrudan yönlendiriliyordu; kullanıcı kendini çıkış
+    // yapmış hâlde ana sayfada buluyor ve neden olduğunu anlamıyordu.
+    if (!data.session) {
+      setDogrulamaBekliyor(true)
+      setLoading(false)
+      return
+    }
+
+    router.push(safeNext)
+    router.refresh()
+  }
+
+  async function handleTekrarGonder() {
+    setTekrarDurumu('gonderiliyor')
+    setError('')
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: dogrulamaDonusU() },
+    })
+    if (error) {
+      setError('Mail tekrar gönderilemedi. Birkaç dakika sonra dene.')
+      setTekrarDurumu('bos')
     } else {
-      router.push(safeNext)
-      router.refresh()
+      setTekrarDurumu('gonderildi')
     }
   }
 
@@ -63,6 +108,103 @@ export default function SignupPage() {
       setError('Google ile kayıt başarısız. Tekrar dene.')
       setLoading(false)
     }
+  }
+
+  if (dogrulamaBekliyor) {
+    return (
+      <main style={{ maxWidth: '440px', margin: '0 auto', padding: '56px 24px 80px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+          <h1 className="serif" style={{
+            fontSize: 'clamp(28px, 4vw, 38px)',
+            color: 'var(--ink)',
+            margin: '0 0 10px',
+          }}>
+            Postanı kontrol et
+          </h1>
+          <p style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            color: 'var(--muted)',
+            fontSize: '13.5px',
+          }}>
+            son bir adım kaldı
+          </p>
+        </div>
+
+        <div className="auth-card">
+          <p style={{ fontSize: '15px', lineHeight: 1.6, color: 'var(--ink)', margin: '0 0 14px' }}>
+            <strong>{email}</strong> adresine bir doğrulama bağlantısı gönderdik.
+            Bağlantıya tıkladığında hesabın açılır ve giriş yapmış olursun.
+          </p>
+          <p style={{ fontSize: '14px', lineHeight: 1.6, color: 'var(--muted)', margin: '0 0 20px' }}>
+            Mail birkaç dakika içinde gelmezse spam klasörüne bakmayı unutma.
+          </p>
+
+          {error && (
+            <div style={{
+              background: 'rgba(176, 67, 48, .1)',
+              border: '1.5px solid rgba(176, 67, 48, .3)',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              color: 'var(--coral-deep)',
+              fontSize: '14px',
+              fontWeight: 600,
+              textAlign: 'center',
+              marginBottom: '14px',
+            }}>
+              {error}
+            </div>
+          )}
+
+          {tekrarDurumu === 'gonderildi' ? (
+            <p role="status" style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: '13px',
+              color: 'var(--ink)',
+              textAlign: 'center',
+              margin: 0,
+            }}>
+              yeni bağlantı gönderildi
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleTekrarGonder}
+              disabled={tekrarDurumu === 'gonderiliyor'}
+              className="btn-primary"
+              style={{ width: '100%', textAlign: 'center' }}
+            >
+              {tekrarDurumu === 'gonderiliyor' ? 'Gönderiliyor...' : 'Maili tekrar gönder'}
+            </button>
+          )}
+        </div>
+
+        <p style={{
+          textAlign: 'center',
+          marginTop: '24px',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '13px',
+          color: 'var(--muted)',
+        }}>
+          yanlış adres mi yazdın?{' '}
+          <button
+            type="button"
+            onClick={() => { setDogrulamaBekliyor(false); setTekrarDurumu('bos'); setError('') }}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              font: 'inherit',
+              color: 'var(--ink)',
+              fontWeight: 700,
+              textDecoration: 'underline',
+              cursor: 'pointer',
+            }}
+          >
+            geri dön
+          </button>
+        </p>
+      </main>
+    )
   }
 
   return (

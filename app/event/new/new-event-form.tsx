@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { localInputToISO } from '@/lib/date'
 
 export default function NewEventForm({
   userId,
@@ -35,7 +36,7 @@ export default function NewEventForm({
         title,
         description: description || null,
         location,
-        event_date: new Date(eventDate).toISOString(),
+        event_date: localInputToISO(eventDate),
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
       }),
     })

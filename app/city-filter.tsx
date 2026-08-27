@@ -1,8 +1,9 @@
 'use client'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 export default function CityFilter({ cities, activeCity }: { cities: string[]; activeCity: string }) {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -12,8 +13,10 @@ export default function CityFilter({ cities, activeCity }: { cities: string[]; a
     } else {
       params.delete('city')
     }
+    // Hedef sabit '/' değildi; bileşen başka bir sayfada kullanılsa
+    // kullanıcıyı ana sayfaya fırlatıyordu.
     const qs = params.toString()
-    router.push(qs ? `/?${qs}` : '/')
+    router.push(qs ? `${pathname}?${qs}` : pathname)
   }
 
   return (

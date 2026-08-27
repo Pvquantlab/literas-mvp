@@ -127,7 +127,40 @@ function buildMail(template: string, payload: any): { subject: string; html: str
   return null
 }
 
+/**
+ * ÇALIŞMA SIKLIĞI ve SÜRE LİMİTİ
+ *
+ * Zamanlama vercel.json'da: "0 6 * * *" — GÜNDE BİR. Vercel Hobby planı daha
+ * sık cron'a izin vermiyor. (vercel.json'a açıklama yazılamaz: JSON yorum
+ * desteklemiyor ve Vercel bilinmeyen anahtarları şema hatasıyla reddediyor —
+ * bir kez denendi, deploy kırıldı. Bu yüzden not burada duruyor.)
+ *
+ * 06:00 UTC = 09:00 Türkiye. Hatırlatma penceresi 24 saat olduğu için
+ * hatırlatmalar doğru çalışıyor.
+ *
+ * BİLİNEN SINIR: bekleme listesi terfi maili ("yerin açıldı") de bu cron'a
+ * bağlı, yani yer açıldıktan sonra kullanıcıya haber 24 saate kadar
+ * gecikebiliyor. RSVP'si DB trigger'ıyla zaten oluştuğu için yerini
+ * kaybetmiyor, sadece geç öğreniyor. Çözüm: Pro'ya geçip cron'u saatlik
+ * yapmak, ya da terfi mailini RSVP iptal akışından tetiklemek.
+ *
+ * SÜRE: Hobby planında fonksiyon tavanı 60 saniye (doğrulandı). Daha büyük bir
+ * maxDuration yazmanın faydası yok, plan tavanına çekilir; bütçeyi 60'a göre
+ * ayarlamazsak fonksiyon bütçe dolmadan öldürülür ve temiz çıkış hiç çalışmaz.
+ *
+ * Pro'ya geçilirse: maxDuration 300, SURE_BUTCESI_MS 240_000 yapılabilir —
+ * o zaman kuyruk tek koşuda çok daha fazla mail bitirir.
+ */
+export const maxDuration = 60
+
+// Bütçe tavanın altında: kesilmek yerine kendi isteğimizle, her gönderimi
+// işaretlemiş olarak çıkalım. Kalanları ertesi koşu alır.
+const SURE_BUTCESI_MS = 50_000
+const MAIL_ARASI_MS = 600
+
 export async function GET(req: Request) {
+  const basladi = Date.now()
+
   // Yetki: CRON_SECRET tanımlı değilse kapalı başarısız ol.
   const cronSecret = process.env.CRON_SECRET
   if (!cronSecret) {
@@ -179,6 +212,7 @@ export async function GET(req: Request) {
 
     const { error: markErr } = await supabase.rpc('mark_reminder_sent', {
       p_event_id: event.id,
+      p_secret: cronSecret,
     })
     if (markErr) {
       console.error(`[cron/reminders] ${event.id} işaretlenemedi:`, markErr)
@@ -206,10 +240,22 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Kutu açılamadı' }, { status: 500 })
   }
 
+  const kuyruk = outbox ?? []
   let sent = 0
-  const sentIds: number[] = []
+  let basarisiz = 0
+  let sureDoldu = false
 
-  for (const row of outbox ?? []) {
+  for (const [sira, row] of kuyruk.entries()) {
+    // Süre bütçesi: fonksiyon öldürülmeden önce temiz çık. Kalanları bir
+    // sonraki koşu alır — hepsi hâlâ sent_at IS NULL olduğu için kaybolmaz.
+    if (Date.now() - basladi > SURE_BUTCESI_MS) {
+      sureDoldu = true
+      console.warn(
+        `[cron/reminders] süre bütçesi doldu: ${sira}/${kuyruk.length} işlendi, kalanlar sonraki koşuya bırakıldı`
+      )
+      break
+    }
+
     const mail = buildMail(row.template, row.payload)
     if (!mail || !row.email) continue
 
@@ -219,24 +265,41 @@ export async function GET(req: Request) {
       html: mail.html,
     })
 
-    if (result.ok) {
-      sent++
-      sentIds.push(row.id)
-    } else {
+    if (!result.ok) {
+      basarisiz++
       console.error(`[cron/reminders] mail gönderilemedi (kuyruk #${row.id}):`, result.error)
+      await sleep(MAIL_ARASI_MS)
+      continue
     }
-    await sleep(600) // Resend hız limiti
-  }
 
-  if (sentIds.length > 0) {
+    sent++
+
+    // İşaretlemeyi döngü sonuna BIRAKMA. Eskiden tüm id'ler sonda tek seferde
+    // işaretleniyordu; fonksiyon süre limitinde kesildiğinde gönderilmiş
+    // mailler işaretsiz kalıyor ve ertesi koşu AYNI kişilere tekrar mail
+    // gönderiyordu. Her gönderimden hemen sonra işaretleyince tekrar gönderim
+    // penceresi en fazla tek maile iner.
     const { error: markErr } = await supabase.rpc('mark_outbox_sent', {
-      p_ids: sentIds,
+      p_ids: [row.id],
       p_secret: cronSecret,
     })
     if (markErr) {
-      console.error('[cron/reminders] gönderim işaretlenemedi:', markErr)
+      // Kritik: mail gitti ama işaretlenemedi → tekrar gönderilebilir.
+      console.error(
+        `[cron/reminders] DİKKAT: #${row.id} gönderildi ama işaretlenemedi, tekrar gidebilir:`,
+        markErr
+      )
     }
+
+    await sleep(MAIL_ARASI_MS) // Resend hız limiti
   }
 
-  return NextResponse.json({ ok: true, queuedReminders, sent })
+  return NextResponse.json({
+    ok: true,
+    queuedReminders,
+    sent,
+    basarisiz,
+    kuyrukta: kuyruk.length,
+    sureDoldu,
+  })
 }

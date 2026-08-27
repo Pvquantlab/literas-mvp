@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import { dosyayiDogrula, guvenliDosyaAdi } from '@/lib/upload'
 
 type Props = {
   bucket: string
@@ -10,18 +11,6 @@ type Props = {
   hint?: string
 }
 
-// Güvenlik: sadece bu MIME tipleri kabul edilir
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
-const MAX_FILE_SIZE_MB = 5
-const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
-
-// MIME tipini güvenli uzantıya çevir (kullanıcının dosya adına güvenmiyoruz)
-const MIME_TO_EXT: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-}
-
 export default function ImageUpload({ bucket, value, onChange, label, hint }: Props) {
   const supabase = createClient()
   const [uploading, setUploading] = useState(false)
@@ -29,29 +18,23 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
+    // Aynı dosya hatadan sonra tekrar seçilebilsin diye her seferinde sıfırla.
+    e.target.value = ''
     if (!file) return
 
-    // Güvenlik kontrolü 1: MIME tipi
-    if (!ALLOWED_MIME_TYPES.includes(file.type as any)) {
-      setError('Sadece JPG, PNG veya WebP görseller yüklenebilir')
-      // input'u sıfırla ki aynı dosyayı tekrar seçebilsin
-      e.target.value = ''
-      return
-    }
-
-    // Güvenlik kontrolü 2: Boyut
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      setError(`Görsel en fazla ${MAX_FILE_SIZE_MB} MB olabilir`)
-      e.target.value = ''
+    // Kurallar lib/upload.ts'te — avatar editörüyle tek kaynaktan.
+    // Boyut limiti artık kovaya göre değişiyor: burada sabit 5 MB yazıyordu,
+    // ama avatars kovasının sunucu limiti 2 MB.
+    const dogrulama = dosyayiDogrula(file, bucket)
+    if (!dogrulama.ok) {
+      setError(dogrulama.mesaj)
       return
     }
 
     setUploading(true)
     setError(null)
 
-    // Güvenli uzantı: dosya adından değil, MIME tipinden türet
-    const ext = MIME_TO_EXT[file.type]
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+    const fileName = guvenliDosyaAdi(file.type)
 
     const { error: uploadError } = await supabase.storage
       .from(bucket)
@@ -62,8 +45,8 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
       })
 
     if (uploadError) {
-      setError('Yükleme başarısız: ' + uploadError.message)
-      console.error(uploadError)
+      console.error('[image-upload] yükleme hatası:', uploadError)
+      setError('Yükleme başarısız. Lütfen tekrar dene.')
       setUploading(false)
       return
     }

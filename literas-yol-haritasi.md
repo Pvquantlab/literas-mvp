@@ -50,6 +50,125 @@ Amaç: Güvenlik açıklarını kapatmak, projeyi kırılmaz hale getirmek. Yeni
 
 ---
 
+## AŞAMA 1.6 — Denetim sonrası kapatma (27.08.2026)
+
+Geniş tarama yapıldı (güvenlik / kod kalitesi / doküman tutarlılığı). Bulgular
+`Literas Denetim Raporu` artifact'inde. Kapatılanlar:
+
+- [x] **Güvenlik paketi 3** (migration `20260827120000`) — canlıya UYGULANDI
+      - `profiles_guard` trigger: `is_admin`, `email`, `id` kilitlendi.
+        Açık gerçekti ve doğrulandı: RLS kolon kısıtı koyamadığı için her
+        kullanıcı konsoldan `is_admin: true` yazıp yönetici olabiliyordu.
+      - `_check_cron_secret` PUBLIC'ten alındı (sır sınama oracle'ıydı).
+        Kasa bozulmadı: SECURITY DEFINER iç çağrıları çalışıyor (test edildi).
+      - `public_profiles` görünümüne gizlilik filtresi: `profile_visibility`
+        ve `account_active` artık gerçekten etkili.
+      - `community_members_guard`: admin rolünü yalnızca kurucu verebilir
+        (API bunu zorluyordu, RLS zorlamıyordu).
+- [ ] **Güvenlik paketi 4** (migration `20260827120100`) — DEPLOY İLE BİRLİKTE
+      `mark_reminder_sent` / `mark_promotion_email_sent` sır kontrolü alıyor.
+      İmza değiştiği için kod deploy'undan ÖNCE uygulanmamalı.
+- [ ] **CRON_SECRET rotasyonu** — kullanıcıda. Gerçek değer `.env.example` ile
+      public repoya commit edilmişti; örnek dosya boşaltıldı ama git geçmişi
+      açık, o yüzden değer yakılmış sayılır.
+- [x] **Kapak görseli veri kaybı** — düzenleme her kaydetmede kapağı siliyordu.
+- [x] **Saat dilimi** — e-posta ve listelerde `lib/date.ts` bağlandı; formların
+      yazma yolu İstanbul duvar saatine sabitlendi (`localInputToISO`).
+- [x] **Geçmiş etkinlik düzenlenebiliyor** — edit şemasından gelecek kısıtı kalktı.
+- [x] **Ayarlar sertleştirme** (gizlilik / sosyal-medya / hesap) — zod + rate
+      limit + hata gösterimi (`AyarlarDurum`). `javascript:` URL'i artık
+      kaydedilemiyor; e-posta alanı salt okunur.
+- [x] **Ölü dosya temizliği** — `patch-hero2.js`, `patch-muted.js`,
+      `kesfet/tab-bar.tsx`, `kesfet/category-strip.tsx`.
+
+- [x] **Keşfet ve arama (Paket 4)**
+      - Header araması `defaultValue="İstanbul"` ile sessizce kilitliydi.
+      - Kategori/sekme tıklamasında `q` ve `city` düşüyordu; artık korunuyor.
+      - Şehir filtresi yokken başlık "İstanbul" yazıp tüm Türkiye'yi
+        listeliyordu — başlık gerçeği söylüyor.
+      - `lib/turkce.ts`: ek sabit `'da` idi; "İzmir'da", "Sinop'da" yanlıştı.
+        Ünlü uyumu + ünsüz benzeşmesi, 14 şehirde test edildi.
+      - Sayfalama off-by-one: son sayfa tam dolduğunda boş sayfaya götürüyordu.
+      - `search-box` / `city-filter` hedefi sabit `/` idi → `usePathname`.
+
+- [x] **Bildirim tercihleri gerçekten uygulanıyor** (migration `20260827140000`)
+      DB'de `email_izni(user, template)` izin katmanı. İşlemsel maillerle
+      (terfi, etkinlik değişikliği/iptali) tercihe bağlı mailleri (hatırlatma,
+      katılım isteği, duyuru) ayırıyor. `account_active` de artık okunuyor.
+      Uçtan uca test edildi: tercih kapalıyken kuyruğa 0 satır, açıkken 1.
+      `push_new_members` varsayılanı `false` → `true` düzeltildi (kurucuya
+      katılım isteği maili gitmiyordu; düzeltilmeseydi bu değişiklik bir
+      gerileme olurdu). "Tüm e-postaları kapat" artık gerçekten hepsini
+      kapatıyor.
+
+- [x] **Kayıt akışı ve auth hata gösterimi**
+      `signUp` sonrası koşulsuz yönlendirme yüzünden, doğrulama açıkken
+      kullanıcı kendini çıkış yapmış hâlde ana sayfada buluyordu. Artık
+      `data.session` null ise "Postanı kontrol et" ekranı + tekrar gönderme.
+      `emailRedirectTo` eklendi (yoktu, `?next` kayboluyordu). Giriş sayfası
+      `?error=` parametresini okuyor (whitelist'ten, ekrana basmadan);
+      doğrulanmamış hesap ayrı mesaj + tekrar gönderme alıyor. `auth/callback`
+      `next`'i sunucuda doğruluyor ve hata türlerini ayırıyor.
+      Çalışan sunucuda doğrulandı: 4 hata mesajı, 5 callback senaryosu (hiçbiri
+      dışarı yönlendirmiyor), `guvenliNext` 12 girdi.
+
+**Bilinen borç:** `push_*` kolonları fiilen e-postayı yönetiyor ama adları
+push diyor; platformda push altyapısı yok. Yeniden adlandırma ayrı bir iş
+olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
+
+- [x] **Görsel yükleme kuralları tek kaynaktan** (`lib/upload.ts`)
+      Avatar editörü istemcide 5 MB kontrol ediyordu ama `avatars` kovasının
+      sunucu limiti 2 MB — arada kalan görseller ham Supabase hatası alıyordu.
+      MIME kontrolü, `contentType` ve input sıfırlama da eklendi.
+      İstemci limitlerinin canlı kova ayarlarıyla eşitliği otomatik
+      doğrulanıyor (ayrışma bu hatanın kök nedeniydi).
+
+- [x] **Cron idempotent hale getirildi**
+      İşaretleme döngü sonunda tek seferde yapılıyordu; fonksiyon süre
+      limitinde kesilince gönderilmiş mailler işaretsiz kalıyor ve ertesi koşu
+      aynı kişilere tekrar gönderiyordu. Artık her gönderimden hemen sonra
+      işaretleniyor + süre bütçesiyle temiz çıkış + `maxDuration`.
+
+- [x] **Service worker araftan çıkarıldı** — 2.3 PWA artık gerçekten tamam
+      Kayıt layout'tan kaldırılmış, yerine yazılacak bileşen hiç yazılmamıştı:
+      `sw.js` ölü kod olarak duruyordu ama önceden kaydolmuş tarayıcılarda
+      eski hatalı sürüm çalışmaya devam ediyordu. `components/register-sw.tsx`
+      yazıldı; `sw.js` güvenli sürümle değiştirildi (yalnızca `/_next/static/*`
+      — içerik hash'li olduğu için bayatlama imkânsız; doküman ve API'ye hiç
+      dokunulmuyor). `activate` eski `literas-static-v1` önbelleğini siliyor,
+      yani eski kullanıcılardaki bayat/kişisel HTML de temizleniyor.
+      Tarayıcıda doğrulandı: 33 önbellek girdisinin hepsi statik, doküman yok.
+
+**Vercel planı: HOBBY** (doğrulandı). Bunun iki somut sonucu var:
+1. Fonksiyon tavanı **60 saniye** — `maxDuration`/bütçe buna göre ayarlı.
+   Pro'ya geçilirse `app/api/cron/reminders/route.ts` içindeki yorumda yazan
+   değerlere (300s / 240s) çıkarılabilir, kuyruk tek koşuda daha çok biter.
+2. Cron **günde bir** çalışabiliyor. Hatırlatmalar 24 saatlik pencere
+   kullandığı için doğru; ama bekleme listesi terfi maili ("yerin açıldı") de
+   aynı cron'a bağlı olduğundan haber 24 saate kadar gecikebiliyor. Kullanıcı
+   yerini kaybetmiyor (RSVP trigger'la oluşuyor), sadece geç öğreniyor.
+   Çözüm: Pro + saatlik cron, ya da terfi mailini RSVP iptal akışından
+   tetiklemek.
+3. Kapasite: ~72 mail/koşu, günde bir koşu. 3 kullanıcılık MVP için fazlasıyla
+   yeterli; büyürken bu sınır önce vurur.
+
+**Denetimde yanlış çıkan iddialar** (doğrulandı, düzeltilmedi):
+- Bekleme listesi bozuk DEĞİL — `rsvps` SELECT politikası `true`, sayım doğru.
+- `cron/reminders` ve `event/[id]/page.tsx` saatleri zaten doğruydu.
+- Font literal'leri bozuk DEĞİL — Next 16 `next/font` gerçek aile adını
+  üretiyor (`"IBM Plex Mono", "IBM Plex Mono Fallback"`); tarayıcıda ölçüldü,
+  literal ile değişken aynı sonucu veriyor. 121 dosyalık değişiklikten dönüldü.
+- Avatar yükleme "depolanan XSS" DEĞİL — kovalarda `allowed_mime_types`
+  tanımlı, `text/html` 415 ile reddediliyor; anonim yükleme de RLS'e takılıyor.
+  Canlıda curl ile doğrulandı. (Yerinde bir UX hatası vardı, o düzeltildi.)
+
+Kalan paketler: kalan 6 ayarlar action'ı + avatar yükleme MIME + `member`
+rotası zod/limit · cron idempotent işaretleme + SW kararı + ESLint · kayıt
+akışında e-posta doğrulama + bildirim tercihlerinin gerçekten uygulanması ·
+belge/README + baseline migration (`supabase db pull`).
+
+---
+
 ## AŞAMA 2 — Büyüme ve UX (sıradaki)
 
 Amaç: "Luma modeli" — paylaşılabilirlik ve sürtünmesiz akış. Kullanıcı kazandırır.

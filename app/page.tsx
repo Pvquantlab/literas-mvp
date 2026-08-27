@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
 import { bySlug, sanitizeQuery } from '@/lib/categories'
+import { formatDayMonthShort } from '@/lib/date'
+import { bulunmaHali } from '@/lib/turkce'
 import CategoryStrip from './category-strip'
 import { HeroObjects } from '@/components/category-art'
 import HowItWorks from '@/components/how-it-works'
@@ -124,7 +126,9 @@ export default async function HomePage({
     (a, b) => a.localeCompare(b, 'tr')
   )
 
-  const cityLabel = activeCity ?? 'İstanbul'
+  // Şehir filtresi yokken sorgu TÜM Türkiye'yi getiriyor. Eskiden başlık yine
+  // de "İstanbul" yazıyordu — kullanıcıya yanlış bilgi veriyordu.
+  const cityLocative = bulunmaHali(activeCity)
   const hasFilter = Boolean(activeSlug || activeCity || activeQuery)
 
   /* =================================================================
@@ -210,7 +214,7 @@ export default async function HomePage({
                     <li key={ev.id}>
                       <Link href={`/event/${ev.id}`} className="stack" style={{ gap: 2 }}>
                         <span className="mono" style={{ fontSize: 'var(--t-2xs)', color: 'var(--coral)' }}>
-                          {new Date(ev.event_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+                          {formatDayMonthShort(ev.event_date)}
                         </span>
                         <span style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.3 }}>{ev.title}</span>
                       </Link>
@@ -314,8 +318,11 @@ export default async function HomePage({
 
           <p className="hx-lede">İnsanların kendi masalarını kurduğu yer.</p>
           <p className="hx-sub">
-            {cityLabel}&apos;da bu hafta {events.length > 0 ? `${events.length} buluşma var` : 'buluşmalar başlıyor'}.
-            Katıl ya da kendi masanı kur.
+            {cityLocative ? `${cityLocative} ` : ''}
+            {events.length > 0
+              ? `yaklaşan ${events.length} buluşma var`
+              : 'buluşmalar başlıyor'}.
+            {' '}Katıl ya da kendi masanı kur.
           </p>
 
           <div className="hx-cta">
@@ -343,7 +350,11 @@ export default async function HomePage({
       {/* ---- Yaklaşan etkinlikler: sayfanın asıl işi ---- */}
       <section id="etkinlikler" className="container section">
         <SectionHead
-          title={<><span className="highlight-yellow">{cityLabel}</span>&apos;da yaklaşanlar</>}
+          title={
+            cityLocative
+              ? <><span className="highlight-yellow">{activeCity}</span>{cityLocative.slice(activeCity!.length)} yaklaşanlar</>
+              : <><span className="highlight-yellow">Yaklaşan</span> etkinlikler</>
+          }
           href="/kesfet"
           linkLabel="Tüm etkinlikler"
         />

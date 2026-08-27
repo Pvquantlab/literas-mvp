@@ -5,13 +5,23 @@ import Link from 'next/link'
 type Props = {
   activeTab: 'etkinlikler' | 'topluluklar'
   activeCategory: string | null
+  /** Sekme değişince arama ve şehir korunur; sayfa numarası bilinçli sıfırlanır. */
+  query?: string | null
+  city?: string | null
 }
 
-export default function KesfetTabs({ activeTab, activeCategory }: Props) {
+export default function KesfetTabs({
+  activeTab,
+  activeCategory,
+  query = null,
+  city = null,
+}: Props) {
   const buildHref = (tab: string) => {
     const p = new URLSearchParams()
     p.set('tab', tab)
     if (activeCategory) p.set('kategori', activeCategory)
+    if (query) p.set('q', query)
+    if (city) p.set('city', city)
     return `/kesfet?${p.toString()}`
   }
 
