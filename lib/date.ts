@@ -79,6 +79,18 @@ export function formatDateTimeLong(iso: string): string {
   })
 }
 
+/** "04.08.2026 14:17" — admin tabloları gibi kompakt zaman damgaları için */
+export function formatDateTimeShort(iso: string): string {
+  return new Date(iso).toLocaleString('tr-TR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: TZ,
+  })
+}
+
 /** "Salı" */
 export function formatWeekday(iso: string): string {
   return new Date(iso).toLocaleDateString('tr-TR', { weekday: 'long', timeZone: TZ })
@@ -98,6 +110,64 @@ export function dayKey(iso: string): string {
     day: '2-digit',
     timeZone: TZ,
   }).format(new Date(iso))
+}
+
+/**
+ * Verilen anın İstanbul ofsetini milisaniye olarak döndürür.
+ * Sabit +03:00 varsaymak yerine Intl'e sorar; ofset kuralı değişirse kod bozulmaz.
+ */
+function tzOffsetMs(utcMs: number): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZone: TZ,
+  }).formatToParts(new Date(utcMs))
+  const get = (type: string) => Number(parts.find((p) => p.type === type)!.value)
+  const asUtc = Date.UTC(
+    get('year'),
+    get('month') - 1,
+    get('day'),
+    get('hour') % 24,
+    get('minute'),
+    get('second')
+  )
+  return asUtc - utcMs
+}
+
+/**
+ * datetime-local girdisini ("2026-08-04T14:17") ISO'ya çevirir.
+ *
+ * NEDEN: `new Date(value).toISOString()` girdiyi TARAYICININ saat dilimine göre
+ * yorumlar. Berlin'deki bir organizatör 19:00 seçtiğinde etkinlik 20:00 İstanbul
+ * olarak kaydediliyordu. Okuma yolu İstanbul'a sabitken yazma yolu sabit değildi.
+ * Burada girdi her zaman İstanbul duvar saati kabul edilir.
+ */
+export function localInputToISO(value: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value)
+  if (!m) return new Date(value).toISOString()
+  const [, y, mo, d, h, mi] = m
+  const wallAsUtc = Date.UTC(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi))
+  return new Date(wallAsUtc - tzOffsetMs(wallAsUtc)).toISOString()
+}
+
+/** ISO → datetime-local değeri ("2026-08-04T14:17"), İstanbul duvar saatiyle. */
+export function isoToLocalInput(iso: string): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: TZ,
+  }).formatToParts(new Date(iso))
+  const get = (type: string) => parts.find((p) => p.type === type)!.value
+  return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`
 }
 
 /** "Bugün" / "Yarın" / "Salı" — İstanbul gününe göre karşılaştırır. */

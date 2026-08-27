@@ -49,16 +49,21 @@ export const eventSchema = z.object({
   cover_image_url: optionalUrl,
 })
 
-// PATCH için: her alan opsiyonel ama en az bir alan zorunlu
-export const eventUpdateSchema = eventSchema
-  .omit({ community_id: true })
-  .partial()
-  .refine((v) => Object.keys(v).length > 0, {
-    message: 'Güncellenecek en az bir alan gönder',
-  })
-  // PATCH (tam güncelleme): community_id hariç tüm alanlar zorunlu.
+// PATCH (tam güncelleme): community_id hariç tüm alanlar zorunlu.
 // Düzenleme formu bütün alanları gönderdiği için tam doğrulama uygulanır.
-export const eventEditSchema = eventSchema.omit({ community_id: true })
+//
+// İki bilinçli fark var:
+// 1. event_date'te "gelecekte olmalı" kısıtı YOK. Geçmiş bir etkinliğin
+//    başlığındaki yazım hatası da düzeltilebilmeli.
+// 2. cover_image_url üç durumu ayırır: alan yoksa (undefined) kapak
+//    DOKUNULMAZ, boş string/null ise kaldırılır, URL ise değiştirilir.
+//    Eskiden alan gönderilmediğinde kapak sessizce siliniyordu.
+export const eventEditSchema = eventSchema.omit({ community_id: true }).extend({
+  event_date: z.coerce.date({ error: 'Geçersiz tarih' }),
+  cover_image_url: z
+    .union([z.string().trim().url('Geçersiz bağlantı'), z.literal(''), z.null()])
+    .optional(),
+})
 
 // ---- RSVP / Bekleme listesi ----------------------------------------------
 
@@ -113,6 +118,49 @@ export const communitySchema = z.object({
     .array(z.string().trim().min(1))
     .min(1, 'En az bir konu seç')
     .max(10, 'En fazla 10 konu seçebilirsin'),
+})
+
+// ---- Ayarlar (server action'lar) ------------------------------------------
+
+// Yalnızca http/https kabul eder.
+// NEDEN: z.string().url() "javascript:alert(1)" adresini de geçerli sayar.
+// Bu değer profilde <a href> içine konduğunda tıklayan herkeste kod çalışır.
+const httpUrl = z
+  .union([
+    z
+      .string()
+      .trim()
+      .url('Geçersiz bağlantı')
+      .refine((v) => /^https?:\/\//i.test(v), 'Bağlantı http:// veya https:// ile başlamalı'),
+    z.literal(''),
+  ])
+  .optional()
+  .transform((v) => (v ? v : null))
+
+export const sosyalMedyaSchema = z.object({
+  instagram_url: httpUrl,
+  x_url: httpUrl,
+  youtube_url: httpUrl,
+  linkedin_url: httpUrl,
+})
+
+export const gizlilikSchema = z.object({
+  contact_permission: z.enum(['everyone', 'community_members', 'nobody'], {
+    error: 'Geçersiz iletişim izni',
+  }),
+  profile_visibility: z.enum(['public', 'private'], {
+    error: 'Geçersiz profil görünürlüğü',
+  }),
+})
+
+// email BİLİNÇLİ olarak yok: profiles.email artık profiles_guard trigger'ı ile
+// kilitli ve giden tüm postanın kaynağı. Değişimi Supabase auth akışından
+// geçmeli (doğrulama maili), formdan değil.
+export const hesapSchema = z.object({
+  language: z.enum(['tr', 'en'], { error: 'Geçersiz dil' }),
+  timezone: z.enum(['Europe/Istanbul', 'Europe/London', 'Europe/Berlin', 'America/New_York'], {
+    error: 'Geçersiz saat dilimi',
+  }),
 })
 
 // ---- Ortak yardımcı: hata cevabı ------------------------------------------

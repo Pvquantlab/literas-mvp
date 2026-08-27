@@ -1,8 +1,14 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { updateAccount, deactivateAccount } from "./actions";
+import AyarlarDurum from "@/components/ayarlar-durum";
 
-export default async function HesapPage() {
+export default async function HesapPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ durum?: string; hata?: string }>;
+}) {
+  const { durum, hata } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -25,10 +31,24 @@ export default async function HesapPage() {
         Oturum bilgileriniz, dil ve saat dilimi tercihlerinizi yönetin.
       </p>
 
+      <AyarlarDurum durum={durum} hata={hata} />
+
       <form action={updateAccount}>
         <div style={{ marginBottom: 26 }}>
           <label style={labelStyle}>E-posta adresiniz</label>
-          <input type="email" name="email" defaultValue={profile?.email || user.email || ""} style={inputStyle} />
+          <input
+            type="email"
+            value={profile?.email || user.email || ""}
+            readOnly
+            disabled
+            aria-describedby="eposta-not"
+            style={{ ...inputStyle, opacity: 0.65, cursor: "not-allowed" }}
+          />
+          <p id="eposta-not" style={{ fontSize: 13, color: "rgba(30,58,43,0.6)", marginTop: 8 }}>
+            E-posta adresi buradan değiştirilemez: bildirimlerinizin gittiği adres
+            budur ve doğrulama gerektirir. Değiştirmek için bizimle{" "}
+            <a href="/iletisim" style={{ color: "var(--ink)" }}>iletişime geçin</a>.
+          </p>
         </div>
 
         <div style={{ marginBottom: 26 }}>

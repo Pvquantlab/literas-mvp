@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import { sendEmail } from '@/lib/email'
 import { eventEditSchema } from '@/lib/validations'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { formatDateTimeLong } from '@/lib/date'
 
 // HTML injection'a karşı basit escape
 function escapeHtml(str: string): string {
@@ -66,16 +67,9 @@ async function getRsvpEmails(supabase: any, eventId: string, excludeUserId: stri
   return (data ?? []) as string[]
 }
 
-// Tarih formatla (Türkçe)
-function formatDateTr(iso: string): string {
-  return new Date(iso).toLocaleDateString('tr-TR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
+// Tarih formatı lib/date.ts'ten gelir: Vercel UTC'de koştuğu için timeZone
+// belirtmeyen her çağrı e-postalara 3 saat kayık saat yazıyordu.
+const formatDateTr = formatDateTimeLong
 
 // PATCH: Etkinliği güncelle
 export async function PATCH(
@@ -115,16 +109,22 @@ export async function PATCH(
   const { title, description, location, event_date, max_attendees, cover_image_url } =
     parsed.data
 
+  const patch: Record<string, unknown> = {
+    title,
+    description: description || null,
+    location,
+    event_date,
+    max_attendees: max_attendees ?? null,
+  }
+  // Kapak yalnızca gövdede AÇIKÇA gönderildiyse değişir. Düzenleme formu bu
+  // alanı göndermiyor; koşulsuz yazsaydık her düzenleme kapağı silerdi.
+  if (cover_image_url !== undefined) {
+    patch.cover_image_url = cover_image_url || null
+  }
+
   const { data: updatedEvent, error: updateError } = await supabase
     .from('events')
-    .update({
-      title,
-      description: description || null,
-      location,
-      event_date,
-      max_attendees: max_attendees ?? null,
-      cover_image_url: cover_image_url ?? null,
-    })
+    .update(patch)
     .eq('id', id)
     .select()
     .single()

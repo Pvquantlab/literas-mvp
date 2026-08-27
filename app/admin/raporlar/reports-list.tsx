@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { formatDateTimeShort } from '@/lib/date'
 
 const REASON_LABELS: Record<string, string> = {
   spam: 'Spam veya reklam',
@@ -170,7 +171,7 @@ export default function ReportsList({ reports }: { reports: any[] }) {
                       margin: 0,
                       fontFamily: "'IBM Plex Mono', monospace",
                     }}>
-                      {new Date(r.created_at).toLocaleString('tr-TR')} · Rapor eden: {r.reporter?.name || 'anonim'}
+                      {formatDateTimeShort(r.created_at)} · Rapor eden: {r.reporter?.name || 'anonim'}
                     </p>
                   </div>
                   <Link

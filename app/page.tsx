@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
 import { bySlug, sanitizeQuery } from '@/lib/categories'
+import { formatDayMonthShort } from '@/lib/date'
 import CategoryStrip from './category-strip'
 import { HeroObjects } from '@/components/category-art'
 import HowItWorks from '@/components/how-it-works'
@@ -210,7 +211,7 @@ export default async function HomePage({
                     <li key={ev.id}>
                       <Link href={`/event/${ev.id}`} className="stack" style={{ gap: 2 }}>
                         <span className="mono" style={{ fontSize: 'var(--t-2xs)', color: 'var(--coral)' }}>
-                          {new Date(ev.event_date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+                          {formatDayMonthShort(ev.event_date)}
                         </span>
                         <span style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.3 }}>{ev.title}</span>
                       </Link>

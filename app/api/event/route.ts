@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import { sendEmail } from '@/lib/email'
 import { eventSchema } from '@/lib/validations'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { formatDateTimeLong } from '@/lib/date'
 
 // HTML injection'a karşı basit escape fonksiyonu
 function escapeHtml(str: string): string {
@@ -109,13 +110,8 @@ export async function POST(req: Request) {
   const emails = (emailRows ?? []) as string[]
 
   if (emails.length > 0 && community && organizer) {
-    const eventDateStr = new Date(event.event_date).toLocaleDateString('tr-TR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+    // lib/date.ts: timeZone'suz format Vercel'in UTC saatini yazıyordu.
+    const eventDateStr = formatDateTimeLong(event.event_date)
 
     const safeTitle = escapeHtml(event.title)
     const safeCommunity = escapeHtml(community.name)

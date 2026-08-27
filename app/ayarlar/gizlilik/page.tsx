@@ -1,8 +1,14 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { updatePrivacy } from "./actions";
+import AyarlarDurum from "@/components/ayarlar-durum";
 
-export default async function GizlilikPage() {
+export default async function GizlilikPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ durum?: string; hata?: string }>;
+}) {
+  const { durum, hata } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -24,6 +30,8 @@ export default async function GizlilikPage() {
       <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 28px", maxWidth: "56ch" }}>
         Sizinle kimlerin iletişim kurabileceğini ve profilinizde nelerin görüneceğini kontrol edin.
       </p>
+
+      <AyarlarDurum durum={durum} hata={hata} />
 
       <form action={updatePrivacy}>
         <div style={{ marginBottom: 26 }}>

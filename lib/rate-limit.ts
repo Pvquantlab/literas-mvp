@@ -40,6 +40,26 @@ function clientKey(req: Request, userId: string | null): string {
   return `ip:${ip}`
 }
 
+/**
+ * Server action varyantı: elde Request nesnesi yok, kullanıcı kimliği var.
+ * Sadece ok/false döner; action'da başlık dönecek yer olmadığı için headers yok.
+ */
+export async function checkUserRateLimit(
+  userId: string,
+  tier: Tier = 'normal'
+): Promise<boolean> {
+  const limiter = limiters[tier]
+  if (!limiter) return true // env yok → devre dışı
+
+  try {
+    const { success } = await limiter.limit(`u:${userId}`)
+    return success
+  } catch (err) {
+    console.error('[rate-limit] hata, istek serbest bırakıldı:', err)
+    return true
+  }
+}
+
 export async function checkRateLimit(
   req: Request,
   userId: string | null,
