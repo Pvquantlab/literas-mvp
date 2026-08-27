@@ -164,10 +164,25 @@ olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
   tanımlı, `text/html` 415 ile reddediliyor; anonim yükleme de RLS'e takılıyor.
   Canlıda curl ile doğrulandı. (Yerinde bir UX hatası vardı, o düzeltildi.)
 
-Kalan paketler: kalan 6 ayarlar action'ı + avatar yükleme MIME + `member`
-rotası zod/limit · cron idempotent işaretleme + SW kararı + ESLint · kayıt
-akışında e-posta doğrulama + bildirim tercihlerinin gerçekten uygulanması ·
-belge/README + baseline migration (`supabase db pull`).
+- [x] **Kalan server action'lar sertleştirildi** (28.08.2026)
+      profil / kişisel / ilgi-alanları action'ları + `member` rotası. Kural 2
+      (auth → rate limit → zod → yetki) artık istisnasız uygulanıyor.
+      `username` biçim kuralı + ayrılmış ad listesi eklendi (`@admin`,
+      `@literaslab` alınamıyor); unique çakışması artık kullanıcıya
+      gösteriliyor (eskiden 23505 yutuluyordu).
+- [x] **İkinci profil düzenleme yolu kapatıldı**
+      `/profile/[id]/edit` doğrudan istemciden `profiles`'a yazıyordu — zod,
+      uzunluk sınırı ve rate limit yoktu, yani `/ayarlar/profil`in tüm
+      doğrulamaları bu URL'den atlanabiliyordu. Artık `/ayarlar/profil`e
+      yönlendiriyor (silinmedi ki eski yer imleri 404 vermesin).
+- [x] **Canlı manuel testler geçti** — kayıttaki "Postanı kontrol et" ekranı
+      ve avatar yükleme kullanıcı tarafından denendi, ikisi de çalışıyor.
+
+**Kalan işler** (hiçbiri kullanıcıyı doğrudan etkilemiyor):
+ESLint kurulumu · `NEXT_PUBLIC_SITE_URL` (domain 7 dosyada sabit) · README ·
+baseline migration (`supabase db pull` — migration klasörü hâlâ tam şema
+kaynağı değil) · `community/new` action'larında zod (`communitySchema` yazılı
+ama bağlı değil) · RSVP'nin istemciden değil API'den yapılması.
 
 ---
 
