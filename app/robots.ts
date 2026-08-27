@@ -1,3 +1,4 @@
+import { SITE_URL } from '@/lib/site'
 import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
@@ -9,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin/', '/api/', '/ayarlar/', '/profile/*/edit'],
       },
     ],
-    sitemap: 'https://www.literaslab.com/sitemap.xml',
-    host: 'https://www.literaslab.com',
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   }
 }

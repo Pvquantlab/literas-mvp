@@ -228,11 +228,18 @@ olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
       NOT: referans verisi (topics, locations, topic_categories satırları)
       şemada değil; yeniden kurulumda ayrıca yüklenmeli.
 
+- [x] **`NEXT_PUBLIC_SITE_URL`** (28.08.2026) — adres beş dosyada sabit
+      yazılıydı; preview dağıtımlarında OG görselleri, sitemap ve mail
+      bağlantıları hep production'ı gösteriyordu. `lib/site.ts` tek kaynak;
+      preview'da `VERCEL_URL`, yerelde localhost. Yerelde doğrulandı:
+      robots/sitemap/OG artık localhost gösteriyor, sabit adres sızmıyor.
+- [x] **README** (28.08.2026) — repo sunumu, hızlı başlangıç, dizin haritası,
+      belge indeksi ve katkı kuralları. Tüm atıflar koda karşı doğrulandı.
+
 **Kalan işler** (hiçbiri kullanıcıyı doğrudan etkilemiyor):
-`NEXT_PUBLIC_SITE_URL` (domain 7 dosyada sabit) · README ·
-baseline migration (`supabase db pull` — migration klasörü hâlâ tam şema
-kaynağı değil) · `community/new` action'larında zod (`communitySchema` yazılı
-ama bağlı değil) · RSVP'nin istemciden değil API'den yapılması.
+`community/new` action'larında zod (`communitySchema` yazılı ama bağlı değil) ·
+RSVP'nin istemciden değil API'den yapılması · `push_*` kolon adlarının
+gerçekte e-postayı yönetmesi (adlandırma borcu).
 
 ---
 
