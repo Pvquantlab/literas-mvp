@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail } from '@/lib/email'
+import { SITE_URL } from '@/lib/site'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -27,7 +28,7 @@ function formatTr(iso: string): string {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-const SITE = 'https://www.literaslab.com'
+const SITE = SITE_URL
 
 function mailShell(inner: string): string {
   return `

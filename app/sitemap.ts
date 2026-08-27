@@ -1,7 +1,8 @@
+import { SITE_URL } from '@/lib/site'
 import type { MetadataRoute } from 'next'
 import { createClient } from '@/lib/supabase-server'
 
-const BASE_URL = 'https://www.literaslab.com'
+const BASE_URL = SITE_URL
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = await createClient()

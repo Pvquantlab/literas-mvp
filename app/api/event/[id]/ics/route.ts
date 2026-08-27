@@ -1,3 +1,4 @@
+import { SITE_URL } from '@/lib/site'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 
@@ -49,10 +50,10 @@ export async function GET(
     (event.description || '') +
     (event.description ? '\n\n' : '') +
     'Topluluk: ' + communityName + '\n' +
-    'literaslab.com/event/' + id
+    SITE_URL.replace(/^https?:\/\//, '') + '/event/' + id
   )
   const location = escapeIcs(event.location)
-  const uid = id + '@literaslab.com'
+  const uid = id + '@' + SITE_URL.replace(/^https?:\/\//, '')
   const now = toIcsDate(new Date().toISOString())
 
   const ics = [
@@ -69,7 +70,7 @@ export async function GET(
     'SUMMARY:' + summary,
     'DESCRIPTION:' + description,
     'LOCATION:' + location,
-    'URL:https://www.literaslab.com/event/' + id,
+    'URL:' + SITE_URL + '/event/' + id,
     'STATUS:CONFIRMED',
     'END:VEVENT',
     'END:VCALENDAR',

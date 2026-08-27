@@ -3,6 +3,7 @@ import { Literata, Instrument_Sans, IBM_Plex_Mono } from 'next/font/google'
 import { createClient } from '@/lib/supabase-server'
 import Footer from '@/components/footer'
 import Header from '@/components/header'
+import { SITE_URL } from '@/lib/site'
 import RegisterSW from '@/components/register-sw'
 import { IconSprite } from '@/components/category-art'
 import type { Metadata, Viewport } from 'next'
@@ -39,7 +40,7 @@ const mono = IBM_Plex_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.literaslab.com'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'literaslab — kendi topluluğunu kur',
     template: '%s — literaslab',
@@ -52,7 +53,7 @@ export const metadata: Metadata = {
     siteName: 'literaslab',
     title: 'literaslab — kendi topluluğunu kur',
     description: 'Kitap kulübü, yürüyüş, dil pratiği. Topluluk burada başlar.',
-    url: 'https://www.literaslab.com',
+    url: SITE_URL,
   },
   twitter: {
     card: 'summary_large_image',
