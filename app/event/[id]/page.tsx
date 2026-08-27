@@ -339,7 +339,6 @@ export default async function EventPage({
                     </p>
                     <RsvpForm
                       eventId={event.id}
-                      userId={user.id}
                       userHasRsvp={userHasRsvp || false}
                       userInWaitlist={userInWaitlist}
                       isFull={isFull}

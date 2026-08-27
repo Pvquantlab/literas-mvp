@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
 
 type Props = {
   eventId: string
-  userId: string
   userHasRsvp: boolean
   userInWaitlist: boolean
   isFull: boolean
@@ -14,25 +12,26 @@ type Props = {
 
 export default function RsvpForm(props: Props) {
   const router = useRouter()
-  const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // RSVP artık /api/rsvp üzerinden. Eskiden doğrudan tarayıcıdan Supabase'e
+  // gidiyordu: rate limit ve sunucu doğrulaması uygulanamıyordu.
   async function handleRsvp() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase
-      .from('rsvps')
-      .insert({ event_id: props.eventId, user_id: props.userId })
+    const res = await fetch('/api/rsvp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_id: props.eventId }),
+    })
 
-    if (error) {
-      if (error.message && error.message.indexOf('EVENT_FULL') !== -1) {
-        setError('Bu etkinlik az önce doldu. Bekleme listesine girebilirsin.')
-        router.refresh()
-      } else {
-        setError('Katılım kaydedilemedi. Lütfen tekrar dene.')
-      }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setError(data.error || 'Katılım kaydedilemedi. Lütfen tekrar dene.')
+      // Etkinlik dolduysa sayfayı tazele: bekleme listesi seçeneği görünsün.
+      if (data.kod === 'EVENT_FULL') router.refresh()
       setLoading(false)
       return
     }
@@ -43,14 +42,13 @@ export default function RsvpForm(props: Props) {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase
-      .from('rsvps')
-      .delete()
-      .eq('event_id', props.eventId)
-      .eq('user_id', props.userId)
+    const res = await fetch(`/api/rsvp?event_id=${props.eventId}`, {
+      method: 'DELETE',
+    })
 
-    if (error) {
-      setError('İptal başarısız. Lütfen tekrar dene.')
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setError(data.error || 'İptal başarısız. Lütfen tekrar dene.')
       setLoading(false)
       return
     }
