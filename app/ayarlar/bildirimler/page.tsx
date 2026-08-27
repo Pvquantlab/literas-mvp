@@ -1,16 +1,24 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { updateBildirimler } from "./actions";
+import AyarlarDurum from "@/components/ayarlar-durum";
 
+// `yakinda: true` olanlar henüz gönderilmiyor — sözü tutulmayan bir anahtarı
+// çalışıyormuş gibi göstermemek için işaretleniyor.
 const TOGGLES = [
-  { name: "push_new_messages", label: "Yeni mesajlar", desc: "Biri size mesaj gönderdiğinde bildirim al" },
-  { name: "push_event_reminders", label: "Etkinlik hatırlatıcıları", desc: "Katılacağınız etkinliklerden önce hatırlatma" },
-  { name: "push_community_announcements", label: "Topluluk duyuruları", desc: "Üyesi olduğunuz topluluklardan duyurular" },
-  { name: "push_new_members", label: "Yeni üye katılımları", desc: "Yönettiğiniz topluluklara yeni üye katıldığında" },
-  { name: "push_suggested_events", label: "Önerilen etkinlikler", desc: "Size uygun olabilecek etkinlik önerileri" },
+  { name: "push_event_reminders", label: "Etkinlik hatırlatıcıları", desc: "Katılacağınız etkinlikten önce e-posta ile hatırlatırız", yakinda: false },
+  { name: "push_new_members", label: "Yeni üye katılımları", desc: "Yönettiğiniz bir topluluğa katılım isteği geldiğinde", yakinda: false },
+  { name: "push_community_announcements", label: "Topluluk duyuruları", desc: "Üyesi olduğunuz toplulukta yeni etkinlik açıldığında", yakinda: false },
+  { name: "push_new_messages", label: "Yeni mesajlar", desc: "Biri size mesaj gönderdiğinde", yakinda: true },
+  { name: "push_suggested_events", label: "Önerilen etkinlikler", desc: "Size uygun olabilecek etkinlik önerileri", yakinda: true },
 ];
 
-export default async function BildirimlerPage() {
+export default async function BildirimlerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ durum?: string; hata?: string }>;
+}) {
+  const { durum, hata } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -30,8 +38,13 @@ export default async function BildirimlerPage() {
         Bildirimler
       </h1>
       <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 28px", maxWidth: "56ch" }}>
-        Telefonunuza ve tarayıcınıza gönderilen push bildirimlerini yönetin.
+        Hangi durumlarda size e-posta göndereceğimizi siz belirleyin.
+        Katıldığınız bir etkinlik iptal edilir veya saati değişirse, ya da
+        bekleme listesinden yeriniz açılırsa yine haber veririz — bunları
+        kapatmak sizi mağdur ederdi.
       </p>
+
+      <AyarlarDurum durum={durum} hata={hata} />
 
       <form action={updateBildirimler}>
         {TOGGLES.map((t) => (
@@ -40,7 +53,22 @@ export default async function BildirimlerPage() {
             padding: "18px 0", borderBottom: "1px solid var(--border)", cursor: "pointer",
           }}>
             <div style={{ flex: 1, paddingRight: 20 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>{t.label}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2, display: "flex", alignItems: "center", gap: 8 }}>
+                {t.label}
+                {t.yakinda && (
+                  <span style={{
+                    font: "500 10.5px 'IBM Plex Mono', monospace",
+                    letterSpacing: "0.08em",
+                    textTransform: "lowercase",
+                    padding: "2px 7px",
+                    borderRadius: 999,
+                    border: "1px solid var(--border)",
+                    color: "rgba(30,58,43,0.6)",
+                  }}>
+                    yakında
+                  </span>
+                )}
+              </div>
               <div style={{ fontSize: 13.5, color: "rgba(30,58,43,0.65)" }}>{t.desc}</div>
             </div>
             <input type="checkbox" name={t.name} defaultChecked={(profile as any)?.[t.name] ?? true} className="literas-toggle" style={{
