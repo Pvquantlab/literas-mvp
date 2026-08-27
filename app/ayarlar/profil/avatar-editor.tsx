@@ -2,6 +2,9 @@
 
 import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase";
+import { dosyayiDogrula, guvenliDosyaAdi, kovaLimitMb } from "@/lib/upload";
+
+const BUCKET = "avatars";
 
 export default function AvatarEditor({
   initialUrl,
@@ -18,31 +21,43 @@ export default function AvatarEditor({
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    // Aynı dosya hatadan sonra tekrar seçilebilsin diye input'u her seferinde
+    // sıfırlıyoruz; aksi halde onChange bir daha tetiklenmiyor.
+    e.target.value = "";
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Dosya çok büyük. 5 MB'dan küçük olmalı.");
+    // Kurallar lib/upload.ts'te: eskiden burada yalnızca boyuta bakılıyordu ve
+    // limit 5 MB yazılıydı — oysa avatars kovasının sunucu limiti 2 MB.
+    // 3 MB'lık bir görsel istemci kontrolünü geçip sunucudan ham İngilizce
+    // hata alıyordu. Uzantı da kullanıcının dosya adından türetiliyordu.
+    const dogrulama = dosyayiDogrula(file, BUCKET);
+    if (!dogrulama.ok) {
+      setError(dogrulama.mesaj);
       return;
     }
 
     setUploading(true);
     setError(null);
 
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const fileName = guvenliDosyaAdi(file.type);
 
     const { error: uploadError } = await supabase.storage
-      .from("avatars")
-      .upload(fileName, file, { cacheControl: "3600", upsert: false });
+      .from(BUCKET)
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type, // tahmine bırakma
+      });
 
     if (uploadError) {
-      setError("Yükleme başarısız: " + uploadError.message);
+      console.error("[avatar] yükleme hatası:", uploadError);
+      setError("Yükleme başarısız. Lütfen tekrar dene.");
       setUploading(false);
       return;
     }
 
     const { data: { publicUrl } } = supabase.storage
-      .from("avatars")
+      .from(BUCKET)
       .getPublicUrl(fileName);
 
     setUrl(publicUrl);
@@ -157,6 +172,14 @@ export default function AvatarEditor({
               fotoğrafı kaldır
             </button>
           )}
+          <p style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 12,
+            color: "rgba(30,58,43,0.6)",
+            margin: 0,
+          }}>
+            jpg, png veya webp · en fazla {kovaLimitMb(BUCKET)} mb
+          </p>
         </div>
       </div>
 
