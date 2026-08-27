@@ -123,6 +123,25 @@ olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
       İstemci limitlerinin canlı kova ayarlarıyla eşitliği otomatik
       doğrulanıyor (ayrışma bu hatanın kök nedeniydi).
 
+- [x] **Cron idempotent hale getirildi**
+      İşaretleme döngü sonunda tek seferde yapılıyordu; fonksiyon süre
+      limitinde kesilince gönderilmiş mailler işaretsiz kalıyor ve ertesi koşu
+      aynı kişilere tekrar gönderiyordu. Artık her gönderimden hemen sonra
+      işaretleniyor + süre bütçesiyle temiz çıkış + `maxDuration`.
+
+**Vercel planı: HOBBY** (doğrulandı). Bunun iki somut sonucu var:
+1. Fonksiyon tavanı **60 saniye** — `maxDuration`/bütçe buna göre ayarlı.
+   Pro'ya geçilirse `app/api/cron/reminders/route.ts` içindeki yorumda yazan
+   değerlere (300s / 240s) çıkarılabilir, kuyruk tek koşuda daha çok biter.
+2. Cron **günde bir** çalışabiliyor. Hatırlatmalar 24 saatlik pencere
+   kullandığı için doğru; ama bekleme listesi terfi maili ("yerin açıldı") de
+   aynı cron'a bağlı olduğundan haber 24 saate kadar gecikebiliyor. Kullanıcı
+   yerini kaybetmiyor (RSVP trigger'la oluşuyor), sadece geç öğreniyor.
+   Çözüm: Pro + saatlik cron, ya da terfi mailini RSVP iptal akışından
+   tetiklemek.
+3. Kapasite: ~72 mail/koşu, günde bir koşu. 3 kullanıcılık MVP için fazlasıyla
+   yeterli; büyürken bu sınır önce vurur.
+
 **Denetimde yanlış çıkan iddialar** (doğrulandı, düzeltilmedi):
 - Bekleme listesi bozuk DEĞİL — `rsvps` SELECT politikası `true`, sayım doğru.
 - `cron/reminders` ve `event/[id]/page.tsx` saatleri zaten doğruydu.
