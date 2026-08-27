@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { communitySchema, taslakSchema } from '@/lib/validations'
 
 export type WizardStep = 'konum' | 'konular' | 'ad' | 'aciklama' | 'gonder'
 
@@ -46,6 +47,14 @@ export async function saveDraft(partial: Partial<DraftData>, nextStep: WizardSte
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Giriş yapmalısın.')
 
+  // Taslak da kullanıcı girdisi ve jsonb'ye yazılıyor — sınırsız bırakılamaz.
+  // Adımlar tek tek kaydettiği için parça doğrulaması (hepsi opsiyonel).
+  const parsed = taslakSchema.safeParse(partial)
+  if (!parsed.success) {
+    const ilk = Object.values(parsed.error.flatten().fieldErrors).flat()[0]
+    throw new Error(ilk ?? 'Geçersiz veri.')
+  }
+
   // Önce mevcut taslağı çek, üzerine merge et
   const { data: existing } = await supabase
     .from('community_drafts')
@@ -53,7 +62,7 @@ export async function saveDraft(partial: Partial<DraftData>, nextStep: WizardSte
     .eq('user_id', user.id)
     .maybeSingle()
 
-  const mergedData = { ...(existing?.data ?? {}), ...partial }
+  const mergedData = { ...(existing?.data ?? {}), ...parsed.data }
 
   const { error } = await supabase
     .from('community_drafts')
@@ -62,7 +71,7 @@ export async function saveDraft(partial: Partial<DraftData>, nextStep: WizardSte
       data: mergedData,
       current_step: nextStep,
       updated_at: new Date().toISOString(),
-    })
+    }, { onConflict: 'user_id' })
 
   if (error) {
     console.error('saveDraft error:', error)
@@ -97,10 +106,15 @@ export async function submitCommunity() {
   const draft = await loadDraft()
   if (!draft) throw new Error('Taslak bulunamadı.')
 
-  const d = draft.data
-  if (!d.location_type || !d.name || !d.description || !d.topic_ids?.length) {
-    throw new Error('Taslak eksik. Lütfen tüm adımları tamamla.')
+  // Nihai doğrulama. Eskiden yalnızca "boş mu" kontrolü vardı: uzunluk sınırı
+  // yoktu, yani 3 karakterlik ad ya da 1 MB'lık açıklama kaydedilebiliyordu.
+  // communitySchema yazılmıştı ama YANLIŞ şekle göreydi ve hiç bağlanmamıştı.
+  const parsed = communitySchema.safeParse(draft.data)
+  if (!parsed.success) {
+    const ilk = Object.values(parsed.error.flatten().fieldErrors).flat()[0]
+    throw new Error(ilk ?? 'Taslak eksik. Lütfen tüm adımları tamamla.')
   }
+  const d = parsed.data
 
   // 1) Topluluk kaydı
   const { data: community, error: communityError } = await supabase
@@ -108,7 +122,7 @@ export async function submitCommunity() {
     .insert({
       name: d.name.trim(),
       description: d.description.trim(),
-      cover_image_url: d.cover_image_url ?? null,
+      cover_image_url: d.cover_image_url,
       founder_id: user.id,
       location_type: d.location_type,
       location_name: d.location_name ?? null,
@@ -149,7 +163,13 @@ export async function submitCommunity() {
     })
 
   if (memberError) {
+    // KRİTİK: kurucu üyeliği yoksa topluluğu kimse yönetemez, etkinlik açamaz.
+    // Eskiden hata yalnızca loglanıyordu ve ortada YÖNETİLEMEZ bir topluluk
+    // kalıyordu. Üç insert tek işlem değil (PostgREST üzerinden), o yüzden
+    // telafi ediyoruz: topluluğu geri al ve kullanıcıya söyle.
     console.error('community_members insert:', memberError)
+    await supabase.from('communities').delete().eq('id', community.id)
+    throw new Error('Topluluk oluşturulamadı, lütfen tekrar dene.')
   }
 
   // 4) Taslağı temizle
