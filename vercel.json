@@ -1,17 +1,4 @@
 {
-  "_not": [
-    "Cron GÜNDE BİR: Vercel Hobby planı daha sık cron'a izin vermiyor.",
-    "06:00 UTC = 09:00 Türkiye. Hatırlatma penceresi 24 saat olduğu için",
-    "hatırlatmalar doğru çalışıyor.",
-    "",
-    "BİLİNEN SINIR: bekleme listesi terfi maili ('yerin açıldı') de bu cron'a",
-    "bağlı, yani yer açıldıktan sonra kullanıcıya haber 24 saate kadar",
-    "gecikebiliyor. RSVP'si DB trigger'ıyla zaten oluşmuş oluyor, yani yerini",
-    "kaybetmiyor — sadece geç öğreniyor. Çözüm için ya Pro'ya geçip cron'u",
-    "saatlik yapmak, ya da terfi mailini RSVP iptal akışından tetiklemek gerek.",
-    "",
-    "Fonksiyon süre bütçesi route dosyasında Hobby'nin 60 sn tavanına göre."
-  ],
   "crons": [
     { "path": "/api/cron/reminders", "schedule": "0 6 * * *" }
   ]

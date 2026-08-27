@@ -128,10 +128,24 @@ function buildMail(template: string, payload: any): { subject: string; html: str
 }
 
 /**
- * Fonksiyon süre limiti.
+ * ÇALIŞMA SIKLIĞI ve SÜRE LİMİTİ
  *
- * Proje Vercel HOBBY planında (doğrulandı) → tavan 60 saniye. Daha büyük bir
- * değer yazmanın faydası yok, plan tavanına çekilir; bütçeyi 60'a göre
+ * Zamanlama vercel.json'da: "0 6 * * *" — GÜNDE BİR. Vercel Hobby planı daha
+ * sık cron'a izin vermiyor. (vercel.json'a açıklama yazılamaz: JSON yorum
+ * desteklemiyor ve Vercel bilinmeyen anahtarları şema hatasıyla reddediyor —
+ * bir kez denendi, deploy kırıldı. Bu yüzden not burada duruyor.)
+ *
+ * 06:00 UTC = 09:00 Türkiye. Hatırlatma penceresi 24 saat olduğu için
+ * hatırlatmalar doğru çalışıyor.
+ *
+ * BİLİNEN SINIR: bekleme listesi terfi maili ("yerin açıldı") de bu cron'a
+ * bağlı, yani yer açıldıktan sonra kullanıcıya haber 24 saate kadar
+ * gecikebiliyor. RSVP'si DB trigger'ıyla zaten oluştuğu için yerini
+ * kaybetmiyor, sadece geç öğreniyor. Çözüm: Pro'ya geçip cron'u saatlik
+ * yapmak, ya da terfi mailini RSVP iptal akışından tetiklemek.
+ *
+ * SÜRE: Hobby planında fonksiyon tavanı 60 saniye (doğrulandı). Daha büyük bir
+ * maxDuration yazmanın faydası yok, plan tavanına çekilir; bütçeyi 60'a göre
  * ayarlamazsak fonksiyon bütçe dolmadan öldürülür ve temiz çıkış hiç çalışmaz.
  *
  * Pro'ya geçilirse: maxDuration 300, SURE_BUTCESI_MS 240_000 yapılabilir —

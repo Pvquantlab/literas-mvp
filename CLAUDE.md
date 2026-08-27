@@ -86,6 +86,10 @@ tabloları: `community_drafts`, `community_topics`, `topics`, `topic_categories`
 6. Tasarım dili korunur: mevcut renk değişkenleri, IBM Plex Mono vurguları, CATS paleti.
 7. Tek görev = tek commit ölçeği. Görev dışına taşan "iyileştirme" yapma, öner.
 8. Her görev sonu: `npm run build` geçmeli.
+9. `vercel.json`'a YORUM ya da açıklama anahtarı ekleme. JSON yorum
+   desteklemiyor ve Vercel bilinmeyen üst düzey anahtarı şema hatasıyla
+   reddediyor — deploy build başlamadan kırılır (bir kez yaşandı). Açıklama
+   ilgili route dosyasının yorumuna yazılır.
 
 ## Yol haritası durumu
 
