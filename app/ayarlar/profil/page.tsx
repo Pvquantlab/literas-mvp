@@ -1,9 +1,15 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
+import AyarlarDurum from "@/components/ayarlar-durum";
 import { updateProfile } from "./actions";
 import AvatarEditor from "./avatar-editor";
 
-export default async function ProfilPage() {
+export default async function ProfilPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ durum?: string; hata?: string }>;
+}) {
+  const { durum, hata } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -27,6 +33,8 @@ export default async function ProfilPage() {
       <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 28px", maxWidth: "56ch" }}>
         Herkese açık profilinizde görünen bilgileri buradan düzenleyin.
       </p>
+
+      <AyarlarDurum durum={durum} hata={hata} />
 
       <form action={updateProfile}>
         <AvatarEditor initialUrl={profile?.avatar_url || null} initial={initial} />

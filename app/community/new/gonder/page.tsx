@@ -106,7 +106,7 @@ export default function GonderStep() {
           value={coverImageUrl}
           onChange={setCoverImageUrl}
           label="Kapak seç"
-          hint="Önerilen: 1200×675 (16:9). En fazla 5 MB. JPG/PNG/WEBP. Şimdi eklemesen de sonra topluluk sayfandan yükleyebilirsin."
+          hint="Önerilen: 1200×675 (16:9). Şimdi eklemesen de sonra topluluk sayfandan yükleyebilirsin."
         />
       </div>
 

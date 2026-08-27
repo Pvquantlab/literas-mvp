@@ -117,7 +117,7 @@ export default async function ProfilePage({
         </h1>
         {isOwnProfile && (
           <Link
-            href={`/profile/${profile.id}/edit`}
+            href="/ayarlar/profil"
             style={{
               display: 'inline-block',
               fontSize: '13.5px',
@@ -185,7 +185,7 @@ export default async function ProfilePage({
             ) : (
               <p style={emptyLineStyle}>
                 <Link
-                  href={`/profile/${profile.id}/edit`}
+                  href="/ayarlar/profil"
                   style={{ color: 'var(--ink)', textDecoration: 'underline', fontWeight: 600 }}
                 >
                   Kendinden bahset

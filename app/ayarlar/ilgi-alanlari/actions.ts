@@ -3,20 +3,47 @@
 import { createClient } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { ilgiAlanlariSchema } from "@/lib/validations";
+import { checkUserRateLimit } from "@/lib/rate-limit";
+import { ayarlarSonucu, ilkHata } from "@/lib/ayarlar-sonuc";
+
+const YOL = "/ayarlar/ilgi-alanlari";
 
 export async function updateIlgiAlanlari(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const interestsRaw = (formData.get("interests") as string) || "";
-  const distance = parseInt((formData.get("match_distance_km") as string) || "80");
+  if (!(await checkUserRateLimit(user.id, "normal"))) {
+    return ayarlarSonucu(YOL, "Çok fazla istek, biraz bekle");
+  }
 
-  const updates = {
-    interests: interestsRaw ? interestsRaw.split("|").filter(Boolean) : [],
-    match_distance_km: isNaN(distance) ? 80 : distance,
-  };
+  // İlgi alanları "|" ile ayrılmış tek alanda geliyor (etiketler virgül
+  // içerebildiği için ayraç virgül değil).
+  const interestsRaw = ((formData.get("interests") as string) || "")
+    .split("|")
+    .filter(Boolean);
 
-  await supabase.from("profiles").update(updates).eq("id", user.id);
-  revalidatePath("/ayarlar/ilgi-alanlari");
+  // Eskiden sınır yoktu: sayısı ve uzunluğu kontrolsüzdü, mesafe NaN gelirse
+  // sessizce 80'e düşüyordu.
+  const parsed = ilgiAlanlariSchema.safeParse({
+    interests: interestsRaw,
+    match_distance_km: formData.get("match_distance_km") || 80,
+  });
+  if (!parsed.success) {
+    return ayarlarSonucu(YOL, ilkHata(parsed.error.flatten().fieldErrors));
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update(parsed.data)
+    .eq("id", user.id);
+
+  if (error) {
+    console.error("[ayarlar/ilgi-alanlari] güncellenemedi:", error);
+    return ayarlarSonucu(YOL, "Kaydedilemedi, lütfen tekrar dene");
+  }
+
+  revalidatePath(YOL);
+  ayarlarSonucu(YOL);
 }

@@ -120,6 +120,18 @@ export const communitySchema = z.object({
     .max(10, 'En fazla 10 konu seçebilirsin'),
 })
 
+// ---- Topluluk üyelik işlemleri --------------------------------------------
+
+// Rota parametreleri de doğrulanıyor: geçersiz uuid Postgres'ten ham 22P02
+// hatası döndürüyordu.
+export const memberActionSchema = z.object({
+  action: z.enum(['toggle-admin', 'approve', 'reject'], {
+    error: 'Geçersiz işlem',
+  }),
+  community_id: uuid,
+  member_id: uuid,
+})
+
 // ---- Ayarlar (server action'lar) ------------------------------------------
 
 // Yalnızca http/https kabul eder.
@@ -161,6 +173,74 @@ export const hesapSchema = z.object({
   timezone: z.enum(['Europe/Istanbul', 'Europe/London', 'Europe/Berlin', 'America/New_York'], {
     error: 'Geçersiz saat dilimi',
   }),
+})
+
+// Kullanıcı adı: kimliğe bürünmeyi zorlaştırmak için hem biçim hem de
+// ayrılmış ad kontrolü. Eskiden hiçbir kontrol yoktu; biri "@admin" ya da
+// "@literaslab" alabilirdi. DB'de unique index var ama çakışma hatası
+// yutuluyordu — kullanıcı kaydettiğini sanıyordu.
+const AYRILMIS_KULLANICI_ADLARI = new Set([
+  'admin', 'administrator', 'yonetici', 'literas', 'literaslab', 'destek',
+  'support', 'yardim', 'help', 'iletisim', 'contact', 'bilgi', 'info',
+  'root', 'system', 'sistem', 'moderator', 'mod', 'resmi', 'official',
+])
+
+export const profilSchema = z.object({
+  name: trimmed(2, 80, 'Ad'),
+  username: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/^@/, ''))
+    .pipe(
+      z
+        .string()
+        .min(3, 'Kullanıcı adı en az 3 karakter olmalı')
+        .max(30, 'Kullanıcı adı en fazla 30 karakter olabilir')
+        .regex(
+          /^[a-zA-Z0-9._]+$/,
+          'Kullanıcı adı yalnızca harf, rakam, nokta ve alt çizgi içerebilir'
+        )
+        .refine(
+          (v) => !AYRILMIS_KULLANICI_ADLARI.has(v.toLowerCase()),
+          'Bu kullanıcı adı ayrılmış, başka bir tane seç'
+        )
+    )
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  bio: z.string().trim().max(500, 'Hakkında en fazla 500 karakter olabilir').optional(),
+  location: z.string().trim().max(120, 'Konum en fazla 120 karakter olabilir').optional(),
+  avatar_url: httpUrl,
+})
+
+export const kisiselSchema = z.object({
+  birth_date: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Geçersiz doğum tarihi')
+    .refine((v) => {
+      const d = new Date(v + 'T00:00:00Z')
+      if (Number.isNaN(d.getTime())) return false
+      const yas = (Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000)
+      return yas >= 13 && yas <= 120
+    }, 'Doğum tarihi gerçekçi olmalı (en az 13 yaşında)')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  gender: z.enum(['unspecified', 'woman', 'man', 'non_binary'], {
+    error: 'Geçersiz seçim',
+  }),
+  looking_for: z.array(z.enum(['hobbies', 'socialize', 'friends', 'networking'])).max(4),
+  life_stages: z
+    .array(z.enum(['graduate', 'student', 'new_in_town', 'new_parent', 'retired', 'career_change']))
+    .max(6),
+})
+
+export const ilgiAlanlariSchema = z.object({
+  interests: z.array(z.string().trim().min(1).max(60)).max(30, 'En fazla 30 ilgi alanı seçebilirsin'),
+  match_distance_km: z.coerce
+    .number()
+    .int()
+    .min(1, 'Mesafe en az 1 km olmalı')
+    .max(2000, 'Mesafe çok büyük'),
 })
 
 // ---- Ortak yardımcı: hata cevabı ------------------------------------------
