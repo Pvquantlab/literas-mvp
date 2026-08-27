@@ -236,10 +236,22 @@ olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
 - [x] **README** (28.08.2026) — repo sunumu, hızlı başlangıç, dizin haritası,
       belge indeksi ve katkı kuralları. Tüm atıflar koda karşı doğrulandı.
 
+- [x] **RSVP API'ye taşındı** (`app/api/rsvp/route.ts`, 28.08.2026)
+      RSVP oluşturma ve iptal doğrudan tarayıcıdan Supabase'e gidiyordu; tek
+      koruma RLS'ti, kural 2'nin hiçbir adımı uygulanamıyordu. Rate limit
+      özellikle önemliydi: RSVP'yi hızla aç-kapa yapmak her kapanışta
+      `promote_from_waitlist` trigger'ını ateşleyip mail kuyruğuna satır
+      ekliyor — sınırsız hızda Resend kotası tüketilebilirdi.
+      Hata eşlemesi de sunucuya taşındı: istemci eskiden hata METNİNDE
+      'EVENT_FULL' arıyordu, artık net durum kodu ve Türkçe mesaj dönüyor.
+      `rsvpSchema` nihayet kullanılıyor (ölü koddu).
+      DOĞRULANDI: kod tabanında istemciden doğrudan veritabanına yazan
+      HİÇBİR yer kalmadı. Kalan istemci Supabase kullanımları meşru —
+      `.auth` (giriş/kayıt) ve `.storage` (dosya yükleme).
+
 **Kalan işler** (hiçbiri kullanıcıyı doğrudan etkilemiyor):
 `community/new` action'larında zod (`communitySchema` yazılı ama bağlı değil) ·
-RSVP'nin istemciden değil API'den yapılması · `push_*` kolon adlarının
-gerçekte e-postayı yönetmesi (adlandırma borcu).
+`push_*` kolon adlarının gerçekte e-postayı yönetmesi (adlandırma borcu).
 
 ---
 
