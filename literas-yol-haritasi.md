@@ -81,10 +81,27 @@ Geniş tarama yapıldı (güvenlik / kod kalitesi / doküman tutarlılığı). B
 - [x] **Ölü dosya temizliği** — `patch-hero2.js`, `patch-muted.js`,
       `kesfet/tab-bar.tsx`, `kesfet/category-strip.tsx`.
 
-Kalan paketler (rapordaki sıra): kalan 6 ayarlar action'ı + avatar yükleme
-MIME + `member` rotası zod/limit (Paket 3'ün kalanı) · keşfet filtre/şehir/FTS
-+ font literal'leri (Paket 4) · cron idempotent işaretleme + SW kararı + ESLint
-(Paket 5) · belge/README + baseline migration (Paket 6).
+- [x] **Keşfet ve arama (Paket 4)**
+      - Header araması `defaultValue="İstanbul"` ile sessizce kilitliydi.
+      - Kategori/sekme tıklamasında `q` ve `city` düşüyordu; artık korunuyor.
+      - Şehir filtresi yokken başlık "İstanbul" yazıp tüm Türkiye'yi
+        listeliyordu — başlık gerçeği söylüyor.
+      - `lib/turkce.ts`: ek sabit `'da` idi; "İzmir'da", "Sinop'da" yanlıştı.
+        Ünlü uyumu + ünsüz benzeşmesi, 14 şehirde test edildi.
+      - Sayfalama off-by-one: son sayfa tam dolduğunda boş sayfaya götürüyordu.
+      - `search-box` / `city-filter` hedefi sabit `/` idi → `usePathname`.
+
+**Denetimde yanlış çıkan iddialar** (doğrulandı, düzeltilmedi):
+- Bekleme listesi bozuk DEĞİL — `rsvps` SELECT politikası `true`, sayım doğru.
+- `cron/reminders` ve `event/[id]/page.tsx` saatleri zaten doğruydu.
+- Font literal'leri bozuk DEĞİL — Next 16 `next/font` gerçek aile adını
+  üretiyor (`"IBM Plex Mono", "IBM Plex Mono Fallback"`); tarayıcıda ölçüldü,
+  literal ile değişken aynı sonucu veriyor. 121 dosyalık değişiklikten dönüldü.
+
+Kalan paketler: kalan 6 ayarlar action'ı + avatar yükleme MIME + `member`
+rotası zod/limit · cron idempotent işaretleme + SW kararı + ESLint · kayıt
+akışında e-posta doğrulama + bildirim tercihlerinin gerçekten uygulanması ·
+belge/README + baseline migration (`supabase db pull`).
 
 ---
 
