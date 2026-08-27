@@ -22,6 +22,21 @@ const optionalUrl = z
   .optional()
   .transform((v) => (v ? v : undefined))
 
+// Yalnızca http/https kabul eder.
+// NEDEN: z.string().url() "javascript:alert(1)" adresini de geçerli sayar.
+// Bu değer profilde <a href> içine konduğunda tıklayan herkeste kod çalışır.
+const httpUrl = z
+  .union([
+    z
+      .string()
+      .trim()
+      .url('Geçersiz bağlantı')
+      .refine((v) => /^https?:\/\//i.test(v), 'Bağlantı http:// veya https:// ile başlamalı'),
+    z.literal(''),
+  ])
+  .optional()
+  .transform((v) => (v ? v : null))
+
 // ---- Etkinlik -------------------------------------------------------------
 
 export const eventSchema = z.object({
@@ -110,15 +125,51 @@ export const reportUpdateSchema = z.object({
 
 // ---- Topluluk (server action'lar için) ------------------------------------
 
-export const communitySchema = z.object({
-  name: trimmed(3, 80, 'Topluluk adı'),
-  description: trimmed(20, 3000, 'Açıklama'),
-  city: trimmed(2, 60, 'Şehir'),
-  topics: z
-    .array(z.string().trim().min(1))
-    .min(1, 'En az bir konu seç')
-    .max(10, 'En fazla 10 konu seçebilirsin'),
+// DİKKAT: bu şema bir kez yanlış şekle göre yazılıp hiç bağlanmamıştı —
+// `{ city, topics: string[] }` bekliyordu, oysa sihirbaz
+// `{ location_name, topic_ids: number[] }` gönderiyor. Aşağıdaki şekil
+// app/community/new/actions.ts içindeki DraftData tipiyle birebir aynı.
+// İkisi ayrışırsa doğrulama sessizce yanlış şeyi kontrol eder.
+
+/** Sihirbazın her adımda kaydettiği taslak parçası — hepsi opsiyonel. */
+export const taslakSchema = z.object({
+  location_type: z.enum(['physical', 'online'], { error: 'Geçersiz konum türü' }).optional(),
+  location_name: z.string().trim().max(120, 'Konum en fazla 120 karakter olabilir').optional(),
+  topic_ids: z
+    .array(z.coerce.number().int().positive())
+    .max(10, 'En fazla 10 konu seçebilirsin')
+    .optional(),
+  name: z.string().trim().max(80, 'Topluluk adı en fazla 80 karakter olabilir').optional(),
+  description: z
+    .string()
+    .trim()
+    .max(3000, 'Açıklama en fazla 3000 karakter olabilir')
+    .optional(),
+  cover_image_url: httpUrl,
 })
+
+/** Gönderim anındaki NİHAİ kontrol: eksiksiz ve sınırlar içinde olmalı. */
+export const communitySchema = z
+  .object({
+    location_type: z.enum(['physical', 'online'], { error: 'Konum türü seçilmeli' }),
+    location_name: z
+      .string()
+      .trim()
+      .max(120, 'Konum en fazla 120 karakter olabilir')
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
+    topic_ids: z
+      .array(z.coerce.number().int().positive())
+      .min(1, 'En az bir konu seç')
+      .max(10, 'En fazla 10 konu seçebilirsin'),
+    name: trimmed(3, 80, 'Topluluk adı'),
+    description: trimmed(20, 3000, 'Açıklama'),
+    cover_image_url: httpUrl,
+  })
+  .refine((v) => v.location_type === 'online' || !!v.location_name, {
+    message: 'Fiziksel topluluk için konum gerekli',
+    path: ['location_name'],
+  })
 
 // ---- Topluluk üyelik işlemleri --------------------------------------------
 
@@ -133,21 +184,6 @@ export const memberActionSchema = z.object({
 })
 
 // ---- Ayarlar (server action'lar) ------------------------------------------
-
-// Yalnızca http/https kabul eder.
-// NEDEN: z.string().url() "javascript:alert(1)" adresini de geçerli sayar.
-// Bu değer profilde <a href> içine konduğunda tıklayan herkeste kod çalışır.
-const httpUrl = z
-  .union([
-    z
-      .string()
-      .trim()
-      .url('Geçersiz bağlantı')
-      .refine((v) => /^https?:\/\//i.test(v), 'Bağlantı http:// veya https:// ile başlamalı'),
-    z.literal(''),
-  ])
-  .optional()
-  .transform((v) => (v ? v : null))
 
 export const sosyalMedyaSchema = z.object({
   instagram_url: httpUrl,
@@ -243,13 +279,7 @@ export const ilgiAlanlariSchema = z.object({
     .max(2000, 'Mesafe çok büyük'),
 })
 
-// ---- Ortak yardımcı: hata cevabı ------------------------------------------
-
-import { NextResponse } from 'next/server'
-
-export function validationError(error: z.ZodError) {
-  return NextResponse.json(
-    { error: 'Geçersiz veri', details: error.flatten().fieldErrors },
-    { status: 400 }
-  )
-}
+// NOT: burada bir `validationError()` yardımcısı vardı — hiç kullanılmıyordu
+// ve dosyanın ortasında `next/server` import ediyordu. Bu, şema dosyasını
+// Next runtime'ına bağlıyor ve düz Node ile (test dahil) import edilemez
+// hale getiriyordu. Kaldırıldı; rotalar hata cevabını zaten kendileri kuruyor.

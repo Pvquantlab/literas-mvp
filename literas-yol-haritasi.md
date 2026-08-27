@@ -249,8 +249,23 @@ olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
       HİÇBİR yer kalmadı. Kalan istemci Supabase kullanımları meşru —
       `.auth` (giriş/kayıt) ve `.storage` (dosya yükleme).
 
-**Kalan işler** (hiçbiri kullanıcıyı doğrudan etkilemiyor):
-`community/new` action'larında zod (`communitySchema` yazılı ama bağlı değil) ·
+- [x] **Topluluk sihirbazı doğrulaması** (28.08.2026)
+      `submitCommunity` yalnızca "boş mu" kontrolü yapıyordu; uzunluk sınırı
+      yoktu (3 karakterlik ad, 1 MB'lık açıklama geçebiliyordu). `saveDraft`
+      hiç doğrulanmıyordu, oysa taslak jsonb'ye yazılan kullanıcı girdisi.
+      `communitySchema` yazılıydı ama YANLIŞ şekle göre (`city`, `topics:
+      string[]`) ve hiç bağlanmamıştı — sihirbaz `location_name`,
+      `topic_ids: number[]` gönderiyor. Şema gerçek şekle göre yeniden
+      yazıldı, `taslakSchema` eklendi, ikisi de bağlandı. Gerçek şema 16
+      senaryoda test edildi.
+      AYRICA: üç insert tek işlem olmadığı için kurucu üyeliği başarısız
+      olduğunda ortada YÖNETİLEMEZ bir topluluk kalıyordu (hata sadece
+      loglanıyordu). Artık telafi ediliyor: topluluk geri alınıp kullanıcıya
+      hata dönülüyor.
+      `validationError` ölü kodu kaldırıldı — dosyanın ortasında `next/server`
+      import ediyordu ve şema dosyasını düz Node ile test edilemez kılıyordu.
+
+**Kalan işler:**
 `push_*` kolon adlarının gerçekte e-postayı yönetmesi (adlandırma borcu).
 
 ---
