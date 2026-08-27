@@ -101,6 +101,17 @@ Geniş tarama yapıldı (güvenlik / kod kalitesi / doküman tutarlılığı). B
       gerileme olurdu). "Tüm e-postaları kapat" artık gerçekten hepsini
       kapatıyor.
 
+- [x] **Kayıt akışı ve auth hata gösterimi**
+      `signUp` sonrası koşulsuz yönlendirme yüzünden, doğrulama açıkken
+      kullanıcı kendini çıkış yapmış hâlde ana sayfada buluyordu. Artık
+      `data.session` null ise "Postanı kontrol et" ekranı + tekrar gönderme.
+      `emailRedirectTo` eklendi (yoktu, `?next` kayboluyordu). Giriş sayfası
+      `?error=` parametresini okuyor (whitelist'ten, ekrana basmadan);
+      doğrulanmamış hesap ayrı mesaj + tekrar gönderme alıyor. `auth/callback`
+      `next`'i sunucuda doğruluyor ve hata türlerini ayırıyor.
+      Çalışan sunucuda doğrulandı: 4 hata mesajı, 5 callback senaryosu (hiçbiri
+      dışarı yönlendirmiyor), `guvenliNext` 12 girdi.
+
 **Bilinen borç:** `push_*` kolonları fiilen e-postayı yönetiyor ama adları
 push diyor; platformda push altyapısı yok. Yeniden adlandırma ayrı bir iş
 olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
