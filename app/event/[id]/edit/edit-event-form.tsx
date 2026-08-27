@@ -159,7 +159,7 @@ export default function EditEventForm({ event }: { event: any }) {
             background: 'none',
             border: 'none',
             padding: 0,
-            fontFamily: 'Newsreader, serif',
+            fontFamily: 'var(--font-serif), Georgia, serif',
             fontStyle: 'italic',
             fontSize: '0.95rem',
             color: 'var(--ink)',

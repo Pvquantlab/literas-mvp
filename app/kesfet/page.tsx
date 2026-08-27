@@ -89,7 +89,10 @@ export default async function KesfetPage({
   const activeTab = params.tab === 'topluluklar' ? 'topluluklar' : 'etkinlikler'
   const activeCategory = params.kategori || null
   const searchQuery = params.q || null
-  const city = params.city || 'İstanbul'
+  // Şehir yalnızca params.city geldiğinde sorguya uygulanıyor (aşağıda).
+  // Başlık da bunu izlemeli; eskiden filtre yokken "İstanbul yakınındaki"
+  // yazıp tüm Türkiye'yi listeliyordu.
+  const city = params.city?.trim() || null
   const pageParam = parseInt(params.page || '1', 10)
   const activePage = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1
 
@@ -126,12 +129,15 @@ export default async function KesfetPage({
         .gte('event_date', new Date().toISOString())
         .eq('community.status', 'approved')
         .order('event_date', { ascending: true })
-        .range(rangeFrom, rangeTo)
+        // Bir fazlasını iste: "daha fazla var mı" sorusunu satır sayısıyla
+        // değil, fazladan gelen satırla cevaplıyoruz. Eskiden son sayfa tam
+        // 12 kayıtla dolduğunda buton görünüyor, tıklayınca boş sayfa geliyordu.
+        .range(rangeFrom, rangeTo + 1)
 
       if (communityIds) query = query.in('community_id', communityIds)
       // Şehir filtresi: yalnızca açıkça city parametresi geldiyse uygula
-     if (params.city) {
-        const ck = cityKey(params.city)
+      if (city) {
+        const ck = cityKey(city)
         if (ck) query = query.ilike('community.city_key', `%${escapeIlike(ck)}%`)
       }
       if (searchQuery) {
@@ -141,8 +147,9 @@ export default async function KesfetPage({
 
       const { data, error } = await query
       if (error) console.error('kesfet arama hatasi:', error)
-      events = data ?? []
-      hasMore = events.length === PAGE_SIZE
+      const rows = data ?? []
+      hasMore = rows.length > PAGE_SIZE
+      events = rows.slice(0, PAGE_SIZE)
     }
   } else {
     let query = supabase
@@ -151,12 +158,12 @@ export default async function KesfetPage({
       .eq('status', 'approved')
       .eq('community_members.status', 'approved')
       .order('created_at', { ascending: false })
-      .range(rangeFrom, rangeTo)
+      .range(rangeFrom, rangeTo + 1)
 
     if (activeCategory) query = query.eq('category', activeCategory)
     // Şehir filtresi (etkinlikler sekmesiyle aynı kural)
-    if (params.city) {
-      const ck = cityKey(params.city)
+    if (city) {
+      const ck = cityKey(city)
       if (ck) query = query.ilike('city_key', `%${escapeIlike(ck)}%`)
     }
     if (searchQuery) {
@@ -165,9 +172,10 @@ export default async function KesfetPage({
     }
 
     const { data, error } = await query
-      if (error) console.error('kesfet arama hatasi:', error)
-    communities = data ?? []
-    hasMore = communities.length === PAGE_SIZE
+    if (error) console.error('kesfet arama hatasi:', error)
+    const rows = data ?? []
+    hasMore = rows.length > PAGE_SIZE
+    communities = rows.slice(0, PAGE_SIZE)
   }
 
   // "Daha fazla göster" için sonraki sayfanın URL'i (mevcut parametreleri koru)
@@ -176,7 +184,7 @@ export default async function KesfetPage({
     if (activeTab === 'topluluklar') p.set('tab', 'topluluklar')
     if (activeCategory) p.set('kategori', activeCategory)
     if (searchQuery) p.set('q', searchQuery)
-    if (params.city) p.set('city', params.city)
+    if (city) p.set('city', city)
     p.set('page', String(activePage + 1))
     return `/kesfet?${p.toString()}`
   }
@@ -225,7 +233,12 @@ export default async function KesfetPage({
 
       {/* Sekmeler */}
       <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '28px 24px 0' }}>
-        <KesfetTabs activeTab={activeTab} activeCategory={activeCategory} />
+        <KesfetTabs
+          activeTab={activeTab}
+          activeCategory={activeCategory}
+          query={params.q ?? null}
+          city={city}
+        />
       </div>
 
       {/* Başlık */}
@@ -247,8 +260,19 @@ export default async function KesfetPage({
           letterSpacing: '-0.5px',
           color: 'var(--ink)',
         }}>
-          <span className="highlight-yellow">{city}</span>{' '}
-          yakınındaki {activeTab === 'etkinlikler' ? 'etkinlikler' : 'topluluklar'}
+          {city ? (
+            <>
+              <span className="highlight-yellow">{city}</span>{' '}
+              yakınındaki {activeTab === 'etkinlikler' ? 'etkinlikler' : 'topluluklar'}
+            </>
+          ) : (
+            <>
+              Tüm{' '}
+              <span className="highlight-yellow">
+                {activeTab === 'etkinlikler' ? 'etkinlikler' : 'topluluklar'}
+              </span>
+            </>
+          )}
         </h1>
       </div>
 
@@ -258,6 +282,8 @@ export default async function KesfetPage({
           cats={CATS}
           activeTab={activeTab}
           activeCategory={activeCategory}
+          query={params.q ?? null}
+          city={city}
         />
       </div>
 

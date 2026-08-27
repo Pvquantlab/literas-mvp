@@ -1,13 +1,22 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 export default function SearchBox({ initialQuery }: { initialQuery: string }) {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const [value, setValue] = useState(initialQuery)
+  const ilkRender = useRef(true)
 
   useEffect(() => {
+    // İlk mount'ta gezinme yapma: değer zaten URL'den geldi. Eskiden her sayfa
+    // açılışında gereksiz bir navigasyon tetikleniyordu.
+    if (ilkRender.current) {
+      ilkRender.current = false
+      return
+    }
+
     const t = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString())
       const trimmed = value.trim()
@@ -16,13 +25,16 @@ export default function SearchBox({ initialQuery }: { initialQuery: string }) {
       } else {
         params.delete('q')
       }
+      // Hedef sabit '/' değil, bulunulan sayfa: bileşen /kesfet'te de
+      // kullanılabilsin, kullanıcı ana sayfaya fırlatılmasın.
       const qs = params.toString()
-      const next = qs ? `/?${qs}` : '/'
-      router.push(next)
+      router.push(qs ? `${pathname}?${qs}` : pathname)
     }, 300)
 
     return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // searchParams bilinçli olarak bağımlılıkta değil: URL her değiştiğinde
+    // yeniden tetiklenirse döngü olur. Sadece kullanıcının yazması tetikler.
+
   }, [value])
 
   return (

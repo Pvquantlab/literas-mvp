@@ -113,8 +113,8 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
             type="text"
             name="city"
             className="search-city"
-            defaultValue="İstanbul"
-            aria-label="Şehir"
+            placeholder="Şehir"
+            aria-label="Şehir (isteğe bağlı)"
             style={{
               flex: '0 1 110px',
               minWidth: '80px',
