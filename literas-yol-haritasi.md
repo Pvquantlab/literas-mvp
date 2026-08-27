@@ -116,12 +116,22 @@ Geniş tarama yapıldı (güvenlik / kod kalitesi / doküman tutarlılığı). B
 push diyor; platformda push altyapısı yok. Yeniden adlandırma ayrı bir iş
 olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
 
+- [x] **Görsel yükleme kuralları tek kaynaktan** (`lib/upload.ts`)
+      Avatar editörü istemcide 5 MB kontrol ediyordu ama `avatars` kovasının
+      sunucu limiti 2 MB — arada kalan görseller ham Supabase hatası alıyordu.
+      MIME kontrolü, `contentType` ve input sıfırlama da eklendi.
+      İstemci limitlerinin canlı kova ayarlarıyla eşitliği otomatik
+      doğrulanıyor (ayrışma bu hatanın kök nedeniydi).
+
 **Denetimde yanlış çıkan iddialar** (doğrulandı, düzeltilmedi):
 - Bekleme listesi bozuk DEĞİL — `rsvps` SELECT politikası `true`, sayım doğru.
 - `cron/reminders` ve `event/[id]/page.tsx` saatleri zaten doğruydu.
 - Font literal'leri bozuk DEĞİL — Next 16 `next/font` gerçek aile adını
   üretiyor (`"IBM Plex Mono", "IBM Plex Mono Fallback"`); tarayıcıda ölçüldü,
   literal ile değişken aynı sonucu veriyor. 121 dosyalık değişiklikten dönüldü.
+- Avatar yükleme "depolanan XSS" DEĞİL — kovalarda `allowed_mime_types`
+  tanımlı, `text/html` 415 ile reddediliyor; anonim yükleme de RLS'e takılıyor.
+  Canlıda curl ile doğrulandı. (Yerinde bir UX hatası vardı, o düzeltildi.)
 
 Kalan paketler: kalan 6 ayarlar action'ı + avatar yükleme MIME + `member`
 rotası zod/limit · cron idempotent işaretleme + SW kararı + ESLint · kayıt
