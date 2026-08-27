@@ -21,7 +21,7 @@ WhatsApp-first paylaşım ve Türkçe-öncelikli UX ile farklılaşma; tüm kate
 |---|---|
 | Framework | Next.js App Router + TypeScript (next 16.2.9, react 19.2.7 — SABİT) |
 | DB + Auth + Realtime | Supabase (Postgres, RLS zorunlu) |
-| Supabase istemcileri | `lib/supabase.ts` (browser) · `lib/supabase-server.ts` (server, `await createClient()`) · `middleware.ts` (session yenileme) |
+| Supabase istemcileri | `lib/supabase.ts` (browser) · `lib/supabase-server.ts` (server, `await createClient()`) · `proxy.ts` (session yenileme — Next 16'da `middleware.ts` bu ada taşındı, named export `proxy`) |
 | E-posta | Resend, `lib/email.ts` → `sendEmail()` · gönderen: `bildirimler@literaslab.com` |
 | Harita | Leaflet + react-leaflet (Google Maps/Mapbox YOK) |
 | Doğrulama | zod v4, `lib/validations.ts` (şemalar rotalara bağlı) |
@@ -29,7 +29,11 @@ WhatsApp-first paylaşım ve Türkçe-öncelikli UX ile farklılaşma; tüm kate
 | Deploy | Vercel |
 | Stil | Global CSS + inline style; CSS değişkenleri `--ink`, `--paper-cream`; vurgu fontu IBM Plex Mono; kategori renk paleti `app/kesfet/page.tsx` içindeki `CATS` dizisi |
 
-Ortam değişkenleri (`.env.example`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `RESEND_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`. `service_role` anahtarı **hiçbir yerde kullanılmaz** — yetki her zaman RLS ile çözülür.
+Ortam değişkenleri (`.env.example`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `RESEND_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `CRON_SECRET`. `service_role` anahtarı **hiçbir yerde kullanılmaz** — yetki her zaman RLS ile çözülür.
+
+`CRON_SECRET` üç yerde aynı olmalı: `.env.local`, Vercel env, Supabase `app_secrets` (key=`cron_secret`). Örnek dosyaya gerçek değer yazılmaz.
+
+Tarih/saat: `lib/date.ts` tek kaynaktır. Kodun hiçbir yerinde çıplak `toLocaleDateString`/`toISOString` kullanma — Vercel UTC'de koşuyor, saat 3 saat kayıyor. Form girdisi için `localInputToISO` / `isoToLocalInput`.
 
 ## Dizin haritası (mevcut, çalışıyor)
 

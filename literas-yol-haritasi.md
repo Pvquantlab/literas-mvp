@@ -50,6 +50,44 @@ Amaç: Güvenlik açıklarını kapatmak, projeyi kırılmaz hale getirmek. Yeni
 
 ---
 
+## AŞAMA 1.6 — Denetim sonrası kapatma (27.08.2026)
+
+Geniş tarama yapıldı (güvenlik / kod kalitesi / doküman tutarlılığı). Bulgular
+`Literas Denetim Raporu` artifact'inde. Kapatılanlar:
+
+- [x] **Güvenlik paketi 3** (migration `20260827120000`) — canlıya UYGULANDI
+      - `profiles_guard` trigger: `is_admin`, `email`, `id` kilitlendi.
+        Açık gerçekti ve doğrulandı: RLS kolon kısıtı koyamadığı için her
+        kullanıcı konsoldan `is_admin: true` yazıp yönetici olabiliyordu.
+      - `_check_cron_secret` PUBLIC'ten alındı (sır sınama oracle'ıydı).
+        Kasa bozulmadı: SECURITY DEFINER iç çağrıları çalışıyor (test edildi).
+      - `public_profiles` görünümüne gizlilik filtresi: `profile_visibility`
+        ve `account_active` artık gerçekten etkili.
+      - `community_members_guard`: admin rolünü yalnızca kurucu verebilir
+        (API bunu zorluyordu, RLS zorlamıyordu).
+- [ ] **Güvenlik paketi 4** (migration `20260827120100`) — DEPLOY İLE BİRLİKTE
+      `mark_reminder_sent` / `mark_promotion_email_sent` sır kontrolü alıyor.
+      İmza değiştiği için kod deploy'undan ÖNCE uygulanmamalı.
+- [ ] **CRON_SECRET rotasyonu** — kullanıcıda. Gerçek değer `.env.example` ile
+      public repoya commit edilmişti; örnek dosya boşaltıldı ama git geçmişi
+      açık, o yüzden değer yakılmış sayılır.
+- [x] **Kapak görseli veri kaybı** — düzenleme her kaydetmede kapağı siliyordu.
+- [x] **Saat dilimi** — e-posta ve listelerde `lib/date.ts` bağlandı; formların
+      yazma yolu İstanbul duvar saatine sabitlendi (`localInputToISO`).
+- [x] **Geçmiş etkinlik düzenlenebiliyor** — edit şemasından gelecek kısıtı kalktı.
+- [x] **Ayarlar sertleştirme** (gizlilik / sosyal-medya / hesap) — zod + rate
+      limit + hata gösterimi (`AyarlarDurum`). `javascript:` URL'i artık
+      kaydedilemiyor; e-posta alanı salt okunur.
+- [x] **Ölü dosya temizliği** — `patch-hero2.js`, `patch-muted.js`,
+      `kesfet/tab-bar.tsx`, `kesfet/category-strip.tsx`.
+
+Kalan paketler (rapordaki sıra): kalan 6 ayarlar action'ı + avatar yükleme
+MIME + `member` rotası zod/limit (Paket 3'ün kalanı) · keşfet filtre/şehir/FTS
++ font literal'leri (Paket 4) · cron idempotent işaretleme + SW kararı + ESLint
+(Paket 5) · belge/README + baseline migration (Paket 6).
+
+---
+
 ## AŞAMA 2 — Büyüme ve UX (sıradaki)
 
 Amaç: "Luma modeli" — paylaşılabilirlik ve sürtünmesiz akış. Kullanıcı kazandırır.
