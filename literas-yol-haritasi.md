@@ -129,6 +129,16 @@ olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
       aynı kişilere tekrar gönderiyordu. Artık her gönderimden hemen sonra
       işaretleniyor + süre bütçesiyle temiz çıkış + `maxDuration`.
 
+- [x] **Service worker araftan çıkarıldı** — 2.3 PWA artık gerçekten tamam
+      Kayıt layout'tan kaldırılmış, yerine yazılacak bileşen hiç yazılmamıştı:
+      `sw.js` ölü kod olarak duruyordu ama önceden kaydolmuş tarayıcılarda
+      eski hatalı sürüm çalışmaya devam ediyordu. `components/register-sw.tsx`
+      yazıldı; `sw.js` güvenli sürümle değiştirildi (yalnızca `/_next/static/*`
+      — içerik hash'li olduğu için bayatlama imkânsız; doküman ve API'ye hiç
+      dokunulmuyor). `activate` eski `literas-static-v1` önbelleğini siliyor,
+      yani eski kullanıcılardaki bayat/kişisel HTML de temizleniyor.
+      Tarayıcıda doğrulandı: 33 önbellek girdisinin hepsi statik, doküman yok.
+
 **Vercel planı: HOBBY** (doğrulandı). Bunun iki somut sonucu var:
 1. Fonksiyon tavanı **60 saniye** — `maxDuration`/bütçe buna göre ayarlı.
    Pro'ya geçilirse `app/api/cron/reminders/route.ts` içindeki yorumda yazan
