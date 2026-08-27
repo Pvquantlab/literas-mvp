@@ -179,6 +179,7 @@ export async function GET(req: Request) {
 
     const { error: markErr } = await supabase.rpc('mark_reminder_sent', {
       p_event_id: event.id,
+      p_secret: cronSecret,
     })
     if (markErr) {
       console.error(`[cron/reminders] ${event.id} işaretlenemedi:`, markErr)
