@@ -91,6 +91,20 @@ Geniş tarama yapıldı (güvenlik / kod kalitesi / doküman tutarlılığı). B
       - Sayfalama off-by-one: son sayfa tam dolduğunda boş sayfaya götürüyordu.
       - `search-box` / `city-filter` hedefi sabit `/` idi → `usePathname`.
 
+- [x] **Bildirim tercihleri gerçekten uygulanıyor** (migration `20260827140000`)
+      DB'de `email_izni(user, template)` izin katmanı. İşlemsel maillerle
+      (terfi, etkinlik değişikliği/iptali) tercihe bağlı mailleri (hatırlatma,
+      katılım isteği, duyuru) ayırıyor. `account_active` de artık okunuyor.
+      Uçtan uca test edildi: tercih kapalıyken kuyruğa 0 satır, açıkken 1.
+      `push_new_members` varsayılanı `false` → `true` düzeltildi (kurucuya
+      katılım isteği maili gitmiyordu; düzeltilmeseydi bu değişiklik bir
+      gerileme olurdu). "Tüm e-postaları kapat" artık gerçekten hepsini
+      kapatıyor.
+
+**Bilinen borç:** `push_*` kolonları fiilen e-postayı yönetiyor ama adları
+push diyor; platformda push altyapısı yok. Yeniden adlandırma ayrı bir iş
+olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
+
 **Denetimde yanlış çıkan iddialar** (doğrulandı, düzeltilmedi):
 - Bekleme listesi bozuk DEĞİL — `rsvps` SELECT politikası `true`, sayım doğru.
 - `cron/reminders` ve `event/[id]/page.tsx` saatleri zaten doğruydu.
