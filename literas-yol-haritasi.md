@@ -70,7 +70,26 @@ Geniş tarama yapıldı (güvenlik / kod kalitesi / doküman tutarlılığı). B
       yapıyor. PR #1 merge edilip production deploy'u tamamlandıktan SONRA
       uygulandı (imza değiştiği için sıra buydu). Doğrulandı: anonim çağrı
       yanlış sırla `yetkisiz` dönüyor, imzalar `(uuid, text)`.
-- [ ] **CRON_SECRET rotasyonu** — HÂLÂ BEKLİYOR, kullanıcıda. Gerçek değer `.env.example` ile
+- [x] **CRON_SECRET rotasyonu** — TAMAMLANDI 28.08.2026. Vercel + Supabase +
+      .env.local üçü de yeni değerde; cron uçtan uca doğrulandı (`ok: true`).
+      NOT: `.env.example`'a sızmış olan değerin gerçek production sırrı
+      OLMADIĞI ortaya çıktı (o base64'tü, gerçek sır 64 karakterlik hex'ti).
+      Sızıntı riski sanıldığından düşükmüş; rotasyon yine de doğru adımdı.
+- [x] **E-POSTA SİSTEMİ İLK KEZ ÇALIŞTI** — 28.08.2026
+      Kök neden: Resend'de `literaslab.com` alan adı doğrulanmamıştı, her
+      gönderim 403 (`domain is not verified`) alıyordu. Temmuz'da kurulan
+      e-posta kasası mimarisi bir ay boyunca TEK BİR MAİL teslim etmemiş
+      (`email_outbox`: 1 satır kuyrukta, 0 gönderilmiş) ve kimse fark etmemiş,
+      çünkü `sendEmail` sonucu hiçbir çağrı yerinde okunmuyordu.
+      Çözüm: Resend klasik DNS kurulumu (MX + TXT at `send`) — Natro'nun
+      paneli CNAME kabul etmiyordu, MX/TXT kabul ediyor. Doğrulama sonrası
+      kuyruktaki mail gönderildi (1 ay 1 gün beklemişti).
+      DNS notu: alan adı Natro'da (`ns1/ns2.natrohost.com`), Vercel'de değil.
+      Panel CNAME eklemeyi "09-Unable to add record" ile reddediyor; TXT/MX
+      sorunsuz. İleride Resend kaydı değişirse bunu hatırla.
+- [x] **Sessiz mail hataları görünür oldu** — `sendBulkEmail` yardımcısı;
+      gönderim başarısızlıkları artık loglanıyor. Bu olmasaydı aynı arıza
+      bir ay daha sessizce sürebilirdi. Gerçek değer `.env.example` ile
       public repoya commit edilmişti; örnek dosya boşaltıldı ama git geçmişi
       açık, o yüzden değer yakılmış sayılır.
 - [x] **Kapak görseli veri kaybı** — düzenleme her kaydetmede kapağı siliyordu.

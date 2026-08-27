@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
-import { sendEmail } from '@/lib/email'
+import { sendBulkEmail } from '@/lib/email'
 import { eventEditSchema } from '@/lib/validations'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { formatDateTimeLong } from '@/lib/date'
@@ -178,15 +178,14 @@ export async function PATCH(
         </div>
       `
 
-      // Her alıcıya ayrı mail (sızıntı yok)
-      await Promise.all(
-        emails.map((email) =>
-          sendEmail({
-            to: [email],
-            subject: `${updatedEvent.title} — değişiklik var`,
-            html: htmlBody,
-          })
-        )
+      // Her alıcıya ayrı mail (sızıntı yok); başarısızlık artık loglanıyor.
+      await sendBulkEmail(
+        {
+          to: emails,
+          subject: `${updatedEvent.title} — değişiklik var`,
+          html: htmlBody,
+        },
+        'event/degisiklik-bildirimi'
       )
     }
   }
@@ -258,14 +257,13 @@ export async function DELETE(
       </div>
     `
 
-    await Promise.all(
-      emails.map((email) =>
-        sendEmail({
-          to: [email],
-          subject: `${event.title} — iptal edildi`,
-          html: htmlBody,
-        })
-      )
+    await sendBulkEmail(
+      {
+        to: emails,
+        subject: `${event.title} — iptal edildi`,
+        html: htmlBody,
+      },
+      'event/iptal-bildirimi'
     )
   }
 

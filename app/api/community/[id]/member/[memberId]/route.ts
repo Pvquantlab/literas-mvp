@@ -145,7 +145,7 @@ export async function POST(
       const safeMemberName = escapeHtml(member.name ?? '')
       const safeCommunityName = escapeHtml(community.name)
 
-      await sendEmail({
+      const mailSonuc = await sendEmail({
         to: member.email,
         subject: `${community.name} — hoş geldin`,
         html: `
@@ -164,6 +164,11 @@ export async function POST(
           </div>
         `,
       })
+
+      // Sonuç artık yutulmuyor: gönderim sessizce başarısız olursa iz kalsın.
+      if (!mailSonuc.ok) {
+        console.error('[member/hosgeldin] mail gönderilemedi:', mailSonuc.error)
+      }
     }
 
     return NextResponse.json({ ok: true })

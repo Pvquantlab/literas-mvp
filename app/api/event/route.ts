@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
-import { sendEmail } from '@/lib/email'
+import { sendBulkEmail } from '@/lib/email'
 import { eventSchema } from '@/lib/validations'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { formatDateTimeLong } from '@/lib/date'
@@ -139,14 +139,13 @@ export async function POST(req: Request) {
       </div>
     `
 
-    await Promise.all(
-      emails.map((email) =>
-        sendEmail({
-          to: [email],
-          subject: `${community.name} — yeni bir etkinlik`,
-          html: htmlBody,
-        })
-      )
+    await sendBulkEmail(
+      {
+        to: emails,
+        subject: `${community.name} — yeni bir etkinlik`,
+        html: htmlBody,
+      },
+      'event/yeni-etkinlik-duyurusu'
     )
   }
 

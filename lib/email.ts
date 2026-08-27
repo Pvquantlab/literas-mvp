@@ -21,6 +21,40 @@ type SendEmailArgs = {
   html: string
 }
 
+/**
+ * Birden çok alıcıya AYRI AYRI gönderir (BCC sızıntısı olmasın diye) ve
+ * sonucu loglar.
+ *
+ * NEDEN: çağıran yerler `await Promise.all(emails.map(sendEmail))` yazıp
+ * sonucu tamamen atıyordu. 27.08.2026'da ortaya çıktı ki Resend, alan adı
+ * doğrulanmadığı için BİR AY BOYUNCA her gönderimi 403 ile reddetmiş —
+ * ve hiçbir yerde tek satır iz kalmamış. Kimse fark etmedi çünkü hata
+ * hiçbir şeye yansımıyordu.
+ *
+ * Artık en az bir gönderim başarısızsa log düşüyor. Gönderimi engellemez;
+ * amaç sessizliği bozmak.
+ */
+export async function sendBulkEmail(
+  { to, subject, html }: { to: string[]; subject: string; html: string },
+  etiket: string
+): Promise<{ gonderildi: number; basarisiz: number }> {
+  if (to.length === 0) return { gonderildi: 0, basarisiz: 0 }
+
+  const sonuclar = await Promise.all(
+    to.map((email) => sendEmail({ to: [email], subject, html }))
+  )
+
+  const basarisizlar = sonuclar.filter((r) => !r.ok)
+  if (basarisizlar.length > 0) {
+    console.error(
+      `[${etiket}] ${basarisizlar.length}/${to.length} mail GÖNDERİLEMEDİ:`,
+      basarisizlar[0].error
+    )
+  }
+
+  return { gonderildi: to.length - basarisizlar.length, basarisiz: basarisizlar.length }
+}
+
 export async function sendEmail({ to, subject, html }: SendEmailArgs) {
   const client = getResend()
   if (!client) {
