@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export const metadata = { title: "Hakkında — literaslab" };
 
 export default function HakkindaPage() {
@@ -13,7 +15,7 @@ export default function HakkindaPage() {
         Yakında burada literaslab'ın hikayesi olacak.
       </p>
       <p style={{ fontSize: 15, lineHeight: 1.7, color: "rgba(30,58,43,0.65)", margin: 0 }}>
-        Bu arada <a href="/kesfet" style={{ color: "var(--ink)", fontWeight: 700 }}>etkinlikleri keşfedebilir</a> ya da <a href="/community/new" style={{ color: "var(--ink)", fontWeight: 700 }}>kendi topluluğunu kurabilirsin</a>.
+        Bu arada <Link href="/kesfet" style={{ color: "var(--ink)", fontWeight: 700 }}>etkinlikleri keşfedebilir</Link> ya da <Link href="/community/new" style={{ color: "var(--ink)", fontWeight: 700 }}>kendi topluluğunu kurabilirsin</Link>.
       </p>
     </div>
   );
