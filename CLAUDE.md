@@ -59,7 +59,12 @@ app/
     waitlist/                 dolu etkinlik bekleme listesi (zod + rate limit) + otomatik terfi
 components/                   event-card, header, footer, calendar-button, image-upload, report-button
 lib/                          supabase.ts, supabase-server.ts, email.ts, validations.ts, rate-limit.ts
-supabase/migrations/          ŞEMA BURADA (tek doğruluk kaynağı). Eski supabase-schema.sql SİLİNDİ.
+supabase/schema.sql           TAM ŞEMA ANLIK GÖRÜNTÜSÜ — sıfırdan kurulum ve
+                              felaket kurtarma için. Migration zincirinin
+                              parçası DEĞİL (tarihsel migration'lar idempotent
+                              olmadığı için bilinçli ayrıldı).
+supabase/migrations/          Tarihsel değişiklik kaydı. Şemayı DEĞİŞTİRMEK için
+                              buraya yeni migration yaz.
 ```
 
 ## Veritabanı gerçeği (ÖNEMLİ)
@@ -72,7 +77,14 @@ event_date, cover_image_url), `rsvps` (email YOK — sadece uuid'ler), `waitlist
 tabloları: `community_drafts`, `community_topics`, `topics`, `topic_categories`,
 `topic_category_map`, `topic_suggestions`, `locations`.
 
-Şema bilgisi gerekiyorsa `supabase/migrations/` klasörüne bak. Tahmin yürütüp kod yazma.
+Şema bilgisi gerekiyorsa önce `supabase/schema.sql`'e bak — tüm tablolar,
+kolonlar, kısıtlar, RLS politikaları, fonksiyonlar ve trigger'lar orada.
+`supabase/migrations/` ise nelerin ne zaman değiştiğini anlatır.
+Tahmin yürütüp kod yazma.
+
+DİKKAT: `handle_new_user()` trigger'ı `auth.users` üzerinde. Kayıt olan
+kullanıcıya profil satırı onunla açılıyor; hiçbir migration'da yoktu,
+şimdi schema.sql'de.
 
 ## Kod kuralları (her görevde geçerli)
 

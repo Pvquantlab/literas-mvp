@@ -213,6 +213,21 @@ olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
       kapatıldı (Türkçe kesme işareti her cümlede geçiyor, faydası yok).
       `npm run typecheck` de eklendi.
 
+- [x] **Baseline şema çıkarıldı** (`supabase/schema.sql`, 28.08.2026)
+      Şemanın tek kaynağı canlı Supabase'di; migration klasöründe 12 tablonun
+      ve ~30 profiles kolonunun tanımı yoktu. Artık tam anlık görüntü sürüm
+      kontrolünde: 16 tablo, 22 fonksiyon, 8 trigger, 15 indeks, 36 RLS
+      politikası, 1 görünüm, kısıtlar ve yetkiler. Kapsam otomatik doğrulandı.
+      Migration zincirine EKLENMEDİ — tarihsel migration'lar idempotent değil,
+      baseline oraya konsaydı sıfırdan kurulumda çakışırlardı. `schema.sql`
+      sıfırdan kurulum için, `migrations/` değişiklik kaydı için.
+      YAN BULGU: `auth.users` üzerindeki `on_auth_user_created` trigger'ı
+      hiçbir migration'da yoktu. O olmadan yeniden kurulan bir veritabanında
+      kayıt olan kullanıcıya profil satırı açılmaz ve uygulama sessizce
+      bozulurdu. Artık belgelendi.
+      NOT: referans verisi (topics, locations, topic_categories satırları)
+      şemada değil; yeniden kurulumda ayrıca yüklenmeli.
+
 **Kalan işler** (hiçbiri kullanıcıyı doğrudan etkilemiyor):
 `NEXT_PUBLIC_SITE_URL` (domain 7 dosyada sabit) · README ·
 baseline migration (`supabase db pull` — migration klasörü hâlâ tam şema
