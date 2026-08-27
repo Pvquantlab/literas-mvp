@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { sendEmail } from '@/lib/email'
+import { memberActionSchema } from '@/lib/validations'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 // HTML injection'a karşı basit escape fonksiyonu
 function escapeHtml(str: string): string {
@@ -17,19 +19,39 @@ export async function POST(
   { params }: { params: Promise<{ id: string; memberId: string }> }
 ) {
   const { id: communityId, memberId } = await params
-  const body = await req.json()
-
- const { action } = body as {
-    action: 'toggle-admin' | 'approve' | 'reject'
-  }
 
   const supabase = await createClient()
 
-  // Kim istiyor?
+  // CLAUDE.md kural 2 sırası: auth → rate limit → zod → yetki.
+  // Bu rota eskiden hiçbirini tam yapmıyordu: rate limit yoktu, gövde
+  // `as` ile tip zorlanıyordu (runtime'da action her şey olabilirdi) ve
+  // req.json() korumasızdı — bozuk gövde 500 döndürüyordu.
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Giriş yapmalısın' }, { status: 401 })
   }
+
+  const rl = await checkRateLimit(req, user.id, 'normal')
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Çok fazla istek, biraz bekle' },
+      { status: 429, headers: rl.headers }
+    )
+  }
+
+  const body = await req.json().catch(() => null)
+  const parsed = memberActionSchema.safeParse({
+    action: (body as { action?: unknown } | null)?.action,
+    community_id: communityId,
+    member_id: memberId,
+  })
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Geçersiz veri', details: parsed.error.flatten().fieldErrors },
+      { status: 400 }
+    )
+  }
+  const { action } = parsed.data
 
   // İstek yapan kişi gerçekten kurucu/admin mi? (güvenlik)
   const { data: actor } = await supabase

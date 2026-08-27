@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
+import AyarlarDurum from "@/components/ayarlar-durum";
 import { updateIlgiAlanlari } from "./actions";
 import InterestPicker from "./interest-picker";
 
@@ -10,7 +11,12 @@ const SUGGESTED_INTERESTS = [
   "Müze", "Sergi", "Konser", "Vinil Plak", "Bisiklet Turu",
 ];
 
-export default async function IlgiAlanlariPage() {
+export default async function IlgiAlanlariPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ durum?: string; hata?: string }>;
+}) {
+  const { durum, hata } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -32,6 +38,8 @@ export default async function IlgiAlanlariPage() {
       <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 28px", maxWidth: "56ch" }}>
         Favori ilgi alanlarınızı seçin; size yakın toplulukları bunlara göre önerelim.
       </p>
+
+      <AyarlarDurum durum={durum} hata={hata} />
 
       <form action={updateIlgiAlanlari}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>

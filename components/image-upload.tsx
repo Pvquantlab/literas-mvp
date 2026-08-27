@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
-import { dosyayiDogrula, guvenliDosyaAdi } from '@/lib/upload'
+import { dosyayiDogrula, guvenliDosyaAdi, kovaLimitMb } from '@/lib/upload'
 
 type Props = {
   bucket: string
@@ -141,17 +141,18 @@ export default function ImageUpload({ bucket, value, onChange, label, hint }: Pr
         </label>
       )}
 
-      {hint && (
-        <p style={{
-          marginTop: '8px',
-          fontFamily: "'IBM Plex Mono', monospace",
-          fontSize: '12px',
-          color: 'var(--muted)',
-          lineHeight: 1.5,
-        }}>
-          {hint}
-        </p>
-      )}
+      {/* Sınır metni elle yazılmıyor: kovanın gerçek limitinden türetiliyor.
+          Bu iki değerin ayrışması, kullanıcıya ham Supabase hatası gösteren
+          asıl hatanın kök nedeniydi. */}
+      <p style={{
+        marginTop: '8px',
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: '12px',
+        color: 'var(--muted)',
+        lineHeight: 1.5,
+      }}>
+        {hint ? `${hint} ` : ''}jpg, png veya webp · en fazla {kovaLimitMb(bucket)} mb
+      </p>
 
       {error && (
         <p style={{

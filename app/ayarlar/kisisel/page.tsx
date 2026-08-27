@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
+import AyarlarDurum from "@/components/ayarlar-durum";
 import { updateKisisel } from "./actions";
 import ChipGroup from "./chip-group";
 
@@ -19,7 +20,12 @@ const LIFE_STAGE_OPTIONS = [
   { value: "career_change", label: "🔄 Kariyer değişikliği" },
 ];
 
-export default async function KisiselPage() {
+export default async function KisiselPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ durum?: string; hata?: string }>;
+}) {
+  const { durum, hata } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -41,6 +47,8 @@ export default async function KisiselPage() {
       <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 28px", maxWidth: "56ch" }}>
         Bu bilgiler topluluk önerilerini iyileştirmemize yardımcı olur. Doğum tarihiniz ve cinsiyetiniz profilinizde görünmez.
       </p>
+
+      <AyarlarDurum durum={durum} hata={hata} />
 
       <form action={updateKisisel}>
         <div style={{ marginBottom: 26 }}>
