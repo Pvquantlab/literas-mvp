@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { checkUserRateLimit } from '@/lib/rate-limit'
-import { ilkHata } from '@/lib/ayarlar-sonuc'
 import { z } from 'zod'
 
 const tokenSchema = z.object({
@@ -13,13 +12,26 @@ const tokenSchema = z.object({
 })
 
 /**
+ * Kullanıcıya taşınan hata kodları. Serbest metin DEĞİL: `?hata=` adres
+ * çubuğundan geliyor, yani okutulan QR'ı kuran kişi burayı doldurabilir.
+ * Metin gönderseydik katılımcı, organizatöre kendi yazdığı bir "sistem
+ * mesajını" gösterebilirdi. Kod gönderiyoruz, metni sayfa seçiyor.
+ */
+export type CheckinHata = 'limit' | 'gecersiz' | 'yetkisiz' | 'basarisiz'
+
+/**
  * Action sonucunu kullanıcıya taşır. `<form action={fn}>` deseninde dönüş
  * değeri kullanıcıya ulaşmadığı için sonucu query parametresiyle geri
  * gönderiyoruz. redirect() istisna fırlatır — try/catch içine alma.
+ *
+ * eventId/token kodlanıyor: bu değerler formun hidden alanlarından, yani
+ * kullanıcı kontrolündeki bir kanaldan geliyor. Bugün sabit `/event/`
+ * ön eki sayesinde adres site dışına çıkamıyordu, ama savunma o ön ekin
+ * tesadüfüne dayanmasın.
  */
-function sonuc(eventId: string, token: string, hata?: string): never {
-  const taban = `/event/${eventId}/checkin?t=${token}`
-  redirect(hata ? `${taban}&hata=${encodeURIComponent(hata)}` : taban)
+function sonuc(eventId: string, token: string, hata?: CheckinHata): never {
+  const taban = `/event/${encodeURIComponent(eventId)}/checkin?t=${encodeURIComponent(token)}`
+  redirect(hata ? `${taban}&hata=${hata}` : taban)
 }
 
 async function calistir(formData: FormData, islem: 'yap' | 'geri_al') {
@@ -35,7 +47,7 @@ async function calistir(formData: FormData, islem: 'yap' | 'geri_al') {
   const rawToken = String(formData.get('token') ?? '')
 
   if (!(await checkUserRateLimit(user.id, 'normal'))) {
-    return sonuc(rawEventId, rawToken, 'Çok fazla istek, biraz bekle')
+    return sonuc(rawEventId, rawToken, 'limit')
   }
 
   const parsed = tokenSchema.safeParse({
@@ -43,7 +55,7 @@ async function calistir(formData: FormData, islem: 'yap' | 'geri_al') {
     token: rawToken,
   })
   if (!parsed.success) {
-    return sonuc(rawEventId, rawToken, ilkHata(parsed.error.flatten().fieldErrors))
+    return sonuc(rawEventId, rawToken, 'gecersiz')
   }
 
   const { event_id, token } = parsed.data
@@ -54,10 +66,10 @@ async function calistir(formData: FormData, islem: 'yap' | 'geri_al') {
 
   if (error) {
     if (error.message?.includes('yetkisiz')) {
-      return sonuc(event_id, token, 'Bu etkinliği yönetme yetkin yok')
+      return sonuc(event_id, token, 'yetkisiz')
     }
     console.error('[checkin] islem hatasi:', error)
-    return sonuc(event_id, token, 'İşlem başarısız, tekrar dene')
+    return sonuc(event_id, token, 'basarisiz')
   }
 
   revalidatePath(`/event/${event_id}/checkin`)
