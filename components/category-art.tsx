@@ -32,8 +32,11 @@ import { CATEGORIES, byValue, NEUTRAL_COVER } from '@/lib/categories'
  */
 export const TUMU_SLUG = 'tumu'
 
-/** Gövde şekli. viewBox 0 0 100 100. */
-const SHAPES: Record<string, React.ReactNode> = {
+/** Gövde şekli. viewBox 0 0 100 100.
+ *  Dışa aktarıldı: düz (parlaklıksız) kullanım isteyen yerler aynı şekil
+ *  kütüphanesini tek renkle render edebilsin diye. Şekiller kategori
+ *  kimliğini taşıyor; ikinci bir set çizmek onları ayrıştırırdı. */
+export const SHAPES: Record<string, React.ReactNode> = {
   tumu: (
     <>
       <rect x="20" y="20" width="26" height="26" rx="9" />
