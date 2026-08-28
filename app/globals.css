@@ -417,11 +417,14 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
 }
 
 /* Bölüm başlığı — sayfalar arası tek stil. */
+/* Bölüm başlığı: DNA'ya göre yeniden yazıldı.
+   ÖLÇÜLDÜ (week.wild.plus): en büyük metin 24px, ağırlık 300, harf aralığı
+   POZİTİF (~0.04em), satır 1.2. Eskiden 27px serif, 600 ağırlık, NEGATİF
+   aralıktı — üç boyutta da referansın tersi. */
 .h-section {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 600;
-  font-size: var(--t-2xl);
-  letter-spacing: -0.02em;
+  font-weight: 400;
+  font-size: var(--t-xl);
+  letter-spacing: .04em;
   line-height: 1.2;
   color: var(--ink);
 }
@@ -434,13 +437,14 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   letter-spacing: .02em;
 }
 
+/* Vurgu bandı KALDIRILDI: rengi nane yeşiliydi (adı "yellow" ama değeri
+   #A8EDE4) ve tek sesli palete yabancıydı. Referansta böyle bir vurgu aracı
+   yok — vurgu ağırlıkla değil, mürekkep rengiyle yapılıyor.
+   Sınıf duruyor çünkü birkaç sayfa kullanıyor; artık sadece renk veriyor. */
 .highlight-yellow {
-  background: linear-gradient(100deg,
-    rgba(168,237,228,0) 1%, rgba(168,237,228,.8) 6%,
-    rgba(168,237,228,.9) 50%, rgba(168,237,228,.8) 94%,
-    rgba(168,237,228,0) 99%);
-  border-radius: var(--r-sm);
-  padding: 0 .1em;
+  background: none;
+  color: var(--ink);
+  padding: 0;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
@@ -1187,122 +1191,25 @@ p, .seats-label {
 }
 
 /* ==========================================================================
-   ÜÇ TEMA — karar aracı, kalıcı özellik değil
+   KATEGORİ NESNELERİ: DÜZ
    ==========================================================================
-   Üçü de AYNI dört rengi kullanır (Wild Week Athens'tan ölçüldü):
-   mürekkep #0755BB · sıcak greige · sıcak siyah · beyaz.
-   Fark renk ORANI ve DOKU'da. Seçim yapıldıktan sonra kazanan :root'a
-   taşınır, diğer ikisi ve anahtar bileşeni silinir.
+   Varyant 4 (DNA'dan üretilen) seçildi. Üç tema bloğu karar aracıydı,
+   kaldırıldı — kazanan palet :root'ta duruyor.
 
-   :root varsayılanları = "mürekkep" temasıyla aynı. */
+   ÖLÇÜLDÜ (week.wild.plus): sayfada illüstrasyon YOK, gölge taşıyan sıfır
+   eleman var. Şekilleri tuttuk çünkü kategori kimliğini onlar taşıyor, ama
+   hacim katmanları kapatıldı: nesne artık süs değil, ayırt edici işaret.
 
-/* --- A · KAĞIT ------------------------------------------------------------
-   Referansın kendi oranı: zemin KOYU greige, paneller ondan açık.
-   Nesneler düz siluet — parlaklık, gölge ve iç detay kapalı.
-   Etkinlik kartı kağıda döner. Matbaa hissi en yüksek olan bu. */
-[data-tema="kagit"] {
-  /* ÖLÇÜLDÜ: referansın kendi zemini (#CBCBCB) bizde KALIYOR — mürekkep/zemin
-     4.22:1, kırmızı/zemin 4.28:1, ikisi de AA eşiğinin (4.5) altında.
-     Referans bunu karşılayabiliyor çünkü neredeyse hiç küçük metin taşımayan
-     bir mikrosite; biz liste, form ve bağlantı taşıyoruz.
-     #D2D1CB, ikisinin de geçtiği EN KOYU sıcak greige (4.53 / 4.59). */
-  --paper: #D2D1CB;
-  --paper-cream: #E2E1DA;
-  --paper-soft: #D9D8D1;
-  --border: rgba(7, 85, 187, 0.30);
-  --border-mid: rgba(7, 85, 187, 0.50);
-  --grid-line: rgba(7, 85, 187, .20);
-  --grid-edge: rgba(7, 85, 187, .45);
+   Katmanlar (components/category-art.tsx):
+     ci-shadow      → altındaki bulanık gölge elipsi
+     ci-sheen-layer → sol üstteki beyaz parlama
+     ci-detail      → opacity'li iç detaylar
+     ci-body        → gövde; degrade yerine tek düz mürekkep */
+.ci-shadow,
+.ci-sheen-layer { display: none; }
 
-  /* Nesneler tek düz mürekkep */
-  --obj-hi: #0755BB;
-  --obj-mid: #0755BB;
-  --obj-dk: #0755BB;
+.ci-detail { opacity: 0; }
 
-  /* Kart kağıt */
-  --card-bg: #E2E1DA;
-  --card-panel: #D9D8D1;
-  --card-inset: #CECDC6;
-  --card-line: rgba(7, 85, 187, .28);
-  --card-line-hover: rgba(7, 85, 187, .55);
-  --card-fg: #16160F;
-  --card-fg-strong: #0755BB;
-  --card-fg-dim: #3A3A30;
-  --card-fg-muted: #55554A;
-  --card-chip-bg: rgba(7, 85, 187, .10);
-  --card-chip-bg-soft: rgba(7, 85, 187, .07);
-  --card-chip-line: rgba(7, 85, 187, .26);
-  --card-art-shadow: rgba(22, 22, 15, .22);
-  --card-art-1: #D9D8D1;
-  --card-art-2: #CECDC6;
-  --card-art-3: #E2E1DA;
-  --card-art-4: #D2D1CB;
-  --card-dot: #7A7A6E;
-  --card-dot-now: #A62B22;
-  --card-dot-now-halo: rgba(166, 43, 34, .20);
-}
-
-/* --- B · MÜREKKEP ---------------------------------------------------------
-   Bugünkü hâl. Açık sıcak zemin, mürekkep cömert, nesneler PARLAK kalır,
-   etkinlik kartı KOYU kalır — koyu kart bilinçli bir kontrast aracı.
-   En az değişim, en grafik olan bu. (:root ile aynı, açıkça yazılı.) */
-[data-tema="murekkep"] {
-  --paper: #DCDBD5;
-  --paper-cream: #F1F0EA;
-  --paper-soft: #E5E3DC;
-}
-
-/* --- C · SAYFA ------------------------------------------------------------
-   Renk = SİNYAL. Metin ve nesneler SİYAH; mürekkep yalnızca tıklanabilir
-   şeylerde (bağlantı, buton, aktif durum, odak halkası). "Meetup seviyesi
-   işlevsellik" isteğinin doğrudan karşılığı: maviyse tıklanır.
-   Nesneler düz siyah siluet. */
-[data-tema="sayfa"] {
-  --paper: #DCDBD5;
-  --paper-cream: #EFEEE8;
-  --paper-soft: #E5E3DC;
-  --border: rgba(22, 22, 15, 0.18);
-  --border-mid: rgba(22, 22, 15, 0.34);
-  --grid-line: rgba(22, 22, 15, .10);
-  --grid-edge: rgba(22, 22, 15, .26);
-
-  /* Nesneler düz siyah — mürekkep onlara harcanmıyor */
-  --obj-hi: #16160F;
-  --obj-mid: #16160F;
-  --obj-dk: #16160F;
-
-  --card-bg: #EFEEE8;
-  --card-panel: #E5E3DC;
-  --card-inset: #D8D6CE;
-  --card-line: rgba(22, 22, 15, .16);
-  --card-line-hover: rgba(7, 85, 187, .55);
-  --card-fg: #16160F;
-  --card-fg-strong: #16160F;
-  --card-fg-dim: #3A3A30;
-  --card-fg-muted: #55554A;
-  --card-chip-bg: rgba(22, 22, 15, .07);
-  --card-chip-bg-soft: rgba(22, 22, 15, .05);
-  --card-chip-line: rgba(22, 22, 15, .16);
-  --card-art-shadow: rgba(22, 22, 15, .20);
-  --card-art-1: #E5E3DC;
-  --card-art-2: #D8D6CE;
-  --card-art-3: #EFEEE8;
-  --card-art-4: #DCDBD5;
-  --card-dot: #8A8A7C;
-  --card-dot-now: #A62B22;
-  --card-dot-now-halo: rgba(166, 43, 34, .20);
-}
-
-/* --- Düz doku: A ve C'de nesnelerin hacim katmanları kapanır -------------- */
-[data-tema="kagit"] .ci-shadow,
-[data-tema="sayfa"] .ci-shadow,
-[data-tema="kagit"] .ci-sheen-layer,
-[data-tema="sayfa"] .ci-sheen-layer { display: none; }
-
-[data-tema="kagit"] .ci-detail,
-[data-tema="sayfa"] .ci-detail { opacity: 0; }
-
-/* Gövde: degrade yerine tek düz renk. `fill` hem SVG attribute hem CSS
-   property olduğu için buradan ezilebiliyor. */
-[data-tema="kagit"] .ci-body { fill: var(--obj-mid); stroke: none; }
-[data-tema="sayfa"] .ci-body { fill: var(--obj-mid); stroke: none; }
+/* `fill` hem SVG attribute hem CSS property olduğu için degradeyi buradan
+   ezebiliyoruz. */
+.ci-body { fill: var(--obj-mid); stroke: none; }
