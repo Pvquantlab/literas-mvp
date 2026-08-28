@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { duyuruGuncelle, duyuruSil } from '../../actions'
+import SilButonu from './sil-butonu'
 
 export default async function DuyuruDuzenle({
   params,
@@ -69,9 +70,7 @@ export default async function DuyuruDuzenle({
       <form action={duyuruSil} style={{ marginTop: 26 }}>
         <input type="hidden" name="community_id" value={id} />
         <input type="hidden" name="duyuru_id" value={duyuru.id} />
-        <button type="submit" className="btn-secondary" style={{ fontSize: 13.5, padding: '8px 18px' }}>
-          Duyuruyu sil
-        </button>
+        <SilButonu />
       </form>
 
       <Link href={`/community/${id}/duyuru`} style={{ marginTop: 22, display: 'inline-block', color: 'var(--muted)' }}>
