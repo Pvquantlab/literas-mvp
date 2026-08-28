@@ -270,10 +270,10 @@ CREATE TABLE IF NOT EXISTS public.app_secrets (
 
 -- Topluluk duyuruları: organizatörün etkinlikten bağımsız üye iletişimi.
 CREATE TABLE IF NOT EXISTS public.community_announcements (
-  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  community_id uuid NOT NULL REFERENCES public.communities(id) ON DELETE CASCADE,
+  id           uuid NOT NULL DEFAULT gen_random_uuid(),
+  community_id uuid NOT NULL,
   -- Yazar silinse de duyuru kalsın: kalan üyeler geçmişi kaybetmemeli.
-  author_id    uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  author_id    uuid,
   title        text NOT NULL,
   body         text NOT NULL,
   created_at   timestamptz NOT NULL DEFAULT now(),
@@ -290,6 +290,7 @@ CREATE TABLE IF NOT EXISTS public.community_announcements (
 
 ALTER TABLE public.app_secrets ADD CONSTRAINT app_secrets_pkey PRIMARY KEY (key);
 ALTER TABLE public.communities ADD CONSTRAINT communities_pkey PRIMARY KEY (id);
+ALTER TABLE public.community_announcements ADD CONSTRAINT community_announcements_pkey PRIMARY KEY (id);
 ALTER TABLE public.community_drafts ADD CONSTRAINT community_drafts_pkey PRIMARY KEY (user_id);
 ALTER TABLE public.community_members ADD CONSTRAINT community_members_pkey PRIMARY KEY (id);
 ALTER TABLE public.community_topics ADD CONSTRAINT community_topics_pkey PRIMARY KEY (community_id, topic_id);
@@ -327,6 +328,8 @@ ALTER TABLE public.topic_suggestions ADD CONSTRAINT topic_suggestions_status_che
 
 ALTER TABLE public.profiles ADD CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
 ALTER TABLE public.communities ADD CONSTRAINT communities_founder_id_fkey FOREIGN KEY (founder_id) REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE public.community_announcements ADD CONSTRAINT community_announcements_author_id_fkey FOREIGN KEY (author_id) REFERENCES profiles(id) ON DELETE SET NULL;
+ALTER TABLE public.community_announcements ADD CONSTRAINT community_announcements_community_id_fkey FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE;
 ALTER TABLE public.community_drafts ADD CONSTRAINT community_drafts_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 ALTER TABLE public.community_members ADD CONSTRAINT community_members_community_id_fkey FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE;
 ALTER TABLE public.community_members ADD CONSTRAINT community_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
