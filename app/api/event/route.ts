@@ -1,19 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
-import { sendBulkEmail } from '@/lib/email'
+import { sendBulkEmail, escapeHtml } from '@/lib/email'
 import { eventSchema } from '@/lib/validations'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { formatDateTimeLong } from '@/lib/date'
-
-// HTML injection'a karşı basit escape fonksiyonu
-function escapeHtml(str: string): string {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
 
 export async function POST(req: Request) {
   const supabase = await createClient()

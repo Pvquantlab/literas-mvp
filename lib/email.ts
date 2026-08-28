@@ -15,6 +15,20 @@ function getResend(): Resend | null {
 // literaslab.com üzerinden gönderim yapıyoruz.
 const FROM = 'literas <bildirimler@literaslab.com>'
 
+/**
+ * E-posta HTML'ine giren HER değişken buradan geçer (CLAUDE.md kural 3).
+ * Eskiden app/api/event/route.ts içinde yerel bir kopyası vardı; duyurular
+ * da aynısına ihtiyaç duyunca ikinci kopya çıkarmak yerine buraya alındı.
+ */
+export function escapeHtml(str: string): string {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 type SendEmailArgs = {
   to: string | string[]
   subject: string
@@ -53,6 +67,54 @@ export async function sendBulkEmail(
   }
 
   return { gonderildi: to.length - basarisizlar.length, basarisiz: basarisizlar.length }
+}
+
+/**
+ * Alıcılara PARÇALAR hâlinde gönderir.
+ *
+ * NEDEN: sendBulkEmail hepsini Promise.all ile aynı anda yolluyor. Resend
+ * saniyelik istek sınırı uyguluyor ve sendEmail'de yeniden deneme yok —
+ * sınıra çarpan alıcının postası sessizce kayboluyor. Duyuru, etkinlik
+ * oluşturmaktan çok daha sık gönderilecek bir şey.
+ *
+ * sendBulkEmail KALDIRILMADI: app/api/event/route.ts ve üyelik postaları onu
+ * kullanıyor; onları taşımak ayrı bir iştir.
+ */
+export async function sendChunkedEmail(
+  { to, subject, html }: { to: string[]; subject: string; html: string },
+  etiket: string,
+  { parcaBoyu = 5, bekleMs = 1000 }: { parcaBoyu?: number; bekleMs?: number } = {}
+): Promise<{ gonderildi: number; basarisiz: number }> {
+  if (to.length === 0) return { gonderildi: 0, basarisiz: 0 }
+
+  let gonderildi = 0
+  let basarisiz = 0
+  let ilkHata: unknown = null
+
+  for (let i = 0; i < to.length; i += parcaBoyu) {
+    const parca = to.slice(i, i + parcaBoyu)
+    const sonuclar = await Promise.all(
+      parca.map((email) => sendEmail({ to: [email], subject, html }))
+    )
+    for (const r of sonuclar) {
+      if (r.ok) {
+        gonderildi++
+      } else {
+        basarisiz++
+        if (!ilkHata) ilkHata = r.error
+      }
+    }
+    // Son parçadan sonra bekleme yok: gereksiz gecikme olurdu.
+    if (i + parcaBoyu < to.length) {
+      await new Promise((c) => setTimeout(c, bekleMs))
+    }
+  }
+
+  if (basarisiz > 0) {
+    console.error(`[${etiket}] ${basarisiz}/${to.length} mail GÖNDERİLEMEDİ:`, ilkHata)
+  }
+
+  return { gonderildi, basarisiz }
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailArgs) {
