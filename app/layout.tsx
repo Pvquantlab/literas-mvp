@@ -68,7 +68,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#1E3A2B',
+  themeColor: '#0755BB',
   width: 'device-width',
   initialScale: 1,
 }
@@ -94,7 +94,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html lang="tr" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
+    <html lang="tr" data-tema="murekkep" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
       <body>
         <a href="#content" className="skip-link">İçeriğe atla</a>
 

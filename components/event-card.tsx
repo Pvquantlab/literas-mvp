@@ -96,12 +96,12 @@ export default function EventCard({ event, showCommunityName = true }: Props) {
               <svg viewBox="0 0 200 150" aria-hidden="true">
                 <defs>
                   <linearGradient id={`ec-top-${event.id}`} x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#3A4050" />
-                    <stop offset="100%" stopColor="#22262F" />
+                    <stop offset="0%" stopColor="var(--card-art-1)" />
+                    <stop offset="100%" stopColor="var(--card-art-2)" />
                   </linearGradient>
                   <linearGradient id={`ec-side-${event.id}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#272B35" />
-                    <stop offset="100%" stopColor="#14161C" />
+                    <stop offset="0%" stopColor="var(--card-art-3)" />
+                    <stop offset="100%" stopColor="var(--card-art-4)" />
                   </linearGradient>
                 </defs>
                 {/* kaide halkası — kategorinin rengini alır */}
@@ -169,11 +169,11 @@ export default function EventCard({ event, showCommunityName = true }: Props) {
         .ec-link { display:block; text-decoration:none; height:100%; }
         .ec {
           display:flex; flex-direction:column; height:100%;
-          background:#14171F; border:1px solid #232733; border-radius:22px;
-          overflow:hidden; color:#EDF1FA;
+          background:var(--card-bg); border:1px solid var(--card-line); border-radius:22px;
+          overflow:hidden; color:var(--card-fg);
           transition:transform .35s var(--ease, cubic-bezier(.2,.8,.3,1)), border-color .35s ease;
         }
-        .ec-link:hover .ec { transform:translateY(-5px); border-color:#394054; }
+        .ec-link:hover .ec { transform:translateY(-5px); border-color:var(--card-line-hover); }
 
         .ec-stage { position:relative; height:168px; overflow:hidden; }
         .ec-glow {
@@ -185,7 +185,7 @@ export default function EventCard({ event, showCommunityName = true }: Props) {
         .ec-art svg { position:absolute; right:2%; top:14%; width:64%; height:auto; }
         .ec-icon {
           position:absolute; right:19%; top:8%;
-          filter:drop-shadow(0 12px 16px rgba(0,0,0,.55));
+          filter:drop-shadow(0 12px 16px var(--card-art-shadow));
         }
         .ec-photo { width:100%; height:100%; object-fit:cover; display:block; opacity:.9; }
 
@@ -193,8 +193,8 @@ export default function EventCard({ event, showCommunityName = true }: Props) {
           position:absolute; top:14px; right:14px; z-index:2;
           display:inline-flex; align-items:center; gap:6px;
           font-family:var(--font-mono), monospace; font-size:11px;
-          color:#C3CBDD; background:rgba(255,255,255,.10);
-          border:1px solid rgba(255,255,255,.14);
+          color:var(--card-fg-dim); background:var(--card-chip-bg);
+          border:1px solid var(--card-chip-line);
           padding:5px 10px; border-radius:999px;
         }
 
@@ -202,50 +202,50 @@ export default function EventCard({ event, showCommunityName = true }: Props) {
 
         .ec-chip {
           align-self:flex-start; display:inline-flex; align-items:center; gap:7px;
-          font-size:12px; font-weight:600; color:#D6DDEC;
-          background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.13);
+          font-size:12px; font-weight:600; color:var(--card-fg-dim);
+          background:var(--card-chip-bg); border:1px solid var(--card-chip-line);
           padding:5px 12px 5px 6px; border-radius:999px;
           max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
         }
         .ec-title {
           font-family:var(--font-serif), Georgia, serif;
           font-size:22px; font-weight:600; line-height:1.18; letter-spacing:-.015em;
-          color:#FFFFFF; margin:12px 0 0;
+          color:var(--card-fg-strong); margin:12px 0 0;
           display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
         }
 
         .ec-panel {
           display:flex; align-items:center; gap:12px;
-          background:#1B1F29; border-radius:15px; padding:10px 12px;
+          background:var(--card-panel); border-radius:15px; padding:10px 12px;
           margin-top:16px;
         }
         .ec-cal {
           flex:none; display:grid; place-items:center;
           width:44px; padding:5px 0; border-radius:10px;
-          background:#272C38; line-height:1.1;
+          background:var(--card-inset); line-height:1.1;
         }
-        .ec-cal b { font-family:var(--font-mono), monospace; font-size:9px; letter-spacing:.08em; color:#9AA5BE; }
-        .ec-cal i { font-style:normal; font-size:18px; font-weight:700; color:#fff; }
+        .ec-cal b { font-family:var(--font-mono), monospace; font-size:9px; letter-spacing:.08em; color:var(--card-fg-muted); }
+        .ec-cal i { font-style:normal; font-size:18px; font-weight:700; color:var(--card-fg-strong); }
         .ec-when { display:flex; flex-direction:column; min-width:0; flex:1; }
-        .ec-when b { font-size:13.5px; font-weight:600; color:#EDF1FA; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .ec-when i { font-style:normal; font-size:12px; color:#8B95AD; }
+        .ec-when b { font-size:13.5px; font-weight:600; color:var(--card-fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .ec-when i { font-style:normal; font-size:12px; color:var(--card-fg-muted); }
 
         .ec-live {
           flex:none; display:inline-flex; align-items:center; gap:6px;
-          font-size:11.5px; font-weight:600; color:#C3CBDD;
-          background:rgba(255,255,255,.07); padding:5px 11px; border-radius:999px;
+          font-size:11.5px; font-weight:600; color:var(--card-fg-dim);
+          background:var(--card-chip-bg-soft); padding:5px 11px; border-radius:999px;
         }
-        .ec-live::before { content:""; width:6px; height:6px; border-radius:50%; background:#6B7488; }
-        .ec-live.now::before  { background:#3DDC8A; box-shadow:0 0 0 3px rgba(61,220,138,.22); }
-        .ec-live.soon::before { background:#0755BB; }
+        .ec-live::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--card-dot); }
+        .ec-live.now::before  { background:var(--card-dot-now); box-shadow:0 0 0 3px var(--card-dot-now-halo); }
+        .ec-live.soon::before { background:var(--ink); }
 
         .ec-foot {
           display:flex; align-items:center; justify-content:space-between; gap:12px;
           margin-top:auto; padding-top:14px;
         }
-        .ec-foot span { font-size:12.5px; color:#8B95AD; }
+        .ec-foot span { font-size:12.5px; color:var(--card-fg-muted); }
         .ec-foot b {
-          font-size:13px; font-weight:600; color:#EDF1FA;
+          font-size:13px; font-weight:600; color:var(--card-fg);
           max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
         }
 

@@ -10,6 +10,7 @@ import ClosingCta from '@/components/closing-cta'
 import CommunityCard, { type CommunitySummary } from '@/components/community-card'
 import UpcomingEvents, { type EventSummary } from '@/components/upcoming-events'
 import EventCard from '@/components/event-card'
+import TemaAnahtari from '@/components/tema-anahtari'
 import SearchBox from './search-box'
 import CityFilter from './city-filter'
 
@@ -391,6 +392,11 @@ export default async function HomePage({
            Eski lacivert bandın yerine geçti — ikisi de topluluk kurmaya
            çağırıyordu, iki CTA üst üste geliyordu. --- */}
       <ClosingCta />
+
+      {/* Tema denemesi: üç varyant arasında canlı geçiş. KARAR ARACI —
+          yalnızca geliştirmede render edilir, ürüne çıkmaz. Varyant
+          seçildikten sonra kazanan :root'a taşınıp bu blok silinecek. */}
+      {process.env.NODE_ENV === 'development' && <TemaAnahtari />}
     </main>
   )
 }

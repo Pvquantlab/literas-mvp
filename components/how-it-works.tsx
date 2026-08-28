@@ -51,7 +51,7 @@ function Defs({ id, light, mid, deep }: { id: string; light: string; mid: string
         <stop offset="100%" stopColor={deep} />
       </radialGradient>
       <filter id={`${id}-sh`} x="-40%" y="-40%" width="180%" height="180%">
-        <feDropShadow dx="0" dy="7" stdDeviation="6" floodColor="#0B1470" floodOpacity=".26" />
+        <feDropShadow dx="0" dy="7" stdDeviation="6" floodColor="var(--obj-dk)" floodOpacity=".26" />
       </filter>
     </defs>
   )
@@ -62,7 +62,7 @@ function IconMasa() {
   const id = 'hw-masa'
   return (
     <svg viewBox="0 0 100 100" aria-hidden="true">
-      <Defs id={id} light="#5E93DA" mid="#0755BB" deep="#043B85" />
+      <Defs id={id} light="var(--obj-hi)" mid="var(--obj-mid)" deep="var(--obj-dk)" />
       <g filter={`url(#${id}-sh)`}>
         <rect x="46" y="58" width="8" height="24" rx="3" fill={`url(#${id}-side)`} />
         <rect x="26" y="54" width="7" height="22" rx="3" fill={`url(#${id}-edge)`} />
@@ -78,7 +78,7 @@ function IconPlan() {
   const id = 'hw-plan'
   return (
     <svg viewBox="0 0 100 100" aria-hidden="true">
-      <Defs id={id} light="#5E93DA" mid="#0755BB" deep="#043B85" />
+      <Defs id={id} light="var(--obj-hi)" mid="var(--obj-mid)" deep="var(--obj-dk)" />
       <g filter={`url(#${id}-sh)`}>
         <rect x="18" y="30" width="64" height="54" rx="11" fill={`url(#${id}-side)`} />
         <rect x="18" y="26" width="64" height="54" rx="11" fill={`url(#${id}-top)`} />
@@ -111,7 +111,7 @@ function Mug({ cx, top, rx, h, id }: { cx: number; top: number; rx: number; h: n
       <ellipse cx={cx} cy={top + h} rx={rx} ry={ry} fill={`url(#${id}-edge)`} />
       <rect x={cx - rx} y={top} width={rx * 2} height={h} fill={`url(#${id}-side)`} />
       <ellipse cx={cx} cy={top} rx={rx} ry={ry} fill={`url(#${id}-top)`} />
-      <ellipse cx={cx} cy={top} rx={rx * 0.7} ry={ry * 0.68} fill="#5C0F42" opacity=".5" />
+      <ellipse cx={cx} cy={top} rx={rx * 0.7} ry={ry * 0.68} fill="var(--obj-dk)" opacity=".5" />
       <ellipse cx={cx} cy={top} rx={rx} ry={ry} fill="none" stroke="#fff" strokeWidth="1.3" opacity=".55" />
     </g>
   )
@@ -122,9 +122,9 @@ function IconTanis() {
   const id = 'hw-tanis'
   return (
     <svg viewBox="0 0 100 100" aria-hidden="true">
-      <Defs id={id} light="#5E93DA" mid="#0755BB" deep="#043B85" />
+      <Defs id={id} light="var(--obj-hi)" mid="var(--obj-mid)" deep="var(--obj-dk)" />
       <g filter={`url(#${id}-sh)`}>
-        <ellipse cx="52" cy="84" rx="34" ry="8" fill="#0B1470" opacity=".16" />
+        <ellipse cx="52" cy="84" rx="34" ry="8" fill="var(--obj-dk)" opacity=".16" />
         <Mug id={id} cx={64} top={40} rx={16} h={26} />
         <Mug id={id} cx={38} top={32} rx={20} h={34} />
       </g>

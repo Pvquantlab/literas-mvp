@@ -58,6 +58,41 @@
   --grad-4: #06397C;
   --grad-5: #043B85;
 
+  /* --- Etkinlik kartı yüzeyi ---
+     Kart eskiden components/event-card.tsx içinde 24 sabit hex taşıyordu ve
+     sitenin paletinden TAMAMEN bağımsızdı (koyu tema). Buraya taşındı ki
+     "kart koyu mu kağıt mı" bir TEMA KARARI olsun, dosyaya gömülü bir gerçek
+     değil. Varsayılan: koyu kart (eski davranış birebir korundu). */
+  --card-bg: #14171F;
+  --card-panel: #1B1F29;
+  --card-inset: #272C38;
+  --card-line: #232733;
+  --card-line-hover: #394054;
+  --card-fg: #EDF1FA;
+  --card-fg-strong: #FFFFFF;
+  --card-fg-dim: #C3CBDD;
+  --card-fg-muted: #8B95AD;
+  --card-chip-bg: rgba(255, 255, 255, .10);
+  --card-chip-bg-soft: rgba(255, 255, 255, .07);
+  --card-chip-line: rgba(255, 255, 255, .14);
+  --card-art-shadow: rgba(0, 0, 0, .55);
+  --card-art-1: #3A4050;
+  --card-art-2: #22262F;
+  --card-art-3: #272B35;
+  --card-art-4: #14161C;
+  --card-dot: #6B7488;
+  --card-dot-now: #3DDC8A;            /* "şu an oluyor" — işlevsel sinyal */
+  --card-dot-now-halo: rgba(61, 220, 138, .22);
+
+  /* Kahraman ızgarası: elle yazılmış rgba yerine token. */
+  --grid-line: rgba(7, 85, 187, .16);
+  --grid-edge: rgba(7, 85, 187, .38);
+
+  /* Kategori nesnelerinin üç tonu. category-art.tsx bunları okur. */
+  --obj-hi: #5E93DA;
+  --obj-mid: #0755BB;
+  --obj-dk: #043B85;
+
   /* --- Sticky rozet: sıcak nötr zemin, mürekkep metin --- */
   --sticky-blue-bg: #D8E2F4;
   --sticky-blue-ink: #0755BB;
@@ -989,11 +1024,11 @@ p, .seats-label {
   padding: var(--s-8) var(--s-5);
   background-color: var(--paper-cream);
   background-image:
-    linear-gradient(rgba(7, 85, 187, .16) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(7, 85, 187, .16) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 24px 24px;
-  border-top: 1.5px solid rgba(7, 85, 187, .38);
-  border-bottom: 1.5px solid rgba(7, 85, 187, .38);
+  border-top: 1.5px solid var(--grid-edge);
+  border-bottom: 1.5px solid var(--grid-edge);
 }
 .hx-inner { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; }
 
@@ -1144,3 +1179,124 @@ p, .seats-label {
   .hx { padding: var(--s-7) var(--s-4); background-size: 18px 18px; }
   .hx-strip { margin-top: var(--s-6); }
 }
+
+/* ==========================================================================
+   ÜÇ TEMA — karar aracı, kalıcı özellik değil
+   ==========================================================================
+   Üçü de AYNI dört rengi kullanır (Wild Week Athens'tan ölçüldü):
+   mürekkep #0755BB · sıcak greige · sıcak siyah · beyaz.
+   Fark renk ORANI ve DOKU'da. Seçim yapıldıktan sonra kazanan :root'a
+   taşınır, diğer ikisi ve anahtar bileşeni silinir.
+
+   :root varsayılanları = "mürekkep" temasıyla aynı. */
+
+/* --- A · KAĞIT ------------------------------------------------------------
+   Referansın kendi oranı: zemin KOYU greige, paneller ondan açık.
+   Nesneler düz siluet — parlaklık, gölge ve iç detay kapalı.
+   Etkinlik kartı kağıda döner. Matbaa hissi en yüksek olan bu. */
+[data-tema="kagit"] {
+  /* ÖLÇÜLDÜ: referansın kendi zemini (#CBCBCB) bizde KALIYOR — mürekkep/zemin
+     4.22:1, kırmızı/zemin 4.28:1, ikisi de AA eşiğinin (4.5) altında.
+     Referans bunu karşılayabiliyor çünkü neredeyse hiç küçük metin taşımayan
+     bir mikrosite; biz liste, form ve bağlantı taşıyoruz.
+     #D2D1CB, ikisinin de geçtiği EN KOYU sıcak greige (4.53 / 4.59). */
+  --paper: #D2D1CB;
+  --paper-cream: #E2E1DA;
+  --paper-soft: #D9D8D1;
+  --border: rgba(7, 85, 187, 0.30);
+  --border-mid: rgba(7, 85, 187, 0.50);
+  --grid-line: rgba(7, 85, 187, .20);
+  --grid-edge: rgba(7, 85, 187, .45);
+
+  /* Nesneler tek düz mürekkep */
+  --obj-hi: #0755BB;
+  --obj-mid: #0755BB;
+  --obj-dk: #0755BB;
+
+  /* Kart kağıt */
+  --card-bg: #E2E1DA;
+  --card-panel: #D9D8D1;
+  --card-inset: #CECDC6;
+  --card-line: rgba(7, 85, 187, .28);
+  --card-line-hover: rgba(7, 85, 187, .55);
+  --card-fg: #16160F;
+  --card-fg-strong: #0755BB;
+  --card-fg-dim: #3A3A30;
+  --card-fg-muted: #55554A;
+  --card-chip-bg: rgba(7, 85, 187, .10);
+  --card-chip-bg-soft: rgba(7, 85, 187, .07);
+  --card-chip-line: rgba(7, 85, 187, .26);
+  --card-art-shadow: rgba(22, 22, 15, .22);
+  --card-art-1: #D9D8D1;
+  --card-art-2: #CECDC6;
+  --card-art-3: #E2E1DA;
+  --card-art-4: #D2D1CB;
+  --card-dot: #7A7A6E;
+  --card-dot-now: #A62B22;
+  --card-dot-now-halo: rgba(166, 43, 34, .20);
+}
+
+/* --- B · MÜREKKEP ---------------------------------------------------------
+   Bugünkü hâl. Açık sıcak zemin, mürekkep cömert, nesneler PARLAK kalır,
+   etkinlik kartı KOYU kalır — koyu kart bilinçli bir kontrast aracı.
+   En az değişim, en grafik olan bu. (:root ile aynı, açıkça yazılı.) */
+[data-tema="murekkep"] {
+  --paper: #DCDBD5;
+  --paper-cream: #F1F0EA;
+  --paper-soft: #E5E3DC;
+}
+
+/* --- C · SAYFA ------------------------------------------------------------
+   Renk = SİNYAL. Metin ve nesneler SİYAH; mürekkep yalnızca tıklanabilir
+   şeylerde (bağlantı, buton, aktif durum, odak halkası). "Meetup seviyesi
+   işlevsellik" isteğinin doğrudan karşılığı: maviyse tıklanır.
+   Nesneler düz siyah siluet. */
+[data-tema="sayfa"] {
+  --paper: #DCDBD5;
+  --paper-cream: #EFEEE8;
+  --paper-soft: #E5E3DC;
+  --border: rgba(22, 22, 15, 0.18);
+  --border-mid: rgba(22, 22, 15, 0.34);
+  --grid-line: rgba(22, 22, 15, .10);
+  --grid-edge: rgba(22, 22, 15, .26);
+
+  /* Nesneler düz siyah — mürekkep onlara harcanmıyor */
+  --obj-hi: #16160F;
+  --obj-mid: #16160F;
+  --obj-dk: #16160F;
+
+  --card-bg: #EFEEE8;
+  --card-panel: #E5E3DC;
+  --card-inset: #D8D6CE;
+  --card-line: rgba(22, 22, 15, .16);
+  --card-line-hover: rgba(7, 85, 187, .55);
+  --card-fg: #16160F;
+  --card-fg-strong: #16160F;
+  --card-fg-dim: #3A3A30;
+  --card-fg-muted: #55554A;
+  --card-chip-bg: rgba(22, 22, 15, .07);
+  --card-chip-bg-soft: rgba(22, 22, 15, .05);
+  --card-chip-line: rgba(22, 22, 15, .16);
+  --card-art-shadow: rgba(22, 22, 15, .20);
+  --card-art-1: #E5E3DC;
+  --card-art-2: #D8D6CE;
+  --card-art-3: #EFEEE8;
+  --card-art-4: #DCDBD5;
+  --card-dot: #8A8A7C;
+  --card-dot-now: #A62B22;
+  --card-dot-now-halo: rgba(166, 43, 34, .20);
+}
+
+/* --- Düz doku: A ve C'de nesnelerin hacim katmanları kapanır -------------- */
+[data-tema="kagit"] .ci-shadow,
+[data-tema="sayfa"] .ci-shadow,
+[data-tema="kagit"] .ci-sheen-layer,
+[data-tema="sayfa"] .ci-sheen-layer { display: none; }
+
+[data-tema="kagit"] .ci-detail,
+[data-tema="sayfa"] .ci-detail { opacity: 0; }
+
+/* Gövde: degrade yerine tek düz renk. `fill` hem SVG attribute hem CSS
+   property olduğu için buradan ezilebiliyor. */
+[data-tema="kagit"] .ci-body { fill: var(--obj-mid); stroke: none; }
+[data-tema="sayfa"] .ci-body { fill: var(--obj-mid); stroke: none; }

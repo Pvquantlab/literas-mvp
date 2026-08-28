@@ -208,7 +208,7 @@ function details(slug: string, hi: string, dk: string): React.ReactNode {
  * zeminlerinde (event-card.tsx, cat.colors) yaşamaya devam ediyor — orada
  * gerçekten yön buldurma işi yapıyor, burada yapmıyordu.
  */
-const INK_RAMP: [string, string, string] = ['#5E93DA', '#0755BB', '#043B85']
+const INK_RAMP: [string, string, string] = ['var(--obj-hi)', 'var(--obj-mid)', 'var(--obj-dk)']
 
 const SPRITE_ITEMS: { slug: string; colors: [string, string, string] }[] = [
   { slug: TUMU_SLUG, colors: INK_RAMP },
@@ -254,14 +254,22 @@ export function IconSprite() {
         ))}
 
         {SPRITE_ITEMS.map(({ slug, colors: [hi, base, dk] }) => (
+          /* Katmanlara class veriliyor ki tema onları kapatabilsin.
+             Öncesinde hiçbirinde class yoktu — sadece inline SVG attribute
+             vardı ve CSS'ten temiz hedeflemek mümkün değildi.
+               ci-shadow     → altındaki bulanık gölge elipsi
+               ci-body       → gövde: degrade dolgu + koyu kontur
+               ci-sheen-layer→ sol üstteki beyaz parlama
+               ci-detail     → opacity'li iç detaylar (kitap sırtı, perde ışığı…)
+             "Düz" temalar gölgeyi/parlamayı gizler, gövdeyi tek renge çeker. */
           <symbol key={slug} id={`ci-icon-${slug}`} viewBox="-6 -6 112 112">
-            <ellipse cx="50" cy="90" rx="30" ry="8" fill={base} opacity=".35" filter="url(#ci-softblur)" />
-            <g fill={`url(#ci-grad-${slug})`} stroke={dk}>
+            <ellipse className="ci-shadow" cx="50" cy="90" rx="30" ry="8" fill={base} opacity=".35" filter="url(#ci-softblur)" />
+            <g className="ci-body" fill={`url(#ci-grad-${slug})`} stroke={dk}>
               {SHAPES[slug]}
             </g>
             <g clipPath={`url(#ci-clip-${slug})`}>
-              <rect x="-6" y="-6" width="112" height="112" fill="url(#ci-sheen)" />
-              {details(slug, hi, dk)}
+              <rect className="ci-sheen-layer" x="-6" y="-6" width="112" height="112" fill="url(#ci-sheen)" />
+              <g className="ci-detail">{details(slug, hi, dk)}</g>
             </g>
           </symbol>
         ))}
