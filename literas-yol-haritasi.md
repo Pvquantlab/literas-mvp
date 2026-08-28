@@ -355,7 +355,33 @@ alıyor, katılımcı listesi canlı, QR ile giriş alınabiliyor.
 ## AŞAMA 3 — Derinlik (2-3. ay)
 
 - [ ] Tekrarlayan etkinlik serileri
-- [ ] Topluluk duyuruları
+- [x] **Topluluk duyuruları** (28.08.2026)
+      Migration `20260829100000_topluluk_duyurulari.sql`: community_announcements
+      tablosu (id, community_id, author_id, title, body, created_at, updated_at,
+      sent_count — 8 kolon), indeks (community_id, created_at DESC), 4 RLS
+      politikası (onaylı üye okur; founder/admin yazar/günceller/siler), yeni
+      SECURITY DEFINER fonksiyon topluluk_yoneticisi_mi(uuid) + GRANT EXECUTE.
+      KOLON BAZLI YETKİ TUZAĞI (2.6'daki ile aynı ders, burada da tekrar
+      düşülmedi): community_announcements toplu GRANT INSERT/UPDATE/DELETE
+      listesine EKLENMEDİ, ayrı satırlarda GRANT INSERT (community_id, author_id,
+      title, body) ve GRANT UPDATE (title, body, updated_at, sent_count) verildi
+      — aksi halde created_at ve community_id korumaları sessizce anlamsızlaşırdı.
+      Alıcı listesi için yeni kod YAZILMADI: mevcut get_member_emails zaten
+      founder/admin doğrulaması yapıp email_izni(user,'announcement') ile
+      süzüyordu, olduğu gibi yeniden kullanıldı. Gönderim anında ama parçalı:
+      lib/email.ts → sendChunkedEmail 5'erli parça, parçalar arası 1 sn bekleme,
+      100 alıcı üstünde reddediliyor. KUYRUK BİLİNÇLİ OLARAK SEÇİLMEDİ: Hobby
+      planda cron günde bir kez çalışıyor, duyuru kuyruğa düşerse ertesi güne
+      kadar gitmezdi — anlık-ama-parçalı gönderim tercih edildi. (Not: cron'daki
+      buildMail zaten yalnızca reminder/promotion/join_request tanıyor,
+      'announcement' satırları hiç işlemiyor — kuyruk yolu bilerek kesik
+      bırakıldı, geri açmak için buildMail'e ayrı dal eklemek gerekir.)
+      app/community/[id]/duyuru/: actions.ts (yayınla/güncelle/sil server
+      action'ları), liste sayfası, yazma ve düzenleme sayfaları, iki adımlı
+      silme onayı. app/community/[id]/duyurular.tsx: topluluk sayfasındaki
+      bölüm, yalnızca onaylı üyeye görünür. KAPSAM DIŞI: push bildirim,
+      görsel/ek dosya, zamanlanmış gönderim, duyuru başına kitle seçimi,
+      yorum/tepki.
 - [ ] Katılım karnesi (profilde: katıldığı etkinlik sayısı, üye olduğu topluluklar;
       gizlilik toggle: show_reading_stats benzeri)
 - [ ] İlgi alanına göre kişisel keşif

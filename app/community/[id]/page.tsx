@@ -6,6 +6,7 @@ import { GlossyIcon } from '@/components/category-art'
 import MemberActions from './member-actions'
 import JoinButton from './join-button'
 import ReportButton from '@/components/report-button'
+import Duyurular from './duyurular'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({
@@ -156,6 +157,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   const isAdmin = currentUserMembership?.role === 'admin' && currentUserMembership?.status === 'approved'
   const isPending = currentUserMembership?.status === 'pending'
   const canModerate = isFounder || isAdmin
+  const isApprovedMember = currentUserMembership?.status === 'approved'
 
   /* --- Etkinlikler: yaklaşanlar + son geçmişler (zaman çizelgesi ve takvim) --- */
 
@@ -299,6 +301,10 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                   ))}
                 </div>
               </section>
+            )}
+
+            {isApprovedMember && (
+              <Duyurular communityId={community.id} yonetici={canModerate} />
             )}
 
             <section className="cp-block">

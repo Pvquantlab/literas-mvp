@@ -283,3 +283,16 @@ export const ilgiAlanlariSchema = z.object({
 // ve dosyanın ortasında `next/server` import ediyordu. Bu, şema dosyasını
 // Next runtime'ına bağlıyor ve düz Node ile (test dahil) import edilemez
 // hale getiriyordu. Kaldırıldı; rotalar hata cevabını zaten kendileri kuruyor.
+
+// ---- Topluluk duyuruları --------------------------------------------------
+
+export const duyuruSchema = z.object({
+  community_id: uuid,
+  title: trimmed(3, 120, 'Başlık'),
+  body: trimmed(10, 3000, 'Duyuru metni'),
+})
+
+export const duyuruSilSchema = z.object({
+  community_id: uuid,
+  duyuru_id: uuid,
+})

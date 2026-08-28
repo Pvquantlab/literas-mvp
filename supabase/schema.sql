@@ -268,6 +268,21 @@ CREATE TABLE IF NOT EXISTS public.app_secrets (
   value text NOT NULL
 );
 
+-- Topluluk duyuruları: organizatörün etkinlikten bağımsız üye iletişimi.
+CREATE TABLE IF NOT EXISTS public.community_announcements (
+  id           uuid NOT NULL DEFAULT gen_random_uuid(),
+  community_id uuid NOT NULL,
+  -- Yazar silinse de duyuru kalsın: kalan üyeler geçmişi kaybetmemeli.
+  author_id    uuid,
+  title        text NOT NULL,
+  body         text NOT NULL,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  updated_at   timestamptz,
+  -- Kaç kişiye ULAŞTI. Üye sayısıyla aynı olmak zorunda değil: bildirim
+  -- tercihini kapatmış üyeler get_member_emails tarafından süzülüyor.
+  sent_count   integer NOT NULL DEFAULT 0
+);
+
 
 -- -----------------------------------------------------------------------------
 -- 5. KISITLAR
@@ -275,6 +290,7 @@ CREATE TABLE IF NOT EXISTS public.app_secrets (
 
 ALTER TABLE public.app_secrets ADD CONSTRAINT app_secrets_pkey PRIMARY KEY (key);
 ALTER TABLE public.communities ADD CONSTRAINT communities_pkey PRIMARY KEY (id);
+ALTER TABLE public.community_announcements ADD CONSTRAINT community_announcements_pkey PRIMARY KEY (id);
 ALTER TABLE public.community_drafts ADD CONSTRAINT community_drafts_pkey PRIMARY KEY (user_id);
 ALTER TABLE public.community_members ADD CONSTRAINT community_members_pkey PRIMARY KEY (id);
 ALTER TABLE public.community_topics ADD CONSTRAINT community_topics_pkey PRIMARY KEY (community_id, topic_id);
@@ -312,6 +328,8 @@ ALTER TABLE public.topic_suggestions ADD CONSTRAINT topic_suggestions_status_che
 
 ALTER TABLE public.profiles ADD CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
 ALTER TABLE public.communities ADD CONSTRAINT communities_founder_id_fkey FOREIGN KEY (founder_id) REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE public.community_announcements ADD CONSTRAINT community_announcements_author_id_fkey FOREIGN KEY (author_id) REFERENCES profiles(id) ON DELETE SET NULL;
+ALTER TABLE public.community_announcements ADD CONSTRAINT community_announcements_community_id_fkey FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE;
 ALTER TABLE public.community_drafts ADD CONSTRAINT community_drafts_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 ALTER TABLE public.community_members ADD CONSTRAINT community_members_community_id_fkey FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE;
 ALTER TABLE public.community_members ADD CONSTRAINT community_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
@@ -336,6 +354,7 @@ ALTER TABLE public.waitlist ADD CONSTRAINT waitlist_user_id_fkey FOREIGN KEY (us
 -- 6. İNDEKSLER
 -- -----------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS communities_search_vector_idx ON public.communities USING gin (search_vector);
+CREATE INDEX IF NOT EXISTS community_announcements_community_created_idx ON public.community_announcements USING btree (community_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS events_search_vector_idx ON public.events USING gin (search_vector);
 CREATE INDEX IF NOT EXISTS community_topics_topic_idx ON public.community_topics USING btree (topic_id);
 CREATE INDEX IF NOT EXISTS idx_events_community_id ON public.events USING btree (community_id);
@@ -781,6 +800,27 @@ BEGIN
 END;
 $function$;
 
+-- ---- Topluluk duyuruları — yol haritası Aşama 3 -----------------------------
+-- get_member_emails içindeki founder/admin kontrolü üç RLS politikasında ve
+-- iki sayfa kapısında tekrar edilecekti. Tek yerde tutuluyor ki ayrışamasınlar.
+--
+-- SECURITY DEFINER olması ayrıca RLS özyinelemesini önlüyor: politika
+-- community_members'a bakıyor, o da kendi politikasını tetiklemiyor.
+--
+-- GRANT vermek güvenli: fonksiyon içeride auth.uid() kullanıyor, yani çağıran
+-- yalnızca KENDİ yetkisini sorabiliyor. Dönen bilgi zaten kendisinin bildiği
+-- bir şey. (etkinlik_yoneticisi_mi için verilen kararla birebir aynı.)
+CREATE OR REPLACE FUNCTION public.topluluk_yoneticisi_mi(p_community_id uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public' AS $function$
+  SELECT EXISTS (
+    SELECT 1 FROM community_members cm
+    WHERE cm.community_id = p_community_id
+      AND cm.user_id = auth.uid()
+      AND cm.role IN ('founder','admin')
+      AND cm.status = 'approved'
+  );
+$function$;
+
 -- ---- QR ile giriş (check-in) — yol haritası 2.6 -----------------------------
 -- Beşi de SECURITY DEFINER; yetki kontrolü fonksiyonun İÇİNDE (auth.uid()
 -- ile). checkin_token istemciye hiç düşmez, yalnızca QR geometrisine gömülü.
@@ -932,6 +972,7 @@ WHERE COALESCE(account_active, true)
 -- -----------------------------------------------------------------------------
 ALTER TABLE public.app_secrets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.communities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.community_announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_drafts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_topics ENABLE ROW LEVEL SECURITY;
@@ -973,6 +1014,25 @@ CREATE POLICY "Founder toplulugunu gunceller" ON public.communities FOR UPDATE
   WITH CHECK ((auth.uid() = founder_id) OR is_admin());
 CREATE POLICY "Founder toplulugunu siler" ON public.communities FOR DELETE
   USING (auth.uid() = founder_id);
+
+-- community_announcements
+-- Duyuru üye iletişimidir ("salon değişti", "kapı kodu 1234"). Postayı zaten
+-- yalnızca üyeler alıyor; sayfa da aynı kitleyi görmeli.
+CREATE POLICY "Duyurulari onayli uye okur" ON public.community_announcements
+  FOR SELECT USING (EXISTS (
+    SELECT 1 FROM community_members cm
+    WHERE cm.community_id = community_announcements.community_id
+      AND cm.user_id = auth.uid()
+      AND cm.status = 'approved'
+  ));
+CREATE POLICY "Duyuruyu yonetici yazar" ON public.community_announcements
+  FOR INSERT WITH CHECK (
+    public.topluluk_yoneticisi_mi(community_id) AND author_id = auth.uid()
+  );
+CREATE POLICY "Duyuruyu yonetici gunceller" ON public.community_announcements
+  FOR UPDATE USING (public.topluluk_yoneticisi_mi(community_id));
+CREATE POLICY "Duyuruyu yonetici siler" ON public.community_announcements
+  FOR DELETE USING (public.topluluk_yoneticisi_mi(community_id));
 
 -- events
 CREATE POLICY "Events okunabilir" ON public.events FOR SELECT
@@ -1110,8 +1170,33 @@ GRANT INSERT ON TABLE public.topic_suggestions TO authenticated;
 -- RSVP'sini sil" politikası ona dayanıyor. INSERT yalnızca event_id/user_id
 -- ile sınırlı — aksi halde onaylı bir üye kendi adına sahte bir "gelmiş"
 -- satırı (checked_in_at/checked_in_by dolu) yazabilirdi.
+-- Kolon bazlı yazma yetkisi de tablo bazlı GRANT'i ezmez: panelden
+-- (supabase_admin olarak) çalıştırıldığında varsayılan authenticated'a
+-- arwdDxtm verir ve aşağıdaki INSERT/UPDATE kısıtları anlamsızlaşırdı.
+REVOKE INSERT, UPDATE ON public.rsvps FROM authenticated, anon;
 GRANT DELETE ON TABLE public.rsvps TO authenticated;
 GRANT INSERT (event_id, user_id) ON public.rsvps TO authenticated;
+
+-- community_announcements: DİKKAT — üstteki toplu INSERT/UPDATE/DELETE
+-- listelerine EKLENMEZ. Kolon bazlı yetki tablo bazlı GRANT'i ezmez; birlikte
+-- verilirse created_at ve community_id korumaları sessizce anlamsızlaşır
+-- (bir kez yaşandı). Tabloyu her zaman migration ile oluştur.
+-- Kolon bazlı yetki tablo bazlı GRANT'i EZMEZ: önce tablo düzeyi geri alınır.
+-- Baseline panelden çalıştırıldığında (KURULUM-REHBERI.md'nin anlattığı yol)
+-- supabase_admin varsayılanı authenticated'a arwdDxtm veriyor; bu REVOKE
+-- olmadan aşağıdaki kolon listeleri sessizce anlamsızlaşır.
+REVOKE INSERT, UPDATE ON public.community_announcements FROM authenticated, anon;
+GRANT SELECT ON public.community_announcements TO authenticated;
+GRANT DELETE ON public.community_announcements TO authenticated;
+-- created_at ve id istemciden yazılamaz: created_at sıralamayı belirliyor,
+-- uydurulabilseydi bir duyuru akışın başına çivilenebilirdi.
+GRANT INSERT (community_id, author_id, title, body)
+  ON public.community_announcements TO authenticated;
+-- community_id BİLİNÇLİ olarak yok: UPDATE politikasında yalnızca USING var,
+-- WITH CHECK yok. Kolon güncellenebilseydi bir yönetici duyuruyu yönetmediği
+-- bir topluluğa taşıyabilirdi. İki koruma birbirine bağlı.
+GRANT UPDATE (title, body, updated_at, sent_count)
+  ON public.community_announcements TO authenticated;
 
 -- Fonksiyon yetkileri: varsayılan PUBLIC EXECUTE her yerde geri alınıyor.
 REVOKE ALL ON FUNCTION public._check_cron_secret(text) FROM PUBLIC;
@@ -1142,6 +1227,10 @@ REVOKE ALL ON FUNCTION public.get_member_contact(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_member_contact(uuid) TO authenticated;
 REVOKE ALL ON FUNCTION public.queue_join_notification(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.queue_join_notification(uuid) TO authenticated;
+
+-- Topluluk duyuruları: yetki kontrolü fonksiyonun içinde (auth.uid()).
+REVOKE ALL ON FUNCTION public.topluluk_yoneticisi_mi(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.topluluk_yoneticisi_mi(uuid) TO authenticated;
 
 -- QR check-in: yetki kontrolü fonksiyonun içinde (auth.uid()).
 REVOKE ALL ON FUNCTION public.etkinlik_yoneticisi_mi(uuid) FROM PUBLIC;

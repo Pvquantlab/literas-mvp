@@ -5,9 +5,12 @@
 export default function AyarlarDurum({
   durum,
   hata,
+  mesaj,
 }: {
   durum?: string
   hata?: string
+  /** Başarı durumunda gösterilecek özel metin. Verilmezse varsayılan yazı. */
+  mesaj?: string
 }) {
   if (!hata && durum !== 'ok') return null
 
@@ -43,7 +46,7 @@ export default function AyarlarDurum({
         {basarili ? 'kaydedildi' : 'hata'}
       </span>
       <span style={{ fontWeight: 600 }}>
-        {basarili ? 'Değişiklikler kaydedildi.' : hata}
+        {basarili ? (mesaj ?? 'Değişiklikler kaydedildi.') : hata}
       </span>
     </div>
   )
