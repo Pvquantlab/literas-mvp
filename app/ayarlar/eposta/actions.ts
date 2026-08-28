@@ -26,7 +26,7 @@ const FIELDS = [
  * etkinliğe giderdi. Hesabı dondurmak bunları da durdurur.
  */
 const EPOSTA_KAPISI_OLAN_PUSH_ALANLARI = [
-  "push_event_reminders", "push_new_members", "push_community_announcements",
+  "email_event_reminders", "email_new_members", "email_community_announcements",
 ] as const;
 
 export async function updateEposta(formData: FormData) {
