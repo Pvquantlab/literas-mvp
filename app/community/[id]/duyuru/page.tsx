@@ -34,7 +34,7 @@ export default async function DuyuruListesi({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(`/login?next=${encodeURIComponent(`/community/${id}/duyuru`)}`)
 
-  const kayit = sonuc ? SONUC[sonuc] : undefined
+  const kayit = sonuc && Object.hasOwn(SONUC, sonuc) ? SONUC[sonuc] : undefined
 
   const { data: topluluk } = await supabase
     .from('communities').select('name').eq('id', id).single()
