@@ -84,11 +84,14 @@ export default function ClosingCta() {
         .cc-mark svg { width: 100%; height: auto; display: block; }
 
         .cc-title {
-          font-family: var(--font-serif), Georgia, serif;
+          /* DNA: en büyük metin 24px, ağırlık en ince, harf aralığı POZİTİF.
+             Eskiden 62px'e kadar çıkan serif bir başlıktı — referansın
+             tipografi ölçeğiyle bağdaşmıyordu. Tavan 34px'e çekildi:
+             24px'ten okunur, 62px'ten uzak. */
           font-weight: 400;
-          font-size: clamp(34px, 6vw, 62px);
+          font-size: clamp(24px, 3vw, 34px);
+          letter-spacing: .04em;
           line-height: 1.06;
-          letter-spacing: -.028em;
           color: var(--night);
           margin: 0;
         }

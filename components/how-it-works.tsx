@@ -1,3 +1,4 @@
+import { RolyefMasa, RolyefSandalye, RolyefKahve } from '@/components/rolyef'
 /**
  * "Nasıl çalışır" — kenarlıklı kutu, ikon sırası, aralarında oklar.
  *
@@ -132,10 +133,15 @@ function IconTanis() {
   )
 }
 
+/* İkonlar parlak 3B'den GRAVÜR RÖLYEFE geçti (components/rolyef.tsx).
+   Eski üçlü sayfadaki tek parlak/hacimli öğe olarak kalmıştı ve künye
+   ızgarasının düz diliyle çakışıyordu. Referansta hacim yok. */
+const rolyefStil = { width: 68, height: 68, color: 'var(--ink)' } as const
+
 const STEPS: Step[] = [
-  { title: 'Bir masa aç', body: 'Konu, şehir, isim. Topluluk kurmak iki dakika sürer.', icon: <IconMasa /> },
-  { title: 'Buluşmayı planla', body: 'Tarih ve yer gir. Bağlantıyı paylaş, katılımı gör.', icon: <IconPlan /> },
-  { title: 'Tanışın', body: 'İnsanlar gelir. Gerisi kahvenin işi.', icon: <IconTanis /> },
+  { title: 'Bir masa aç', body: 'Konu, şehir, isim. Topluluk kurmak iki dakika sürer.', icon: <RolyefSandalye style={rolyefStil} /> },
+  { title: 'Buluşmayı planla', body: 'Tarih ve yer gir. Bağlantıyı paylaş, katılımı gör.', icon: <RolyefMasa style={rolyefStil} /> },
+  { title: 'Tanışın', body: 'İnsanlar gelir. Gerisi kahvenin işi.', icon: <RolyefKahve style={rolyefStil} /> },
 ]
 
 function Arrow() {
@@ -171,8 +177,10 @@ export default function HowItWorks() {
 
       <style>{`
         .hw {
-          border: 1.5px solid var(--ink);
-          border-radius: var(--r-lg);
+          /* border kaldırıldı: referansta border taşıyan sıfır eleman var,
+             ayrım zemin farkıyla kuruluyor. */
+          background: var(--paper-cream);
+          border-radius: var(--r-md);
           background: var(--paper-cream);
           box-shadow: 7px 7px 0 var(--ink);
           padding: var(--s-7) var(--s-5);

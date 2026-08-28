@@ -42,32 +42,40 @@ function Tarama({
   return <g>{cizgiler}</g>
 }
 
-/** Masa: markanın çekirdek metaforu — etrafında toplanılan yer. */
+/** Masa: markanın çekirdek metaforu — etrafında toplanılan yer.
+ *  YUKARIDAN görünüyor: simetrik olduğu için ortalanmış dev logotype'ın
+ *  arkasına oturuyor, ve kurulu bir masa anında okunuyor. Önceki yandan
+ *  görünüş o kırpımda ne olduğu belirsiz bir davul gibi duruyordu. */
 export function RolyefMasa({ className, style }: Props) {
   return (
     <svg viewBox="0 0 200 200" className={className} style={style} aria-hidden="true">
       <g {...ortak}>
-        {/* tabla */}
-        <ellipse cx="100" cy="96" rx="72" ry="26" />
-        <path d="M28 96 v10 a72 26 0 0 0 144 0 V96" />
-        {/* ayak */}
-        <path d="M100 122 v40" />
-        <path d="M74 176 q26 -14 52 0" />
-        {/* iki fincan */}
-        <ellipse cx="76" cy="88" rx="13" ry="5.5" />
-        <path d="M63 88 v6 a13 5.5 0 0 0 26 0 v-6" />
-        <ellipse cx="126" cy="92" rx="13" ry="5.5" />
-        <path d="M113 92 v6 a13 5.5 0 0 0 26 0 v-6" />
-        {/* arkada iki sandalye sırtı */}
-        <path d="M52 74 v-30 a10 10 0 0 1 20 0 v30" />
-        <path d="M130 70 v-30 a10 10 0 0 1 20 0 v30" />
+        {/* masa kenarı */}
+        <circle cx="100" cy="100" r="92" />
+        <circle cx="100" cy="100" r="86" opacity=".55" />
+        {/* çevresinde kurulum: tabak + fincan */}
+        <circle cx="100.0" cy="38.0" r="15" />
+        <circle cx="100.0" cy="38.0" r="9.5" opacity=".7" />
+        <circle cx="115.9" cy="21.6" r="6.5" />
+        <circle cx="153.7" cy="69.0" r="15" />
+        <circle cx="153.7" cy="69.0" r="9.5" opacity=".7" />
+        <circle cx="175.8" cy="74.6" r="6.5" />
+        <circle cx="153.7" cy="131.0" r="15" />
+        <circle cx="153.7" cy="131.0" r="9.5" opacity=".7" />
+        <circle cx="160.0" cy="153.0" r="6.5" />
+        <circle cx="100.0" cy="162.0" r="15" />
+        <circle cx="100.0" cy="162.0" r="9.5" opacity=".7" />
+        <circle cx="84.1" cy="178.4" r="6.5" />
+        <circle cx="46.3" cy="131.0" r="15" />
+        <circle cx="46.3" cy="131.0" r="9.5" opacity=".7" />
+        <circle cx="24.2" cy="125.4" r="6.5" />
+        <circle cx="46.3" cy="69.0" r="15" />
+        <circle cx="46.3" cy="69.0" r="9.5" opacity=".7" />
+        <circle cx="40.0" cy="47.0" r="6.5" />
+        {/* ortada paylaşılan iki kap */}
+        <ellipse cx="100" cy="100" rx="24" ry="24" />
+        <ellipse cx="100" cy="100" rx="15" ry="15" opacity=".6" />
       </g>
-      <g clipPath="url(#rolyef-masa-kirp)">
-        <Tarama x={30} y={106} w={140} h={18} aralik={8} egim={4} />
-      </g>
-      <clipPath id="rolyef-masa-kirp">
-        <path d="M28 96 v10 a72 26 0 0 0 144 0 V96 Z" />
-      </clipPath>
     </svg>
   )
 }
