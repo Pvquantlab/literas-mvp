@@ -21,7 +21,8 @@ const GUNLUK_DUYURU_SINIRI = 3
  */
 export type DuyuruSonuc =
   | 'yayinlandi' | 'alicisiz' | 'cok_uye' | 'guncellendi' | 'silindi'
-  | 'posta_hatasi' | 'limit' | 'gecersiz' | 'yetkisiz' | 'gunluk' | 'kaydedilemedi'
+  | 'posta_hatasi' | 'kismi_gonderim' | 'limit' | 'gecersiz' | 'yetkisiz'
+  | 'gunluk' | 'kaydedilemedi'
 
 /**
  * Action sonucunu kullanıcıya taşır: `<form action={fn}>` deseninde dönüş
@@ -143,7 +144,10 @@ export async function duyuruYayinla(formData: FormData): Promise<never> {
     .eq('id', duyuru.id)
 
   revalidatePath(`/community/${community_id}/duyuru`)
+  // Kısmi gönderim (Resend saniyelik sınırı, tekil hata vb.) sessizce
+  // "yayınlandı" sayılmaz — yönetici kaç üyenin postayı almadığını bilmeli.
   if (gonderildi === 0) sonuc(community_id, 'posta_hatasi')
+  if (gonderildi < alicilar.length) sonuc(community_id, 'kismi_gonderim')
   sonuc(community_id, 'yayinlandi')
 }
 
@@ -172,13 +176,22 @@ export async function duyuruGuncelle(formData: FormData): Promise<never> {
   if (!yetkili) sonuc(community_id, 'yetkisiz')
 
   // Düzenleme yeniden POSTA GÖNDERMEZ: giden posta gitmiştir (spec K4).
-  const { error } = await supabase
+  //
+  // community_id filtresi savunma derinliği içindir: yetki kontrolü
+  // community_id üzerinden yapılıyordu ama satır seçimi yalnızca duyuru_id'ye
+  // bağlıydı — ikisi birbirine bağlanmamıştı. .select('id') ile de gerçekten
+  // bir satır güncellendiğini doğruluyoruz: PostgREST 0 satırlık UPDATE'te
+  // hata DÖNDÜRMEZ (error null kalır), yani eşleşmeyen bir duyuru_id
+  // (bayat form, eşzamanlı silme) sessizce "güncellendi" der.
+  const { data: guncellenen, error } = await supabase
     .from('community_announcements')
     .update({ title, body, updated_at: new Date().toISOString() })
     .eq('id', duyuruId)
+    .eq('community_id', community_id)
+    .select('id')
 
-  if (error) {
-    console.error('[duyuru] guncellenemedi:', error)
+  if (error || !guncellenen || guncellenen.length === 0) {
+    console.error('[duyuru] guncellenemedi:', error ?? 'satir eslesmedi (silinmis/yanlis topluluk)')
     sonuc(community_id, 'kaydedilemedi')
   }
 
@@ -202,13 +215,18 @@ export async function duyuruSil(formData: FormData): Promise<never> {
   })
   if (!yetkili) sonuc(communityId, 'yetkisiz')
 
-  const { error } = await supabase
+  // community_id filtresi + .select('id'): duyuruGuncelle'deki savunma
+  // derinliği gerekçesinin aynısı — bayat form / eşzamanlı silme 0 satırlık
+  // DELETE'i sessizce "silindi" saymasın.
+  const { data: silinen, error } = await supabase
     .from('community_announcements')
     .delete()
     .eq('id', duyuruId)
+    .eq('community_id', communityId)
+    .select('id')
 
-  if (error) {
-    console.error('[duyuru] silinemedi:', error)
+  if (error || !silinen || silinen.length === 0) {
+    console.error('[duyuru] silinemedi:', error ?? 'satir eslesmedi (zaten silinmis/yanlis topluluk)')
     sonuc(communityId, 'kaydedilemedi')
   }
 
