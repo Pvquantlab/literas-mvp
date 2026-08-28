@@ -1094,8 +1094,17 @@ GRANT  SELECT (id, event_id, user_id, created_at, checked_in_at, checked_in_by)
 GRANT INSERT, UPDATE, DELETE ON TABLE public.communities, public.events TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON TABLE public.profiles TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON TABLE public.community_members, public.community_topics,
-  public.community_drafts, public.rsvps TO authenticated;
+  public.community_drafts TO authenticated;
 GRANT INSERT ON TABLE public.topic_suggestions TO authenticated;
+
+-- rsvps: yazma da kolon bazlı. UPDATE hiç verilmiyor (politikası yok,
+-- uygulama kodunda .update() çağrısı yok — giriş/geri alma SECURITY
+-- DEFINER fonksiyonlardan geçiyor). DELETE tablo bazlı kalıyor, "Kendi
+-- RSVP'sini sil" politikası ona dayanıyor. INSERT yalnızca event_id/user_id
+-- ile sınırlı — aksi halde onaylı bir üye kendi adına sahte bir "gelmiş"
+-- satırı (checked_in_at/checked_in_by dolu) yazabilirdi.
+GRANT DELETE ON TABLE public.rsvps TO authenticated;
+GRANT INSERT (event_id, user_id) ON public.rsvps TO authenticated;
 
 -- Fonksiyon yetkileri: varsayılan PUBLIC EXECUTE her yerde geri alınıyor.
 REVOKE ALL ON FUNCTION public._check_cron_secret(text) FROM PUBLIC;

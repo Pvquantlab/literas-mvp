@@ -10,8 +10,13 @@ import { qrSvg } from '@/lib/qr'
  */
 export default async function CheckinQr({ eventId }: { eventId: string }) {
   const supabase = await createClient()
-  const { data: token } = await supabase.rpc('checkin_kodum', { p_event_id: eventId })
-  if (!token) return null
+  const { data: token, error } = await supabase.rpc('checkin_kodum', { p_event_id: eventId })
+  // Bileşen yalnızca userHasRsvp doğruyken çağrılıyor, yani token null
+  // dönerse "RSVP yok" değil gerçek bir hata var — en azından iz bırak.
+  if (!token) {
+    if (error) console.error('[checkin] kod alinamadi:', error)
+    return null
+  }
 
   const svg = await qrSvg(`${SITE_URL}/event/${eventId}/checkin?t=${token}`)
 

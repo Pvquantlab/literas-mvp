@@ -63,32 +63,52 @@ export default async function CheckinPage({
   }
 
   // Token yoksa: sayaç + liste
-  const { data: kayitlar } = await supabase
+  // rsvps'te user:profiles(...) gömmesi kullanılmıyor: rsvps -> profiles
+  // arasında checked_in_by ile ikinci bir FK var, ipucusuz gömme PGRST201
+  // ile belirsizlik hatası veriyor. Ayrıca profiles'ın SELECT politikası
+  // yalnızca kendi satırını görmeye izin veriyor — organizatör başka
+  // katılımcıların profiles satırını okuyamaz. İsimler bunun yerine
+  // event/[id]/page.tsx'teki desenle public_profiles'tan ayrıca çekilir.
+  const { data: kayitlar, error: kayitlarError } = await supabase
     .from('rsvps')
-    .select('id, checked_in_at, user:profiles(name)')
+    .select('id, user_id, checked_in_at')
     .eq('event_id', id)
     .order('checked_in_at', { ascending: false, nullsFirst: false })
 
+  if (kayitlarError) console.error('[checkin] liste sorgusu:', kayitlarError)
+
+  const attendeeIds = (kayitlar ?? []).map((k) => k.user_id).filter(Boolean)
+  const { data: attendeeProfiles, error: profilError } = attendeeIds.length > 0
+    ? await supabase.from('public_profiles').select('id, name').in('id', attendeeIds)
+    : { data: [] as { id: string; name: string | null }[], error: null }
+
+  if (profilError) console.error('[checkin] profil sorgusu:', profilError)
+
+  const adById = new Map((attendeeProfiles ?? []).map((p) => [p.id, p.name]))
+
   const toplam = kayitlar?.length ?? 0
   const giren = kayitlar?.filter((k) => k.checked_in_at).length ?? 0
+  const listeHatasi = kayitlarError || profilError
 
   return (
     <main style={sayfaStil}>
       <h1 style={baslikStil}>Girişler</h1>
+      <AyarlarDurum hata={hata} />
       <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 15, color: 'var(--muted)' }}>
         {toplam} kayıt · {giren} giriş
       </p>
       <ul style={{ listStyle: 'none', padding: 0, marginTop: 20 }}>
         {kayitlar?.map((k) => (
           <li key={k.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
-            <span>{(k.user as { name?: string } | null)?.name ?? 'İsimsiz'}</span>
+            <span>{adById.get(k.user_id) ?? 'İsimsiz'}</span>
             <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, color: k.checked_in_at ? 'var(--ink)' : 'var(--muted)' }}>
               {k.checked_in_at ? formatDateTimeShort(k.checked_in_at) : 'gelmedi'}
             </span>
           </li>
         ))}
       </ul>
-      {toplam === 0 && <p style={altStil}>Henüz kimse katılmıyor.</p>}
+      {listeHatasi && <p style={altStil}>Liste yüklenemedi, az sonra tekrar dene.</p>}
+      {!listeHatasi && toplam === 0 && <p style={altStil}>Henüz kimse katılmıyor.</p>}
     </main>
   )
 }
