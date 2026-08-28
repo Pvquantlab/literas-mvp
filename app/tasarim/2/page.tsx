@@ -48,7 +48,7 @@ export default async function Urun() {
     <main style={{ paddingBottom: 100 }}>
       {/* --- Arama önce: kahraman tek satır ------------------------------ */}
       <section style={{ ...kap, paddingTop: 34, paddingBottom: 20 }}>
-        <h1 style={{ fontSize: 25, fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
+        <h1 style={{ fontSize: 25, fontWeight: 400, letterSpacing: '.01em', margin: 0 }}>
           İstanbul&apos;da ne var?
         </h1>
         <p style={{ fontSize: 14.5, color: 'var(--muted)', margin: '6px 0 18px' }}>
@@ -72,8 +72,6 @@ export default async function Urun() {
       {/* --- Filtre şeridi: küçük, düz, işlevsel ------------------------- */}
       <section
         style={{
-          borderTop: '1px solid var(--border)',
-          borderBottom: '1px solid var(--border)',
           background: 'var(--paper-cream)',
           position: 'sticky',
           top: 0,
@@ -100,9 +98,9 @@ export default async function Urun() {
                 flex: 'none',
                 padding: '7px 13px',
                 borderRadius: 999,
-                border: '1px solid var(--border-mid)',
+                background: 'var(--paper)',
                 fontSize: 13,
-                fontWeight: 600,
+                fontWeight: 400,
                 color: 'var(--ink)',
                 whiteSpace: 'nowrap',
               }}
@@ -124,7 +122,7 @@ export default async function Urun() {
             marginBottom: 14,
           }}
         >
-          <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>Etkinlikler</h2>
+          <h2 style={{ fontSize: 17, fontWeight: 400, margin: 0 }}>Etkinlikler</h2>
           <Link href="/kesfet" style={{ fontSize: 13, color: 'var(--muted)' }}>
             tümü →
           </Link>
@@ -150,7 +148,6 @@ export default async function Urun() {
                 gap: 12,
                 padding: 13,
                 borderRadius: 12,
-                border: '1px solid var(--border)',
                 background: 'var(--paper-cream)',
                 color: 'inherit',
               }}
@@ -162,22 +159,22 @@ export default async function Urun() {
                   width: 46,
                   textAlign: 'center',
                   borderRadius: 9,
-                  border: '1px solid var(--border)',
+                  background: 'var(--paper)',
                   padding: '6px 0',
                   lineHeight: 1.15,
                 }}
               >
                 <div
                   style={{
-                    font: "500 9.5px 'IBM Plex Mono', monospace",
-                    letterSpacing: '.08em',
+                    font: "400 9.5px 'IBM Plex Mono', monospace",
+                    letterSpacing: '.16em',
                     color: 'var(--ink)',
                     textTransform: 'uppercase',
                   }}
                 >
                   {formatMonthShort(e.event_date)}
                 </div>
-                <div style={{ fontSize: 19, fontWeight: 800, color: 'var(--night)' }}>
+                <div style={{ fontSize: 19, fontWeight: 400, color: 'var(--night)' }}>
                   {dayOfMonth(e.event_date)}
                 </div>
               </div>
@@ -186,7 +183,7 @@ export default async function Urun() {
                 <div
                   style={{
                     fontSize: 14.5,
-                    fontWeight: 700,
+                    fontWeight: 500,
                     lineHeight: 1.3,
                     color: 'var(--night)',
                     display: '-webkit-box',
@@ -199,7 +196,7 @@ export default async function Urun() {
                 </div>
                 <div
                   style={{
-                    font: "500 11.5px 'IBM Plex Mono', monospace",
+                    font: "400 11.5px 'IBM Plex Mono', monospace",
                     color: 'var(--muted)',
                     marginTop: 5,
                   }}
@@ -235,7 +232,7 @@ export default async function Urun() {
             marginBottom: 14,
           }}
         >
-          <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>Topluluklar</h2>
+          <h2 style={{ fontSize: 17, fontWeight: 400, margin: 0 }}>Topluluklar</h2>
           <Link href="/kesfet?sekme=topluluk" style={{ fontSize: 13, color: 'var(--muted)' }}>
             tümü →
           </Link>
@@ -260,7 +257,6 @@ export default async function Urun() {
                   gap: 11,
                   padding: 13,
                   borderRadius: 12,
-                  border: '1px solid var(--border)',
                   background: 'var(--paper-cream)',
                   color: 'inherit',
                 }}
@@ -273,7 +269,7 @@ export default async function Urun() {
                     style={{
                       display: 'block',
                       fontSize: 14,
-                      fontWeight: 700,
+                      fontWeight: 500,
                       color: 'var(--night)',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -285,7 +281,7 @@ export default async function Urun() {
                   <span
                     style={{
                       display: 'block',
-                      font: "500 11.5px 'IBM Plex Mono', monospace",
+                      font: "400 11.5px 'IBM Plex Mono', monospace",
                       color: 'var(--muted)',
                       marginTop: 2,
                     }}

@@ -45,8 +45,8 @@ export default async function Vitrin() {
         <div>
           <div
             style={{
-              font: "500 11px 'IBM Plex Mono', monospace",
-              letterSpacing: '.14em',
+              font: "400 11px 'IBM Plex Mono', monospace",
+              letterSpacing: '.18em',
               textTransform: 'uppercase',
               color: 'var(--ink)',
             }}
@@ -55,10 +55,10 @@ export default async function Vitrin() {
           </div>
           <h1
             style={{
-              fontSize: 'clamp(38px, 5.6vw, 68px)',
-              fontWeight: 800,
-              letterSpacing: '-0.035em',
-              lineHeight: 1.02,
+              fontSize: 'clamp(30px, 4vw, 48px)',
+              fontWeight: 400,
+              letterSpacing: '.005em',
+              lineHeight: 1.18,
               margin: '16px 0 0',
               color: 'var(--ink)',
               maxWidth: '13ch',
@@ -98,12 +98,10 @@ export default async function Vitrin() {
             href={`/event/${oneCikan.id}`}
             style={{
               display: 'grid',
-              gridTemplateColumns: 'minmax(0, 1fr) auto',
               gap: 28,
               alignItems: 'center',
               padding: '26px 28px',
               borderRadius: 20,
-              border: '1.5px solid var(--border-mid)',
               background: 'var(--paper-cream)',
               color: 'inherit',
             }}
@@ -111,7 +109,7 @@ export default async function Vitrin() {
             <div style={{ minWidth: 0 }}>
               <div
                 style={{
-                  font: "500 11px 'IBM Plex Mono', monospace",
+                  font: "400 11px 'IBM Plex Mono', monospace",
                   letterSpacing: '.12em',
                   textTransform: 'uppercase',
                   color: 'var(--ink)',
@@ -124,7 +122,7 @@ export default async function Vitrin() {
                   fontFamily: 'var(--font-serif), Georgia, serif',
                   fontSize: 'clamp(24px, 3.2vw, 36px)',
                   lineHeight: 1.16,
-                  letterSpacing: '-0.015em',
+                  letterSpacing: '.01em',
                   color: 'var(--night)',
                   margin: '10px 0 0',
                 }}
@@ -137,10 +135,9 @@ export default async function Vitrin() {
                 {oneCikan.community?.name ? ` · ${oneCikan.community.name}` : ''}
               </div>
             </div>
-            <GlossyIcon
-              value={oneCikan.community?.category ?? undefined}
-              size={104}
-            />
+            {/* Burada nesne YOK: kahramanda zaten bir kitap var ve öne çıkan
+                etkinlik de kitap kulübünden geliyordu — aynı nesnenin iki kez
+                görünmesi "az ve büyük" kuralını kendi içinde çürütüyordu. */}
           </Link>
         </section>
       )}
@@ -155,7 +152,7 @@ export default async function Vitrin() {
             marginBottom: 18,
           }}
         >
-          <h2 style={{ fontSize: 19, fontWeight: 800, margin: 0 }}>Yaklaşanlar</h2>
+          <h2 style={{ fontSize: 19, fontWeight: 400, margin: 0 }}>Yaklaşanlar</h2>
           <Link href="/kesfet" style={{ fontSize: 13.5, color: 'var(--muted)' }}>
             tümü →
           </Link>
@@ -176,14 +173,13 @@ export default async function Vitrin() {
                 display: 'block',
                 padding: '20px 22px',
                 borderRadius: 16,
-                border: '1.5px solid var(--border)',
                 background: 'var(--paper-cream)',
                 color: 'inherit',
               }}
             >
               <div
                 style={{
-                  font: "500 11px 'IBM Plex Mono', monospace",
+                  font: "400 11px 'IBM Plex Mono', monospace",
                   letterSpacing: '.1em',
                   textTransform: 'uppercase',
                   color: 'var(--ink)',
@@ -220,7 +216,7 @@ export default async function Vitrin() {
            Üç parlak nesne kuralı gereği burada nesne YOK. Kimlik zaten
            yukarıda kuruldu; burada tekrar etmek onu ucuzlatırdı. */}
       <section style={{ ...kap, paddingBottom: 48 }}>
-        <h2 style={{ fontSize: 19, fontWeight: 800, margin: '0 0 16px' }}>Ne ilgini çeker?</h2>
+        <h2 style={{ fontSize: 19, fontWeight: 400, margin: '0 0 16px' }}>Ne ilgini çeker?</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 9 }}>
           {CATEGORIES.map((c) => (
             <Link
@@ -229,9 +225,8 @@ export default async function Vitrin() {
               style={{
                 padding: '9px 16px',
                 borderRadius: 999,
-                border: '1.5px solid var(--border-mid)',
                 fontSize: 14,
-                fontWeight: 600,
+                fontWeight: 400,
                 color: 'var(--ink)',
               }}
             >
@@ -243,7 +238,7 @@ export default async function Vitrin() {
 
       {/* --- Topluluklar ----------------------------------------------- */}
       <section style={kap}>
-        <h2 style={{ fontSize: 19, fontWeight: 800, margin: '0 0 18px' }}>Topluluklar</h2>
+        <h2 style={{ fontSize: 19, fontWeight: 400, margin: '0 0 18px' }}>Topluluklar</h2>
         <div
           style={{
             display: 'grid',
@@ -259,15 +254,14 @@ export default async function Vitrin() {
                 display: 'block',
                 padding: '18px 20px',
                 borderRadius: 16,
-                border: '1.5px solid var(--border)',
                 background: 'var(--paper-cream)',
                 color: 'inherit',
               }}
             >
-              <div style={{ fontSize: 15.5, fontWeight: 700, color: 'var(--night)' }}>{t.name}</div>
+              <div style={{ fontSize: 15.5, fontWeight: 500, color: 'var(--night)' }}>{t.name}</div>
               <div
                 style={{
-                  font: "500 11.5px 'IBM Plex Mono', monospace",
+                  font: "400 11.5px 'IBM Plex Mono', monospace",
                   color: 'var(--muted)',
                   marginTop: 6,
                 }}
