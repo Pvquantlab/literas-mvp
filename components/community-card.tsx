@@ -105,24 +105,18 @@ export default function CommunityCard({ community }: { community: CommunitySumma
       <style>{`
         .cm-link { display:block; text-decoration:none; color:inherit; height:100%; }
         .cm-card {
-          --clay: 10px 14px 26px rgba(22, 22, 15, .13),
-                  inset -5px -7px 12px rgba(22, 22, 15, .14),
-                  inset 5px 7px 14px rgba(255,255,255,.70);
-          --clay-hi: 16px 24px 38px rgba(22, 22, 15, .19),
-                     inset -5px -7px 12px rgba(22, 22, 15, .14),
-                     inset 6px 8px 16px rgba(255,255,255,.78);
           position:relative; display:flex; flex-direction:column; height:100%;
-          padding:16px; border-radius:30px;
+          padding:16px; border-radius:4px;
           background:var(--paper-cream, #FFF);
           border:1px solid var(--border, #E8E5DD);
-          box-shadow:var(--clay);
+          
           transition:transform .4s var(--ease, cubic-bezier(.2,.8,.3,1)), box-shadow .4s ease;
         }
-        .cm-link:hover .cm-card { transform:translateY(-6px); box-shadow:var(--clay-hi); }
+        .cm-link:hover .cm-card { transform:translateY(-2px); }
         .cm-cover {
-          position:relative; height:172px; border-radius:22px; overflow:hidden;
+          position:relative; height:172px; border-radius:3px; overflow:hidden;
           display:grid; place-items:center;
-          box-shadow:inset 0 0 0 1px rgba(22, 22, 15, .16);
+          
         }
         .cm-tags { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:12px; }
         .cm-tag {
@@ -149,7 +143,7 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         }
         .cm-body { padding:4px 4px 0; display:flex; flex-direction:column; flex:1; }
         .cm-title {
-          font-family:var(--font-serif), Georgia, serif; font-weight:600;
+          font-weight:400; letter-spacing:.02em;
           font-size:21px; line-height:1.2; letter-spacing:-.005em;
           color:var(--ink, #1E3A2B); margin:0;
         }

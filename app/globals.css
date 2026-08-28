@@ -968,13 +968,14 @@ p, .seats-label {
   padding: 0;
 }
 
+/* DNA'ya çekildi: 22px köşe + gölge + çerçeve, referansın diliyle
+   bağdaşmıyordu (ölçüm: baskın köşe 4px, gölge taşıyan sıfır eleman).
+   Ayrım artık yalnızca zemin farkıyla — paper-cream, paper'dan açık. */
 .ct-sq {
   display: grid;
   place-items: center;
-  border-radius: 22px;
+  border-radius: 4px;
   background: var(--paper-cream);
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 20px -10px rgba(22, 22, 15, .26);
   transition: transform .3s var(--ease), box-shadow .3s var(--ease),
               background .3s var(--ease), border-color .3s var(--ease);
 }
@@ -984,8 +985,6 @@ p, .seats-label {
 }
 .ct-sq.on {
   background: var(--ink);
-  border-color: var(--ink);
-  box-shadow: 0 14px 28px -12px rgba(22, 22, 15, .5);
 }
 
 .ct-lbl {
