@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
 import { bySlug, sanitizeQuery, CATEGORIES } from '@/lib/categories'
+import { Kabartma, DevLogotype } from '@/components/kunye'
 import { formatDayMonthShort } from '@/lib/date'
 import { bulunmaHali } from '@/lib/turkce'
 import CategoryStrip from './category-strip'
@@ -317,17 +318,40 @@ export default async function HomePage({
   return (
     <main id="content">
       {/* ---- Künye ızgarası ----
-           week.wild.plus/athens-26 ÖLÇÜLEREK çıkarılan DNA'dan
-           (docs/tasarim/wild-week-dna.json). Eski dev kelimeli kahramanın
-           yerine geçti.
+           week.wild.plus/athens-26 uyarlaması (docs/tasarim/wild-week-dna.json).
 
-           Yapı referanstan: TAM GENİŞLİK 3 sütun, hücreler içeriğinden
-           yüksek, içerik üste/alta yaslı — boşluk dolgudan değil BOŞ
-           HÜCREDEN geliyor. Dolgu sıkı (18–20px), köşe 4px, gölge ve
-           border yok.
+           DÜZELTME: ilk sürümde DOM ölçümüne bakıp "illüstrasyon yok, en büyük
+           metin 24px" sonucuna varıp nesneleri TAMAMEN kaldırmıştım. Ekran
+           görüntüsü tersini gösterdi — ölçüm metni ve CSS'i görüyor, GÖRSELİ
+           görmüyor:
+             · dev "WILD WEEK" yazısı metin değil SVG, o yüzden ölçüme takılmadı
+             · her hücre büyük, tek renk bir KABARTMA taşıyor; sayfanın
+               güzelliğinin çoğu bu
+           Doğrusu: dev logotype + büyük sessiz illüstrasyon + minik yazı.
 
-           Yüzen 3B nesneler kaldırıldı: referansta illüstrasyon yok ve
-           iki nesne bu ızgara diliyle çakışıyordu. */}
+           Kabartmaların karşılığı olarak mevcut kategori şekilleri dev ve
+           soluk kullanılıyor — yeni bir çizim seti üretmedik, var olan
+           kimliğin ölçeği ve sesi değişti. */}
+
+      {/* Satır 1: dev logotype, tam genişlik. Arkasında soluk bir şekil —
+          referansta "WILD WEEK"in arkasındaki vazonun karşılığı. */}
+      <section
+        aria-label="literaslab"
+        style={{
+          ...kunyeHucre,
+          position: 'relative',
+          overflow: 'hidden',
+          margin: '8px 8px 0',
+          padding: 'clamp(28px, 5vw, 64px) 20px',
+          justifyContent: 'center',
+        }}
+      >
+        <Kabartma slug="sosyal" opaklik={0.07} />
+        <div style={{ position: 'relative' }}>
+          <DevLogotype />
+        </div>
+      </section>
+
       <section
         aria-label="Giriş"
         style={{
@@ -338,8 +362,17 @@ export default async function HomePage({
         }}
       >
         {/* Hücre 1: içerik ALTA yaslı, üstü bilerek boş */}
-        <div style={{ ...kunyeHucre, minHeight: 380, justifyContent: 'space-between' }}>
-          <span style={kunyeEtiket}>literaslab — İstanbul</span>
+        <div
+          style={{
+            ...kunyeHucre,
+            minHeight: 380,
+            justifyContent: 'space-between',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <Kabartma slug="kitap" hizala="top" opaklik={0.10} />
+          <span style={{ ...kunyeEtiket, position: 'relative' }}>literaslab — İstanbul</span>
           <h1 style={{ margin: 0 }}>
             <span
               style={{
@@ -374,8 +407,9 @@ export default async function HomePage({
 
         {/* Hücre 2: GERÇEKLER — referansın "THE FACTS" bloğu, tek harfli
             alan etiketleriyle. */}
-        <div style={{ ...kunyeHucre, minHeight: 380 }}>
-          <span style={{ ...kunyeEtiket, marginBottom: 22 }}>Gerçekler</span>
+        <div style={{ ...kunyeHucre, minHeight: 380, position: 'relative', overflow: 'hidden' }}>
+          <Kabartma slug="sanat" hizala="bottom" opaklik={0.08} />
+          <span style={{ ...kunyeEtiket, marginBottom: 22, position: 'relative' }}>Gerçekler</span>
           <dl style={{ margin: 0, display: 'grid', gap: 10 }}>
             {[
               ['T', 'Topluluk', String(communities.length)],
@@ -401,14 +435,23 @@ export default async function HomePage({
         </div>
 
         {/* Hücre 3: davet. Referansın karşılama paragrafı BÜYÜK HARF. */}
-        <div style={{ ...kunyeHucre, minHeight: 380, justifyContent: 'center' }}>
+        {/* Referansta karşılama paragrafı MAVİ SÜTUN üstünde beyaz metin —
+            ekranda tek dolu mavi alan o. Aynı rol burada. */}
+        <div
+          style={{
+            ...kunyeHucre,
+            minHeight: 380,
+            justifyContent: 'center',
+            background: 'var(--ink)',
+          }}
+        >
           <p
             style={{
               fontSize: 16,
               lineHeight: 1.55,
               letterSpacing: '.03em',
               textTransform: 'uppercase',
-              color: 'var(--ink)',
+              color: '#fff',
               margin: 0,
             }}
           >
@@ -417,10 +460,10 @@ export default async function HomePage({
             olabilir.
           </p>
           <div style={{ display: 'flex', gap: 20, marginTop: 26, flexWrap: 'wrap' }}>
-            <Link href="#etkinlikler" style={{ ...kunyeEtiket, fontSize: 11 }}>
+            <Link href="#etkinlikler" style={{ ...kunyeEtiket, fontSize: 11, color: '#fff' }}>
               Etkinlikleri gör →
             </Link>
-            <Link href="/community/new" style={{ ...kunyeEtiket, fontSize: 11, color: 'var(--night)' }}>
+            <Link href="/community/new" style={{ ...kunyeEtiket, fontSize: 11, color: 'rgba(255,255,255,.72)' }}>
               Topluluk kur →
             </Link>
           </div>
