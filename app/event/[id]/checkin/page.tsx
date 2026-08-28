@@ -5,6 +5,17 @@ import { formatDateTimeShort } from '@/lib/date'
 import AyarlarDurum from '@/components/ayarlar-durum'
 import { girisiOnayla, girisiGeriAl } from './actions'
 
+// Action'lar serbest metin değil KOD gönderiyor (bkz. actions.ts CheckinHata).
+// Metin buradan seçiliyor: `?hata=` adres çubuğundan gelebildiği için, aksi
+// halde okutulan QR'ı kuran kişi organizatöre kendi yazdığı bir mesajı
+// gösterebilirdi. Tanınmayan kod genel mesaja düşer.
+const HATA_MESAJLARI: Record<string, string> = {
+  limit: 'Çok fazla istek, biraz bekle',
+  gecersiz: 'Geçersiz kod',
+  yetkisiz: 'Bu etkinliği yönetme yetkin yok',
+  basarisiz: 'İşlem başarısız, tekrar dene',
+}
+
 export default async function CheckinPage({
   params, searchParams,
 }: {
@@ -15,8 +26,15 @@ export default async function CheckinPage({
   const { t, hata } = await searchParams
   const supabase = await createClient()
 
+  const hataMesaji = hata ? (HATA_MESAJLARI[hata] ?? HATA_MESAJLARI.basarisiz) : undefined
+
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect(`/login?next=/event/${id}/checkin${t ? `?t=${t}` : ''}`)
+  if (!user) {
+    // next kodlanıyor: kodlanmadığında hedefin kendi `?t=` parametresi
+    // /login'in query dizesine karışıyor ve adres bozuk kuruluyordu.
+    const hedef = `/event/${id}/checkin${t ? `?t=${t}` : ''}`
+    redirect(`/login?next=${encodeURIComponent(hedef)}`)
+  }
 
   // Yetki kapısı: rsvps SELECT politikası USING (true), sayfa kendi
   // yetkisini kontrol etmezse giriş yapmış herkes katılımcı listesini
@@ -31,12 +49,20 @@ export default async function CheckinPage({
     // Derinlemesine savunma: RPC de kendi içinde yetki kontrolü yapıyor.
     if (error?.message?.includes('yetkisiz')) return <Mesaj baslik="Yetkin yok" alt="Bu etkinliği yönetme yetkin yok." />
     const kayit = data?.[0]
-    if (!kayit) return <Mesaj baslik="Geçersiz kod" alt="Bu QR bu etkinliğe ait değil." />
+    if (!kayit) return <Mesaj baslik="Geçersiz kod" alt="Bu kod geçersiz." />
+
+    // Token'ın etkinliği ile adresteki etkinlik aynı olmalı. Aynı kişinin iki
+    // etkinliğini yönettiği durumda, A'nın sayfasında B'nin QR'ı okutulursa
+    // yetki kapısı geçiliyordu (ikisinde de yetkili) ve giriş yanlış
+    // etkinliğin sayfasından onaylanıyordu.
+    if (kayit.event_id !== id) {
+      return <Mesaj baslik="Başka etkinlik" alt="Bu QR bu etkinliğe ait değil." />
+    }
 
     return (
       <main style={sayfaStil}>
         <h1 style={baslikStil}>{kayit.katilimci_adi}</h1>
-        <AyarlarDurum hata={hata} />
+        <AyarlarDurum hata={hataMesaji} />
         {kayit.checked_in_at ? (
           <>
             <p style={altStil}>{formatDateTimeShort(kayit.checked_in_at)}&apos;te giriş yapmış.</p>
@@ -93,7 +119,7 @@ export default async function CheckinPage({
   return (
     <main style={sayfaStil}>
       <h1 style={baslikStil}>Girişler</h1>
-      <AyarlarDurum hata={hata} />
+      <AyarlarDurum hata={hataMesaji} />
       <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 15, color: 'var(--muted)' }}>
         {toplam} kayıt · {giren} giriş
       </p>

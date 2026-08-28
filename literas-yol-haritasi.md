@@ -335,6 +335,18 @@ Amaç: "Luma modeli" — paylaşılabilirlik ve sürtünmesiz akış. Kullanıc�
       QR okuyucu yok (telefonun kendi kamerası kullanılıyor), QR yalnızca etkinlik sayfasında
       (RSVP onay e-postasına gömülmedi), offline/çevrimdışı giriş desteklenmiyor.
 
+      SONRAKİ TUR (`20260828180000_qr_checkin_borclar.sql` + kod): checkin_yap artık koşulu
+      UPDATE'in içinde tutuyor, iki yönetici aynı QR'ı aynı anda okutunca checked_in_by son
+      yazana kaymıyor. `?hata=` serbest metin yerine kod taşıyor (limit/gecersiz/yetkisiz/
+      basarisiz), metni sayfa seçiyor — katılımcı kendi QR'ını kurup organizatöre sahte sistem
+      mesajı gösteremiyor. checkin_dogrula'nın döndürdüğü event_id adresteki id ile
+      karşılaştırılıyor; "kod geçersiz" ile "başka etkinliğin QR'ı" ayrıştı. sonuc() ve
+      /login?next= artık encodeURIComponent'ten geçiyor. AYRICA: rsvps canlıda realtime
+      yayınındaydı (bu dosya ve schema.sql doğruyu söylüyordu, veritabanı ayrışmıştı) —
+      abone olan kod olmadığı halde giriş yapmış herkes kimin nereye kaydolduğunu anlık
+      dinleyebiliyordu; yayından çıkarıldı. AÇIK KALAN: spec checkin_dogrula'nın etkinlik
+      başlığını da döndürmesini istiyordu, dönmüyor (eksik özellik, arıza değil).
+
 **Aşama 2 bitiş kriterleri:** WhatsApp linkleri güzel önizleme, RSVP'liler hatırlatma
 alıyor, katılımcı listesi canlı, QR ile giriş alınabiliyor.
 

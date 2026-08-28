@@ -830,20 +830,27 @@ $function$;
 CREATE OR REPLACE FUNCTION public.checkin_yap(p_token uuid)
 RETURNS TABLE(katilimci_adi text, checked_in_at timestamp with time zone, yeni_giris boolean)
 LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $function$
-DECLARE v_event uuid; v_rsvp uuid; v_mevcut timestamptz;
+DECLARE v_event uuid; v_rsvp uuid; v_yeni boolean;
 BEGIN
-  SELECT r.event_id, r.id, r.checked_in_at INTO v_event, v_rsvp, v_mevcut
+  SELECT r.event_id, r.id INTO v_event, v_rsvp
   FROM rsvps r WHERE r.checkin_token = p_token;
   IF v_rsvp IS NULL THEN RETURN; END IF;
   IF NOT public.etkinlik_yoneticisi_mi(v_event) THEN RAISE EXCEPTION 'yetkisiz'; END IF;
 
-  IF v_mevcut IS NULL THEN
-    UPDATE rsvps SET checked_in_at = now(), checked_in_by = auth.uid()
-    WHERE id = v_rsvp;
-  END IF;
+  -- Koşul UPDATE'in İÇİNDE: önce okuyup sonra koşullu yazsaydık iki yönetici
+  -- aynı anda okuttuğunda ikisi de "boş" görüp yazar, checked_in_by son
+  -- yazanın olurdu. Bu haliyle satır kilidi tek yazana veriliyor.
+  --
+  -- DİKKAT: WHERE'deki kolonlar `rsvps.` ile nitelenmek ZORUNDA — fonksiyonun
+  -- checked_in_at adında bir OUT parametresi var, çıplak yazılırsa plpgsql
+  -- değişkenle karıştırıp belirsizlik hatası veriyor.
+  UPDATE rsvps SET checked_in_at = now(), checked_in_by = auth.uid()
+  WHERE rsvps.id = v_rsvp AND rsvps.checked_in_at IS NULL;
+
+  v_yeni := FOUND;
 
   RETURN QUERY
-    SELECT p.name, r.checked_in_at, (v_mevcut IS NULL)
+    SELECT p.name, r.checked_in_at, v_yeni
     FROM rsvps r JOIN profiles p ON p.id = r.user_id
     WHERE r.id = v_rsvp;
 END;
@@ -1154,6 +1161,11 @@ GRANT EXECUTE ON FUNCTION public.checkin_geri_al(uuid) TO authenticated;
 -- -----------------------------------------------------------------------------
 -- Katılımcı listesi events.attendee_count UPDATE'ini dinliyor (rsvps değil —
 -- kimin nereye kayıtlı olduğu yayınlanmasın diye).
+--
+-- rsvps bir ara canlı yayına girmişti; bu dosya doğruyu söylüyordu ama
+-- veritabanı ayrışmıştı. 20260828180000 migration'ı geri çıkardı. Buraya
+-- rsvps EKLEME: abone olan kod yok ve yayında olduğu sürece giriş yapmış
+-- herkes kimin hangi etkinliğe kaydolduğunu anlık dinleyebiliyor.
 ALTER PUBLICATION supabase_realtime ADD TABLE public.events;
 
 
