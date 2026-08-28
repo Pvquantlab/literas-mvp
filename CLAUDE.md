@@ -44,6 +44,7 @@ app/
   event/[id]/                 etkinlik detay: RSVP formu, harita, WhatsApp paylaş, .ics, edit
   event/new/                  etkinlik oluşturma (yetki: topluluğun founder/admin'i)
   community/[id]/             topluluk sayfası, üyelik katıl/yönet
+  community/[id]/duyuru/      topluluk duyuruları: yayınla/düzenle/sil, liste sayfası
   community/new/              5 adımlı kurma sihirbazı (ad→konum→konular→açıklama→gönder)
   admin/                      yönetici paneli: topluluk onay/red, şikayet raporları
                               (guard: layout.tsx → profiles.is_admin kontrolü)
@@ -117,7 +118,7 @@ Ayrıntılar `literas-yol-haritasi.md` dosyasında. Özet durum:
 - [ ] **1.5** Sentry — ERTELENDİ (kullanıcı kararı, sonra eklenecek)
 - [ ] **2.1** OG görselleri ✓ · **2.2** cron hatırlatma ✓ · **2.3** PWA ✓ ·
       **2.4** Realtime katılımcı listesi ✓ · **2.5** Türkçe FTS ✓ · **2.6** QR check-in ✓
-- [ ] **Aşama 3** tekrarlayan etkinlik serileri, topluluk duyuruları, katılım karnesi, kişisel keşif
+- [ ] **Aşama 3** tekrarlayan etkinlik serileri, topluluk duyuruları ✓, katılım karnesi, kişisel keşif
 - [ ] **Aşama 4** iyzico/PayTR ödeme, Expo mobil (kullanıcı çekişi görünce)
 
 Bir görevi bitirince bu listede `[x]` işaretle ve tek satır not düş.
