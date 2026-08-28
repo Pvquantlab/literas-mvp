@@ -291,3 +291,8 @@ export const duyuruSchema = z.object({
   title: trimmed(3, 120, 'Başlık'),
   body: trimmed(10, 3000, 'Duyuru metni'),
 })
+
+export const duyuruSilSchema = z.object({
+  community_id: uuid,
+  duyuru_id: uuid,
+})

@@ -1170,6 +1170,10 @@ GRANT INSERT ON TABLE public.topic_suggestions TO authenticated;
 -- RSVP'sini sil" politikası ona dayanıyor. INSERT yalnızca event_id/user_id
 -- ile sınırlı — aksi halde onaylı bir üye kendi adına sahte bir "gelmiş"
 -- satırı (checked_in_at/checked_in_by dolu) yazabilirdi.
+-- Kolon bazlı yazma yetkisi de tablo bazlı GRANT'i ezmez: panelden
+-- (supabase_admin olarak) çalıştırıldığında varsayılan authenticated'a
+-- arwdDxtm verir ve aşağıdaki INSERT/UPDATE kısıtları anlamsızlaşırdı.
+REVOKE INSERT, UPDATE ON public.rsvps FROM authenticated, anon;
 GRANT DELETE ON TABLE public.rsvps TO authenticated;
 GRANT INSERT (event_id, user_id) ON public.rsvps TO authenticated;
 
@@ -1177,6 +1181,11 @@ GRANT INSERT (event_id, user_id) ON public.rsvps TO authenticated;
 -- listelerine EKLENMEZ. Kolon bazlı yetki tablo bazlı GRANT'i ezmez; birlikte
 -- verilirse created_at ve community_id korumaları sessizce anlamsızlaşır
 -- (bir kez yaşandı). Tabloyu her zaman migration ile oluştur.
+-- Kolon bazlı yetki tablo bazlı GRANT'i EZMEZ: önce tablo düzeyi geri alınır.
+-- Baseline panelden çalıştırıldığında (KURULUM-REHBERI.md'nin anlattığı yol)
+-- supabase_admin varsayılanı authenticated'a arwdDxtm veriyor; bu REVOKE
+-- olmadan aşağıdaki kolon listeleri sessizce anlamsızlaşır.
+REVOKE INSERT, UPDATE ON public.community_announcements FROM authenticated, anon;
 GRANT SELECT ON public.community_announcements TO authenticated;
 GRANT DELETE ON public.community_announcements TO authenticated;
 -- created_at ve id istemciden yazılamaz: created_at sıralamayı belirliyor,

@@ -3,10 +3,13 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatDateTimeShort } from '@/lib/date'
 import AyarlarDurum from '@/components/ayarlar-durum'
+import type { DuyuruSonuc } from './actions'
 
 // Kod→metin eşlemesi. Action serbest metin değil KOD gönderiyor; metni burası
 // seçiyor ki adres çubuğundan uydurma mesaj gösterilemesin.
-const SONUC: Record<string, { metin: string; hataMi: boolean }> = {
+// Record<DuyuruSonuc, ...> derlemede tam kapsamayı zorunlu kılar: actions.ts
+// yeni bir kod eklerse burası eklenmeden derleme kırılır.
+const SONUC: Record<DuyuruSonuc, { metin: string; hataMi: boolean }> = {
   yayinlandi:    { metin: 'Duyuru yayınlandı ve üyelere gönderildi.', hataMi: false },
   alicisiz:      { metin: 'Duyuru yayınlandı. E-posta bildirimi açık üye yok.', hataMi: false },
   cok_uye:       { metin: 'Duyuru yayınlandı ama üye sayısı tek seferde e-posta göndermek için fazla. Sayfada görünüyor.', hataMi: true },
@@ -34,7 +37,7 @@ export default async function DuyuruListesi({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(`/login?next=${encodeURIComponent(`/community/${id}/duyuru`)}`)
 
-  const kayit = sonuc && Object.hasOwn(SONUC, sonuc) ? SONUC[sonuc] : undefined
+  const kayit = sonuc && Object.hasOwn(SONUC, sonuc) ? SONUC[sonuc as DuyuruSonuc] : undefined
 
   const { data: topluluk } = await supabase
     .from('communities').select('name').eq('id', id).single()

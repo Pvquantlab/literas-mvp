@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { checkUserRateLimit } from '@/lib/rate-limit'
-import { duyuruSchema } from '@/lib/validations'
+import { duyuruSchema, duyuruSilSchema } from '@/lib/validations'
 import { sendChunkedEmail, escapeHtml } from '@/lib/email'
 import { SITE_URL } from '@/lib/site'
 
@@ -205,10 +205,17 @@ export async function duyuruSil(formData: FormData): Promise<never> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const communityId = String(formData.get('community_id') ?? '')
-  const duyuruId = String(formData.get('duyuru_id') ?? '')
+  const rawId = String(formData.get('community_id') ?? '')
 
-  if (!(await checkUserRateLimit(user.id, 'normal'))) sonuc(communityId, 'limit')
+  if (!(await checkUserRateLimit(user.id, 'normal'))) sonuc(rawId, 'limit')
+
+  const parsed = duyuruSilSchema.safeParse({
+    community_id: rawId,
+    duyuru_id: formData.get('duyuru_id'),
+  })
+  if (!parsed.success) sonuc(rawId, 'gecersiz')
+
+  const { community_id: communityId, duyuru_id: duyuruId } = parsed.data
 
   const { data: yetkili } = await supabase.rpc('topluluk_yoneticisi_mi', {
     p_community_id: communityId,
@@ -246,7 +253,7 @@ function duyuruHtml({
   const y = escapeHtml(yazar)
   // Satır sonları korunsun: kaçırdıktan SONRA <br> koyuyoruz.
   const m = escapeHtml(metin).replace(/\n/g, '<br />')
-  const adres = `${SITE_URL}/community/${communityId}`
+  const adres = `${SITE_URL}/community/${escapeHtml(communityId)}`
 
   return `
     <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 2rem;">
