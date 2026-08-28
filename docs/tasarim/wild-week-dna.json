@@ -1,0 +1,75 @@
+{
+  "_kaynak": "https://week.wild.plus/athens-26",
+  "_yontem": "Tarayıcıda getComputedStyle + getBoundingClientRect ile ÖLÇÜLDÜ. Göz kararı yok. design-dna skill'inin Faz 2 çıktısı; renk için piksel kümeleme yerine DOM ölçümü kullanıldı (daha kesin: hesaplanmış değerler zaten birebir).",
+  "_olcum_tarihi": "2026-08-28",
+
+  "design_system": {
+    "color": {
+      "accent": { "hex": "#0755BB", "rol": "baskın — metin, çizgi VE dolgu; 2160 düğümde geçiyor" },
+      "surface": { "background": "#CBCBCB", "panel": "#DCDBD5", "beyaz": "#FFFFFF" },
+      "neutral": { "scale": ["#FFFFFF", "#DCDBD5", "#CBCBCB", "#000000"], "usage": "siyah ikincil metin (876 düğüm), beyaz mavi üstünde (269)" },
+      "accent_alpha": "rgba(7,85,187,0.32) — soluk çizgi/ikincil",
+      "toplam_kromatik_renk": 1
+    },
+
+    "typography": {
+      "family": "Albertus Nova Light (lapidary/Roma yazıtı hissi veren sans)",
+      "en_buyuk": "24px — SAYFADA BUNDAN BÜYÜĞÜ YOK",
+      "olcek": { "9px": 223, "10px": 1645, "12px": 72, "14px": 91, "16px": 8, "18px": 3, "24px": 3 },
+      "baskin_boyut": "10px",
+      "weight": { "300": 1919, "400": 116, "500": 10 },
+      "letter_spacing": "POZİTİF: 0.72px (18px'te), 0.96px (24px'te) ≈ 0.04em",
+      "line_height": "1.2 (21.6/18, 28.8/24)",
+      "not": "İddialı his büyük tipografiden DEĞİL; küçük+ince yazı ile geniş alan arasındaki ölçek farkından."
+    },
+
+    "spacing": {
+      "dikey_dolgu": { "6px": 52, "8px": 18, "3px": 17, "2px": 13, "24px": 12, "16px": 10 },
+      "gap": { "10px": 64, "8px": 61, "16px": 22, "24px": 17 },
+      "not": "Dolgu ÇOK SIKI. Boşluk dolgudan değil, içeriğinden çok daha büyük ızgara hücrelerinden geliyor."
+    },
+
+    "layout": {
+      "kap": "TAM GENİŞLİK — ortalanmış max-width YOK",
+      "grid": "3 sütun, her biri 473.664px (1421px içinde)",
+      "hucre_yuksekligi": [474, 827, 947, 948, 1682],
+      "yerlesim": "Bloklar 1 veya 2 sütun kaplıyor; içerik hücrenin üstüne/altına yaslı, ortası boş",
+      "sayfa_genisligi_olculen": 1425
+    },
+
+    "shape": {
+      "radius": { "4px": 54, "50%": 36, "8px": 21, "999px": 1 },
+      "baskin": "4px",
+      "border": "SIFIR eleman border taşıyor"
+    },
+
+    "elevation": {
+      "shadow": "SIFIR eleman box-shadow taşıyor",
+      "ayrim_yontemi": "Gölge veya çizgi değil — zemin farkı ve boşluk"
+    }
+  },
+
+  "design_style": {
+    "mood": "sakin, matbaa, sergi afişi / duvara asılan program",
+    "arketip": "editorial-modular, İsviçre ızgarası",
+    "susleme": "yok denecek kadar az",
+    "boşluk_felsefesi": "boşluk bir öğe değil, ızgaranın kendisi",
+    "ses": "kuru ve esprili (Emergency Pizza, Aristo alıntıları)",
+    "imza": "tek harfli alan etiketleri (D. P. H. I.) ve Roma rakamlı listeler"
+  },
+
+  "visual_effects": {
+    "overview": { "effect_intensity": "düşük", "performance_tier": "hafif" },
+    "svg": { "enabled": true, "adet": 48, "not": "logo ve çizgiler SVG; border yerine SVG/arka plan kullanılıyor" },
+    "canvas_webgl": { "enabled": false },
+    "particles": { "enabled": false },
+    "glassmorphism": { "enabled": false },
+    "scroll": { "enabled": true, "not": "içerik kaydırmada beliriyor" }
+  },
+
+  "_literasa_uyarlama_kisitlari": [
+    "10px gövde metni ALINMAZ — ui-ux-pro-max kuralı: gövde en az 16px. Referans bir kez göz gezdirilen mikrosite; literas okunan bir ürün. 10px yalnızca ETİKET.",
+    "Yazı karakteri Albertus Nova Light bizde yok ve mevcut sans 300 ağırlık taşımıyor (en incesi 400).",
+    "Kontrast: #0755BB / #CBCBCB = 4.22:1, AA eşiğinin (4.5) ALTINDA. Zemin #D2D1CB'ye açılmalı (4.53)."
+  ]
+}

@@ -12,6 +12,7 @@ const VARYANTLAR = [
   { yol: '/tasarim/1', ad: '1 · Dergi', not: 'illüstrasyon yok · saf tipografi' },
   { yol: '/tasarim/2', ad: '2 · Ürün', not: 'arama önce · yoğun ızgara' },
   { yol: '/tasarim/3', ad: '3 · Vitrin', not: 'parlak 3B · disiplinli' },
+  { yol: '/tasarim/4', ad: '4 · Sadık', not: 'DNA ölçüldü · 3 sütun ızgara' },
 ]
 
 export default function TasarimLayout({ children }: { children: React.ReactNode }) {
