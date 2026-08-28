@@ -317,11 +317,23 @@ Amaç: "Luma modeli" — paylaşılabilirlik ve sürtünmesiz akış. Kullanıc�
       + { config: 'turkish', type: 'websearch' }. Mevcut unaccent'i koru.
       (NOT: events'te search_vector zaten var — kontrol et.)
 
-- [ ] **2.6 QR check-in** (akışın son halkası)
-      Migration: rsvps'e checkin_token uuid DEFAULT gen_random_uuid() + checked_in_at.
-      RSVP onay e-postasına + etkinlik sayfasına QR (qrcode paketi, data-url).
-      app/event/[id]/checkin/page.tsx: sadece founder/admin erişir; token doğrular,
-      checked_in_at doldurur. Organizatöre "X kayıt / Y giriş" sayacı.
+- [x] **2.6 QR check-in** (akışın son halkası)
+      rsvps'e checkin_token uuid DEFAULT gen_random_uuid() + checked_in_at + checked_in_by
+      (migration `20260828120000_qr_checkin.sql`), benzersiz indeks checkin_token üzerinde,
+      beş SECURITY DEFINER fonksiyon (etkinlik_yoneticisi_mi, checkin_kodum, checkin_dogrula,
+      checkin_yap, checkin_geri_al — hepsi yetkiyi auth.uid() ile fonksiyon İÇİNDE kontrol
+      eder). lib/qr.ts (qrcode paketi, sabit sürüm) katılımcının QR'ını app/event/[id]/checkin-qr.tsx
+      ile etkinlik sayfasına gömer — token istemciye asla inmez, yalnızca QR geometrisinde.
+      Organizatör tarafı app/event/[id]/checkin/ altında: onay/geri alma server action'ları,
+      etkinlik_yoneticisi_mi yetki kapısı (ayrı migration `20260828140000_checkin_yetki_grant.sql`
+      ile GRANT EXECUTE TO authenticated). KOLON BAZLI YETKİ TUZAĞI: rsvps üzerindeki blanket
+      `GRANT SELECT ... TO authenticated` satırı checkin_token'ı da açığa çıkarıyordu (herkes
+      herkesin giriş kodunu okuyabilirdi); düzeltme `REVOKE SELECT ON rsvps FROM authenticated`
+      ile tablo yetkisini tümüyle geri alıp ardından yalnızca güvenli kolonları (id, event_id,
+      user_id, created_at, checked_in_at, checked_in_by) tek tek GRANT etmek — sıra kritik,
+      çünkü kolon bazlı REVOKE tablo bazlı GRANT'i geçersiz kılmıyor. KAPSAM DIŞI: tarayıcı içi
+      QR okuyucu yok (telefonun kendi kamerası kullanılıyor), QR yalnızca etkinlik sayfasında
+      (RSVP onay e-postasına gömülmedi), offline/çevrimdışı giriş desteklenmiyor.
 
 **Aşama 2 bitiş kriterleri:** WhatsApp linkleri güzel önizleme, RSVP'liler hatırlatma
 alıyor, katılımcı listesi canlı, QR ile giriş alınabiliyor.

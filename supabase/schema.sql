@@ -163,7 +163,10 @@ CREATE TABLE IF NOT EXISTS public.rsvps (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
   event_id uuid NOT NULL,
   user_id uuid NOT NULL,
-  created_at timestamp with time zone DEFAULT now()
+  created_at timestamp with time zone DEFAULT now(),
+  checkin_token uuid DEFAULT gen_random_uuid() NOT NULL,
+  checked_in_at timestamp with time zone,
+  checked_in_by uuid
 );
 
 CREATE TABLE IF NOT EXISTS public.waitlist (
@@ -319,6 +322,7 @@ ALTER TABLE public.events ADD CONSTRAINT events_organizer_id_fkey FOREIGN KEY (o
 ALTER TABLE public.locations ADD CONSTRAINT locations_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES locations(id) ON DELETE CASCADE;
 ALTER TABLE public.reports ADD CONSTRAINT reports_reporter_id_fkey FOREIGN KEY (reporter_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 ALTER TABLE public.reports ADD CONSTRAINT reports_reviewed_by_fkey FOREIGN KEY (reviewed_by) REFERENCES auth.users(id);
+ALTER TABLE public.rsvps ADD CONSTRAINT rsvps_checked_in_by_fkey FOREIGN KEY (checked_in_by) REFERENCES profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.rsvps ADD CONSTRAINT rsvps_event_id_fkey FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE;
 ALTER TABLE public.rsvps ADD CONSTRAINT rsvps_user_id_fkey FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.topic_category_map ADD CONSTRAINT topic_category_map_category_id_fkey FOREIGN KEY (category_id) REFERENCES topic_categories(id) ON DELETE CASCADE;
@@ -343,6 +347,7 @@ CREATE INDEX IF NOT EXISTS locations_type_idx ON public.locations USING btree (t
 CREATE INDEX IF NOT EXISTS reports_status_idx ON public.reports USING btree (status, created_at DESC);
 CREATE INDEX IF NOT EXISTS reports_target_idx ON public.reports USING btree (target_type, target_id);
 CREATE UNIQUE INDEX IF NOT EXISTS reports_unique_reporter_target ON public.reports USING btree (reporter_id, target_type, target_id);
+CREATE UNIQUE INDEX IF NOT EXISTS rsvps_checkin_token_key ON public.rsvps USING btree (checkin_token);
 CREATE INDEX IF NOT EXISTS topics_popular_idx ON public.topics USING btree (is_popular) WHERE (is_popular = true);
 CREATE INDEX IF NOT EXISTS topics_search_idx ON public.topics USING btree (search_text);
 CREATE INDEX IF NOT EXISTS waitlist_event_created_idx ON public.waitlist USING btree (event_id, created_at) WHERE (promoted_at IS NULL);
@@ -776,6 +781,88 @@ BEGIN
 END;
 $function$;
 
+-- ---- QR ile giriş (check-in) — yol haritası 2.6 -----------------------------
+-- Beşi de SECURITY DEFINER; yetki kontrolü fonksiyonun İÇİNDE (auth.uid()
+-- ile). checkin_token istemciye hiç düşmez, yalnızca QR geometrisine gömülü.
+
+-- Yetki yardımcısı: etkinliğin organizatörü VEYA topluluğun onaylı
+-- kurucu/yöneticisi. Yalnızca dahili kullanım.
+CREATE OR REPLACE FUNCTION public.etkinlik_yoneticisi_mi(p_event_id uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public' AS $function$
+  SELECT EXISTS (
+      SELECT 1 FROM events e
+      WHERE e.id = p_event_id AND e.organizer_id = auth.uid()
+    ) OR EXISTS (
+      SELECT 1 FROM events e
+      JOIN community_members cm ON cm.community_id = e.community_id
+      WHERE e.id = p_event_id AND cm.user_id = auth.uid()
+        AND cm.role IN ('founder','admin') AND cm.status = 'approved'
+    );
+$function$;
+
+-- Katılımcı yalnızca KENDİ token'ını alabilir.
+CREATE OR REPLACE FUNCTION public.checkin_kodum(p_event_id uuid)
+RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public' AS $function$
+  SELECT r.checkin_token FROM rsvps r
+  WHERE r.event_id = p_event_id AND r.user_id = auth.uid();
+$function$;
+
+-- Önizleme: hiçbir şeyi değiştirmez.
+-- Kontrol sırası bağlayıcı: önce token aranır (yoksa boş küme, yetki
+-- kontrolü yapılamaz çünkü hangi etkinlik olduğu bilinmiyor), sonra yetki.
+CREATE OR REPLACE FUNCTION public.checkin_dogrula(p_token uuid)
+RETURNS TABLE(rsvp_id uuid, event_id uuid, katilimci_adi text, checked_in_at timestamp with time zone)
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO 'public' AS $function$
+DECLARE v_event uuid;
+BEGIN
+  SELECT r.event_id INTO v_event FROM rsvps r WHERE r.checkin_token = p_token;
+  IF v_event IS NULL THEN RETURN; END IF;
+  IF NOT public.etkinlik_yoneticisi_mi(v_event) THEN RAISE EXCEPTION 'yetkisiz'; END IF;
+
+  RETURN QUERY
+    SELECT r.id, r.event_id, p.name, r.checked_in_at
+    FROM rsvps r JOIN profiles p ON p.id = r.user_id
+    WHERE r.checkin_token = p_token;
+END;
+$function$;
+
+-- Girişi işler. İdempotent: ikinci okutma zamanı değiştirmez.
+CREATE OR REPLACE FUNCTION public.checkin_yap(p_token uuid)
+RETURNS TABLE(katilimci_adi text, checked_in_at timestamp with time zone, yeni_giris boolean)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $function$
+DECLARE v_event uuid; v_rsvp uuid; v_mevcut timestamptz;
+BEGIN
+  SELECT r.event_id, r.id, r.checked_in_at INTO v_event, v_rsvp, v_mevcut
+  FROM rsvps r WHERE r.checkin_token = p_token;
+  IF v_rsvp IS NULL THEN RETURN; END IF;
+  IF NOT public.etkinlik_yoneticisi_mi(v_event) THEN RAISE EXCEPTION 'yetkisiz'; END IF;
+
+  IF v_mevcut IS NULL THEN
+    UPDATE rsvps SET checked_in_at = now(), checked_in_by = auth.uid()
+    WHERE id = v_rsvp;
+  END IF;
+
+  RETURN QUERY
+    SELECT p.name, r.checked_in_at, (v_mevcut IS NULL)
+    FROM rsvps r JOIN profiles p ON p.id = r.user_id
+    WHERE r.id = v_rsvp;
+END;
+$function$;
+
+-- Yanlış okutmayı geri alır.
+CREATE OR REPLACE FUNCTION public.checkin_geri_al(p_token uuid)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $function$
+DECLARE v_event uuid; v_rsvp uuid;
+BEGIN
+  SELECT r.event_id, r.id INTO v_event, v_rsvp
+  FROM rsvps r WHERE r.checkin_token = p_token;
+  IF v_rsvp IS NULL THEN RETURN; END IF;
+  IF NOT public.etkinlik_yoneticisi_mi(v_event) THEN RAISE EXCEPTION 'yetkisiz'; END IF;
+
+  UPDATE rsvps SET checked_in_at = NULL, checked_in_by = NULL WHERE id = v_rsvp;
+END;
+$function$;
+
 
 -- -----------------------------------------------------------------------------
 -- 8. TRIGGER'LAR
@@ -991,9 +1078,18 @@ CREATE POLICY "topic_suggestions insert by authenticated" ON public.topic_sugges
 GRANT SELECT ON TABLE public.communities, public.events, public.community_members,
   public.community_topics, public.topics, public.topic_categories,
   public.topic_category_map, public.locations, public.public_profiles TO anon, authenticated;
-GRANT SELECT ON TABLE public.profiles, public.rsvps, public.community_drafts,
+GRANT SELECT ON TABLE public.profiles, public.community_drafts,
   public.topic_suggestions TO authenticated;
 GRANT SELECT ON TABLE public.profiles TO anon;
+
+-- rsvps: kolon bazlı. checkin_token DIŞARIDA bırakılır — herkesin başkasının
+-- giriş kodunu okuyup onun adına giriş yapabilmesini engeller.
+-- DİKKAT: kolon bazlı REVOKE, tablo bazlı GRANT'i geçersiz kılmaz — komut
+-- hatasız geçer ama hiçbir şey yapmaz. Bu yüzden önce tablo yetkisi
+-- kaldırılıp kolonlar tek tek veriliyor.
+REVOKE SELECT ON public.rsvps FROM authenticated;
+GRANT  SELECT (id, event_id, user_id, created_at, checked_in_at, checked_in_by)
+  ON public.rsvps TO authenticated;
 
 GRANT INSERT, UPDATE, DELETE ON TABLE public.communities, public.events TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON TABLE public.profiles TO anon, authenticated;
@@ -1030,6 +1126,18 @@ REVOKE ALL ON FUNCTION public.get_member_contact(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_member_contact(uuid) TO authenticated;
 REVOKE ALL ON FUNCTION public.queue_join_notification(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.queue_join_notification(uuid) TO authenticated;
+
+-- QR check-in: yetki kontrolü fonksiyonun içinde (auth.uid()).
+REVOKE ALL ON FUNCTION public.etkinlik_yoneticisi_mi(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.etkinlik_yoneticisi_mi(uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.checkin_kodum(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.checkin_kodum(uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.checkin_dogrula(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.checkin_dogrula(uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.checkin_yap(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.checkin_yap(uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.checkin_geri_al(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.checkin_geri_al(uuid) TO authenticated;
 
 
 -- -----------------------------------------------------------------------------
