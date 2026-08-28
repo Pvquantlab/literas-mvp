@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase-server'
 import { byValue } from '@/lib/categories'
 import { GlossyIcon } from '@/components/category-art'
 import RsvpForm from './rsvp-form'
+import CheckinQr from './checkin-qr'
 import AttendeeList from './attendee-list'
 import EventActions from './event-actions'
 import EventMap from './event-map-client'
@@ -343,6 +344,7 @@ export default async function EventPage({
                       userInWaitlist={userInWaitlist}
                       isFull={isFull}
                     />
+                    {userHasRsvp && <CheckinQr eventId={event.id} />}
                   </>
                 )}
               </div>
@@ -370,6 +372,9 @@ export default async function EventPage({
               <section className="ed-block">
                 <h2 className="ed-h2">Yönetim</h2>
                 <EventActions eventId={event.id} />
+                <Link href={`/event/${event.id}/checkin`} style={{ color: 'var(--ink)', fontWeight: 700 }}>
+                  Girişleri yönet
+                </Link>
               </section>
             )}
 
