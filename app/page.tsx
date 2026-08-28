@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
 import { bySlug, sanitizeQuery, CATEGORIES } from '@/lib/categories'
-import { Kabartma, DevLogotype } from '@/components/kunye'
+import { DevLogotype } from '@/components/kunye'
+import { RolyefKap, RolyefMasa, RolyefKahve, RolyefKitap, RolyefSehir } from '@/components/rolyef'
 import { formatDayMonthShort } from '@/lib/date'
 import { bulunmaHali } from '@/lib/turkce'
 import CategoryStrip from './category-strip'
@@ -346,7 +347,7 @@ export default async function HomePage({
           justifyContent: 'center',
         }}
       >
-        <Kabartma slug="sosyal" opaklik={0.07} />
+        <RolyefKap cizim={RolyefMasa} konum="orta" olcek={0.62} opaklik={0.10} />
         <div style={{ position: 'relative' }}>
           <DevLogotype />
         </div>
@@ -371,7 +372,7 @@ export default async function HomePage({
             overflow: 'hidden',
           }}
         >
-          <Kabartma slug="kitap" hizala="top" opaklik={0.10} />
+          <RolyefKap cizim={RolyefKitap} konum="sag-alt" olcek={1.05} opaklik={0.14} />
           <span style={{ ...kunyeEtiket, position: 'relative' }}>literaslab — İstanbul</span>
           <h1 style={{ margin: 0 }}>
             <span
@@ -408,7 +409,7 @@ export default async function HomePage({
         {/* Hücre 2: GERÇEKLER — referansın "THE FACTS" bloğu, tek harfli
             alan etiketleriyle. */}
         <div style={{ ...kunyeHucre, minHeight: 380, position: 'relative', overflow: 'hidden' }}>
-          <Kabartma slug="sanat" hizala="bottom" opaklik={0.08} />
+          <RolyefKap cizim={RolyefSehir} konum="sag-alt" olcek={1.0} opaklik={0.12} />
           <span style={{ ...kunyeEtiket, marginBottom: 22, position: 'relative' }}>Gerçekler</span>
           <dl style={{ margin: 0, display: 'grid', gap: 10 }}>
             {[
@@ -443,8 +444,12 @@ export default async function HomePage({
             minHeight: 380,
             justifyContent: 'center',
             background: 'var(--ink)',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
+          {/* Mavi zeminde rölyef BEYAZ. */}
+          <RolyefKap cizim={RolyefKahve} konum="sag-alt" olcek={1.0} opaklik={0.18} renk="#fff" />
           <p
             style={{
               fontSize: 16,
