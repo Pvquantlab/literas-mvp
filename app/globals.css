@@ -5,53 +5,66 @@
 
 :root {
   /* --- Marka renkleri ---
-     Palet lacivert–turkuaz–mor–magenta spektrumuna geçti. Token ADLARI
-     korundu (--ink, --lime, --coral): site her yerde bunları kullandığı
-     için değerleri değiştirmek tek başına siteyi yeniden renklendiriyor.
-     Adlar artık rengi tarif etmiyor — --lime turkuaz, --coral magenta. */
-  --ink: #0C1B8E;            /* lacivert — birincil marka ve eylem rengi */
-  --ink-hover: #0A1678;
-  --ink-deep: #060F52;
-  --night: #0F2E5C;          /* gövde metni */
+     Palet TEK sese indi: mürekkep mavisi + sıcak greige + sıcak siyah.
+     Referans Wild Week Athens (week.wild.plus) — gözü yormamasının sebebi
+     efekt değil, kısıtlama: dört renk, tek güçlü vurgu.
 
-  /* Zemin: sayfa çok açık lavanta-beyaz, kartlar saf beyaz.
-     Aradaki fark kartları gölgesiz ayırıyor. */
-  --paper: #F7F9FD;
-  --paper-cream: #FFFFFF;
-  --paper-soft: #EEF2FB;
+     Token ADLARI korundu (--lime, --coral): site 59 dosyada bunları
+     kullanıyor, değerleri değiştirmek tek başına siteyi yeniden renklendirdi.
+     UYARI: adlar rengi TARİF ETMİYOR — --lime artık açık mavi, --coral
+     mürekkep, --coral-deep kırmızı. Adları gerçeğe uydurmak ayrı bir iş. */
+  --ink: #0755BB;            /* mürekkep mavisi — birincil marka ve eylem rengi */
+  --ink-hover: #064A9F;
+  --ink-deep: #043B85;
+  --night: #16160F;          /* gövde metni — sıcak siyah */
+
+  /* Zemin: sayfa SICAK greige, kartlar ondan AÇIK.
+     Kartlar gölgeyle değil, zeminden yükselerek ayrılıyor.
+     Soğuk lavanta-beyaz yerine sıcak nötr: gözü yormayan şey bu. */
+  --paper: #DCDBD5;
+  --paper-cream: #F1F0EA;
+  --paper-soft: #E5E3DC;
 
   /* Metin hiyerarşisi tek kaynaktan: --night'ın opaklık kademeleri
      (Luma deseni). %78 ≈ eski #48587D (7.08:1 korunur),
      %58 ≈ eski #707E9E (4.28:1 korunur, yalnız 15px+ metin). */
   --muted: color-mix(in srgb, var(--night) 78%, transparent);
   --muted-light: color-mix(in srgb, var(--night) 58%, transparent);
-  --border: #DFE5F2;
-  --border-mid: #C7D0E6;
+  /* Çizgiler mürekkebin soluk hali — Wild Week'in ızgara çizgisi deseni.
+     Nötr griden farkı: çizgi de paletin parçası, yabancı bir renk değil. */
+  --border: rgba(7, 85, 187, 0.22);
+  --border-mid: rgba(7, 85, 187, 0.42);
 
   /* --- Vurgu ---
-     DİKKAT: turkuaz üstünde beyaz metin 2.14 — asla kullanma.
-     Turkuaz zemin yalnızca lacivert metin taşır. */
-  --lime: #4FC3B8;           /* turkuaz */
-  --lime-soft: #7FEDE0;
-  --lime-press: #3AA79D;
-  --coral: #E040A0;          /* magenta */
-  --coral-deep: #9B2FD0;     /* mor */
-  --yellow-highlight: #A8EDE4;
+     Palet TEK sese indirildi: mürekkep mavisi. Dekoratif renk yok.
+     Eski turkuaz/magenta/mor kaldırıldı — gözü yoran şey onlardı.
 
-  /* --- Degrade durakları: dev başlık ve rozetler bunları kullanır --- */
-  --grad-1: #4FC3B8;
-  --grad-2: #2B6FD4;
-  --grad-3: #5B35CE;
-  --grad-4: #9B2FD0;
-  --grad-5: #E040A0;
+     DİKKAT: --lime AÇIK kalmak ZORUNDA. Kod bu zeminlerin üstüne
+     `color: var(--ink)` koyuyor (9+ ayarlar sayfası). Mürekkep yapılırsa
+     mürekkep üstüne mürekkep gelir ve metin görünmez olur. */
+  --lime: #C7D7F2;           /* mürekkebin açık tonu — birincil eylem zemini */
+  --lime-soft: #DCE6F8;
+  --lime-press: #AFC6EA;
+  --coral: #0755BB;          /* vurgu etiketleri de mürekkep */
+  --coral-deep: #A62B22;     /* TEK işlevsel kırmızı: yıkıcı eylem */
+  --yellow-highlight: #E9E7DF;
 
-  /* --- Sticky rozet --- */
-  --sticky-blue-bg: #DCE6FB;
-  --sticky-blue-ink: #1B3E8C;
-  --sticky-pink-bg: #FBD9EE;
-  --sticky-pink-ink: #8E1F63;
-  --sticky-green-bg: #D2F3EE;
-  --sticky-green-ink: #0E5F70;
+  /* --- Degrade durakları ---
+     Beş renkli gökkuşağı yerine dar bir mürekkep rampası: degrade
+     hâlâ derinlik veriyor ama tek renk kalıyor. */
+  --grad-1: #0755BB;
+  --grad-2: #0A4EA6;
+  --grad-3: #084391;
+  --grad-4: #06397C;
+  --grad-5: #043B85;
+
+  /* --- Sticky rozet: sıcak nötr zemin, mürekkep metin --- */
+  --sticky-blue-bg: #D8E2F4;
+  --sticky-blue-ink: #0755BB;
+  --sticky-pink-bg: #E9E5DC;
+  --sticky-pink-ink: #6B4A2E;
+  --sticky-green-bg: #E1E4D8;
+  --sticky-green-ink: #40542F;
 
   /* --- Tip ölçeği ---
      Ara değer uydurmak yok. 13.5px, 14.5px, 15.5px gibi değerler
@@ -85,9 +98,9 @@
 
   /* --- Gölge. Ofset gölge kaldırıldı: yeni palet Radix'in yumuşak
      gölge diliyle çalışıyor, sert ofset o dille çelişiyordu. --- */
-  --shadow-press: 0 12px 26px -12px rgba(12, 27, 142, .7);
-  --shadow-press-sm: 0 8px 18px -10px rgba(12, 27, 142, .6);
-  --shadow-lift: 0 10px 26px -14px rgba(15, 46, 92, .3);
+  --shadow-press: 0 12px 26px -12px rgba(22, 22, 15, .28);
+  --shadow-press-sm: 0 8px 18px -10px rgba(22, 22, 15, .22);
+  --shadow-lift: 0 10px 26px -14px rgba(22, 22, 15, .18);
 
   /* --- Genişlik: tek kaynak --- */
   --w-page: 1200px;
@@ -97,8 +110,8 @@
 
   /* --- Legacy: eski sayfalar kırılmasın --- */
   --seal: var(--coral);
-  --seal-soft: #FBE7F3;
-  --seal-deep: #8E1F63;
+  --seal-soft: #DCE6F8;
+  --seal-deep: #043B85;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -180,7 +193,7 @@ input, textarea, select {
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--ink);
-  box-shadow: 0 0 0 3px rgba(79, 195, 184, .45);
+  box-shadow: 0 0 0 3px rgba(7, 85, 187, .28);
 }
 input::placeholder, textarea::placeholder {
   color: var(--muted-light);
@@ -233,13 +246,13 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
 /* İmza hareketi: eğilme değil, butonun "basılması". Sitede tek yerde. */
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 30px -12px rgba(12, 27, 142, .8);
+  box-shadow: 0 16px 30px -12px rgba(22, 22, 15, .8);
   background: var(--ink-hover);
   color: #fff;
 }
 .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 6px 14px -8px rgba(12, 27, 142, .7);
+  box-shadow: 0 6px 14px -8px rgba(22, 22, 15, .28);
   background: var(--ink-deep);
 }
 .btn-primary.btn-sm { padding: 9px 18px; font-size: var(--t-sm); box-shadow: var(--shadow-press-sm); }
@@ -260,7 +273,7 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   text-decoration: none;
   transition: background .15s var(--ease);
 }
-.btn-secondary:hover { background: rgba(12, 27, 142, .05); }
+.btn-secondary:hover { background: rgba(22, 22, 15, .05); }
 .btn-secondary.btn-sm { padding: 9px 18px; font-size: var(--t-sm); }
 
 .btn-nav {
@@ -318,7 +331,7 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   font-size: var(--t-xs);
   color: var(--coral-deep);
   border: 1px solid rgba(155, 47, 208, .3);
-  background: rgba(79, 195, 184, .16);
+  background: rgba(7, 85, 187, .12);
   padding: 5px 14px;
   border-radius: var(--r-pill);
 }
@@ -344,7 +357,7 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   font-size: var(--t-xs);
   font-weight: 500;
   color: var(--muted);
-  border: 1px dashed rgba(12, 27, 142, .28);
+  border: 1px dashed rgba(22, 22, 15, .28);
   padding: 2px 9px;
   border-radius: var(--r-pill);
 }
@@ -916,18 +929,18 @@ p, .seats-label {
   border-radius: 22px;
   background: var(--paper-cream);
   border: 1px solid var(--border);
-  box-shadow: 0 8px 20px -10px rgba(15, 46, 92, .26);
+  box-shadow: 0 8px 20px -10px rgba(22, 22, 15, .26);
   transition: transform .3s var(--ease), box-shadow .3s var(--ease),
               background .3s var(--ease), border-color .3s var(--ease);
 }
 .ct-item:hover .ct-sq {
   transform: translateY(-4px);
-  box-shadow: 0 16px 30px -12px rgba(15, 46, 92, .32);
+  box-shadow: 0 16px 30px -12px rgba(22, 22, 15, .32);
 }
 .ct-sq.on {
   background: var(--ink);
   border-color: var(--ink);
-  box-shadow: 0 14px 28px -12px rgba(12, 27, 142, .5);
+  box-shadow: 0 14px 28px -12px rgba(22, 22, 15, .5);
 }
 
 .ct-lbl {
@@ -976,11 +989,11 @@ p, .seats-label {
   padding: var(--s-8) var(--s-5);
   background-color: var(--paper-cream);
   background-image:
-    linear-gradient(rgba(43, 111, 212, .20) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(43, 111, 212, .20) 1px, transparent 1px);
+    linear-gradient(rgba(7, 85, 187, .16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(7, 85, 187, .16) 1px, transparent 1px);
   background-size: 24px 24px;
-  border-top: 1.5px solid rgba(43, 111, 212, .5);
-  border-bottom: 1.5px solid rgba(43, 111, 212, .5);
+  border-top: 1.5px solid rgba(7, 85, 187, .38);
+  border-bottom: 1.5px solid rgba(7, 85, 187, .38);
 }
 .hx-inner { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; }
 
@@ -1083,7 +1096,7 @@ p, .seats-label {
   color: #fff;
   background: var(--ink-hover);
   transform: translateY(-2px);
-  box-shadow: 0 18px 32px -14px rgba(12, 27, 142, .8);
+  box-shadow: 0 18px 32px -14px rgba(22, 22, 15, .8);
 }
 .hx-arrow {
   display: grid;
@@ -1108,7 +1121,7 @@ p, .seats-label {
   padding: 15px 12px;
   background: var(--paper-cream);
   border-radius: var(--r-pill);
-  box-shadow: 0 14px 34px -18px rgba(15, 46, 92, .4);
+  box-shadow: 0 14px 34px -18px rgba(22, 22, 15, .4);
 }
 .hx-strip span {
   padding: 2px clamp(12px, 3vw, 28px);
@@ -1123,7 +1136,7 @@ p, .seats-label {
 .hx-objs { position: absolute; inset: 0; pointer-events: none; }
 .hx-obj { position: absolute; height: auto; }
 .hx-obj-far { opacity: .30; filter: blur(1.4px); }
-.hx-obj-near { filter: drop-shadow(0 8px 12px rgba(15, 46, 92, .22)); }
+.hx-obj-near { filter: drop-shadow(0 8px 12px rgba(22, 22, 15, .22)); }
 
 /* Dar ekranda nesneler metnin üstüne biniyor — tamamen gizle. */
 @media (max-width: 960px) {

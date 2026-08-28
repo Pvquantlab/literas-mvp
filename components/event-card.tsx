@@ -78,8 +78,8 @@ export default function EventCard({ event, showCommunityName = true }: Props) {
   })}`
   const weekday = trLower(fmt(event.event_date, { weekday: 'long' }))
 
-  const c1 = cat?.colors[0] ?? '#8AACF5'
-  const c2 = cat?.colors[1] ?? '#2B6FD4'
+  const c1 = cat?.colors[0] ?? '#5E93DA'
+  const c2 = cat?.colors[1] ?? '#0755BB'
 
   return (
     <Link href={`/event/${event.id}`} className="ec-link">
@@ -237,7 +237,7 @@ export default function EventCard({ event, showCommunityName = true }: Props) {
         }
         .ec-live::before { content:""; width:6px; height:6px; border-radius:50%; background:#6B7488; }
         .ec-live.now::before  { background:#3DDC8A; box-shadow:0 0 0 3px rgba(61,220,138,.22); }
-        .ec-live.soon::before { background:#4FC3B8; }
+        .ec-live.soon::before { background:#0755BB; }
 
         .ec-foot {
           display:flex; align-items:center; justify-content:space-between; gap:12px;

@@ -62,7 +62,7 @@ function IconMasa() {
   const id = 'hw-masa'
   return (
     <svg viewBox="0 0 100 100" aria-hidden="true">
-      <Defs id={id} light="#7FEDE0" mid="#2FA9A2" deep="#0E5F6B" />
+      <Defs id={id} light="#5E93DA" mid="#0755BB" deep="#043B85" />
       <g filter={`url(#${id}-sh)`}>
         <rect x="46" y="58" width="8" height="24" rx="3" fill={`url(#${id}-side)`} />
         <rect x="26" y="54" width="7" height="22" rx="3" fill={`url(#${id}-edge)`} />
@@ -78,7 +78,7 @@ function IconPlan() {
   const id = 'hw-plan'
   return (
     <svg viewBox="0 0 100 100" aria-hidden="true">
-      <Defs id={id} light="#A9C4EE" mid="#2B6FD4" deep="#14306B" />
+      <Defs id={id} light="#5E93DA" mid="#0755BB" deep="#043B85" />
       <g filter={`url(#${id}-sh)`}>
         <rect x="18" y="30" width="64" height="54" rx="11" fill={`url(#${id}-side)`} />
         <rect x="18" y="26" width="64" height="54" rx="11" fill={`url(#${id}-top)`} />
@@ -122,7 +122,7 @@ function IconTanis() {
   const id = 'hw-tanis'
   return (
     <svg viewBox="0 0 100 100" aria-hidden="true">
-      <Defs id={id} light="#F5A9D8" mid="#E040A0" deep="#7A1259" />
+      <Defs id={id} light="#5E93DA" mid="#0755BB" deep="#043B85" />
       <g filter={`url(#${id}-sh)`}>
         <ellipse cx="52" cy="84" rx="34" ry="8" fill="#0B1470" opacity=".16" />
         <Mug id={id} cx={64} top={40} rx={16} h={26} />

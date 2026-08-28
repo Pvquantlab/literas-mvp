@@ -204,7 +204,7 @@ export default async function EventPage({
 
   const hasImage = !!event.cover_image_url
   const cat = byValue((event.community as any)?.category ?? null)
-  const c2 = cat?.colors[1] ?? '#2B6FD4'
+  const c2 = cat?.colors[1] ?? '#0755BB'
 
   // Sayi rsvps dizisinden degil events.attendee_count sutunundan gelir.
   // rsvps anonim kullaniciya kapali oldugu icin dizi bos donuyor ve
@@ -463,8 +463,8 @@ export default async function EventPage({
         .ed-hero {
           background-color: #14171F;
           background-image:
-            linear-gradient(rgba(79, 195, 184, .07) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(79, 195, 184, .07) 1px, transparent 1px);
+            linear-gradient(rgba(7, 85, 187, .07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(7, 85, 187, .07) 1px, transparent 1px);
           background-size: 24px 24px;
           border-bottom: 1.5px solid rgba(43, 111, 212, .5);
           color: #EDF1FA;

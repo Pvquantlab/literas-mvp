@@ -216,8 +216,8 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   const todayD = nowIst.d
 
   const cat = byValue((community as any).category ?? null)
-  const c1 = cat?.colors[0] ?? '#8AACF5'
-  const c2 = cat?.colors[1] ?? '#2B6FD4'
+  const c1 = cat?.colors[0] ?? '#5E93DA'
+  const c2 = cat?.colors[1] ?? '#0755BB'
   const hasCover = !!community.cover_image_url
 
   return (
@@ -476,8 +476,8 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         .cp-banner-art {
           position: absolute; inset: 0;
           background-image:
-            linear-gradient(rgba(79, 195, 184, .07) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(79, 195, 184, .07) 1px, transparent 1px);
+            linear-gradient(rgba(7, 85, 187, .07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(7, 85, 187, .07) 1px, transparent 1px);
           background-size: 24px 24px;
           overflow: hidden;
         }
@@ -537,7 +537,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           font-size: var(--t-xs);
           color: var(--coral-deep);
           border: 1px solid rgba(155, 47, 208, .3);
-          background: rgba(79, 195, 184, .12);
+          background: rgba(7, 85, 187, .12);
           padding: 7px 14px;
           border-radius: var(--r-pill);
         }

@@ -31,7 +31,6 @@ import { CATEGORIES, byValue, NEUTRAL_COVER } from '@/lib/categories'
  * bu yüzden burada özel durum olarak duruyor.
  */
 export const TUMU_SLUG = 'tumu'
-const TUMU_COLORS: [string, string, string] = ['#A9C4EE', '#2B6FD4', '#14306B']
 
 /** Gövde şekli. viewBox 0 0 100 100. */
 const SHAPES: Record<string, React.ReactNode> = {
@@ -197,9 +196,23 @@ function details(slug: string, hi: string, dk: string): React.ReactNode {
 /**
  * Bütün tanımlar. layout.tsx'te BİR KEZ render edilir, görsel çıktısı yok.
  */
+/**
+ * Nesneler TEK renk: mürekkebin üç tonu.
+ *
+ * NEDEN: eskiden her kategori kendi üçlüsünü taşıyordu ve şerit yan yana 14
+ * farklı renkli nesne diziyordu — sayfadaki renk gürültüsünün asıl kaynağı
+ * buydu. Kategori kimliği zaten ŞEKİL ve ETİKET ile taşınıyor; renk oraya
+ * ikinci bir iş yüklemiyordu, sadece bağırıyordu.
+ *
+ * Kategori rengi kaldırılmadı, yeri değişti: etkinlik kartlarının kapak
+ * zeminlerinde (event-card.tsx, cat.colors) yaşamaya devam ediyor — orada
+ * gerçekten yön buldurma işi yapıyor, burada yapmıyordu.
+ */
+const INK_RAMP: [string, string, string] = ['#5E93DA', '#0755BB', '#043B85']
+
 const SPRITE_ITEMS: { slug: string; colors: [string, string, string] }[] = [
-  { slug: TUMU_SLUG, colors: TUMU_COLORS },
-  ...CATEGORIES.map((c) => ({ slug: c.slug, colors: c.colors })),
+  { slug: TUMU_SLUG, colors: INK_RAMP },
+  ...CATEGORIES.map((c) => ({ slug: c.slug, colors: INK_RAMP })),
 ]
 
 export function IconSprite() {
