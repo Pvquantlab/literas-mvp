@@ -4,9 +4,9 @@ import Link from 'next/link'
 import { useRef } from 'react'
 import { CategoryTile, TUMU_SLUG } from '@/components/category-art'
 
-/** `soft` ve `ink` artık kullanılmıyor — karo rengini lib/categories.ts veriyor.
- *  Prop tipi korundu ki page.tsx değişmesin. */
-type Cat = { n: string; slug: string; soft: string; ink: string }
+/** Karo rengini lib/categories.ts veriyor. `soft`/`ink` alanları CATS'ten
+ *  tamamen kaldırıldı — ölü koddu ve 28 palet dışı renk taşıyorlardı. */
+type Cat = { n: string; slug: string }
 
 type Props = {
   cats: Cat[]
@@ -79,15 +79,14 @@ export default function KesfetCategoryStrip({
           top: '22px',
           width: '36px',
           height: '36px',
-          borderRadius: '50%',
-          border: '1px solid var(--border-mid)',
+          borderRadius: 'var(--r-md)',
+          border: '1px solid var(--border)',
           background: 'var(--paper-cream)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'var(--ink)',
-          boxShadow: '0 2px 8px rgba(30,58,43,.08)',
           zIndex: 2,
         }}
       >
