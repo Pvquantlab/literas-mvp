@@ -85,12 +85,6 @@ CREATE POLICY "Duyuruyu yonetici siler" ON public.community_announcements
 -- yetki arwdDxtm olurdu ve aşağıdaki kolon kısıtları SESSİZCE anlamsızlaşırdı
 -- -- kolon bazlı yetki, tablo bazlı GRANT'i ezmez. Tabloyu her zaman
 -- migration ile oluştur.
--- Kolon bazlı yetki tablo bazlı GRANT'i EZMEZ: önce tablo düzeyi geri alınır.
--- Baseline panelden çalıştırıldığında (KURULUM-REHBERI.md'nin anlattığı yol)
--- supabase_admin varsayılanı authenticated'a arwdDxtm veriyor; bu REVOKE
--- olmadan aşağıdaki kolon listeleri sessizce anlamsızlaşır.
-REVOKE INSERT, UPDATE ON public.community_announcements FROM authenticated, anon;
-
 GRANT SELECT ON public.community_announcements TO authenticated;
 GRANT DELETE ON public.community_announcements TO authenticated;
 
