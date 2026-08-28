@@ -27,6 +27,10 @@ const serif = Literata({
 
 const sans = Instrument_Sans({
   subsets: ['latin-ext'],
+  // NOT: referansin (week.wild.plus) imza agirligi 300 (olculdu: 2045 metin
+  // dugumunun 1919'u). Bu yazi karakteri 300 TASIMIYOR -- en incesi 400.
+  // O yuzden "ince" burada 400 demek. Gercekten 300 istenirse yazi karakteri
+  // degismeli; bu ayri bir karar.
   weight: ['400', '500', '600', '700'],
   variable: '--font-sans',
   display: 'swap',
