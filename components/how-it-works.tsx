@@ -14,8 +14,7 @@ import { RolyefMasa, RolyefSandalye, RolyefKahve } from '@/components/rolyef'
 
 type Step = { title: string; body: string; icon: React.ReactNode }
 
-/** Takvim kartındaki gün noktaları. */
-
+/** Rölyeflerin adım ikonu olarak ölçüsü. */
 const rolyefStil = { width: 68, height: 68, color: 'var(--ink)' } as const
 
 const STEPS: Step[] = [
