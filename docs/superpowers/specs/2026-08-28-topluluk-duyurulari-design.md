@@ -243,8 +243,18 @@ fonksiyon tavanı 60 saniye — rahat pay var.
 8. Alıcı sayısı `ANLIK_ALICI_TAVANI`'nı **aşmıyorsa**: `lib/email.ts`'e
    eklenecek parçalı gönderici ile gönder, dönen başarılı sayısını
    `sent_count`'a yaz.
-9. **Aşıyorsa**: her alıcı için `email_outbox`'a satır ekle, `sent_count`'u 0
-   bırak, kullanıcıya "üyelerine sabah ulaşacak" de.
+9. **Aşıyorsa**: posta gönderme, logla ve kullanıcıya söyle. Duyuru sayfada
+   durur.
+
+   > **Güncelleme (plan yazımı sırasında):** bu adım önce "kuyruğa yaz" diye
+   > tasarlanmıştı. Plan yazılırken ölçüldü ki cron'daki `buildMail` yalnızca
+   > `'reminder'`, `'promotion'` ve `'join_request'` şablonlarını tanıyor ve
+   > başkasında `null` dönüyor — yani kuyruğa yazılan `'announcement'`
+   > satırları **hiçbir zaman gönderilmezdi, üstelik sessizce**. Aşağıdaki
+   > YAGNI notunun önceden yetkilendirdiği kesim uygulandı: bozuk bir yedek
+   > yerine tanımlı bir ret. Bir topluluk tavana yaklaşırsa yapılacak iş
+   > `buildMail`'e `'announcement'` dalı eklemek (payload'da
+   > `title`/`body`/`community_name` taşıyarak) ve bu adımı geri açmaktır.
 
 ### Yeni yardımcı: `lib/email.ts`
 
@@ -341,7 +351,7 @@ içerik sahteciliği vektörünün aynısıdır. Kod taşınır, metni sayfa se�
 | Günlük sınır dolu | "Bu topluluk bugün 3 duyuru gönderdi, yarın tekrar dene" |
 | `get_member_emails` hata verdi | Duyuru **kaydedilmiş** olur; "Duyuru yayınlandı ama e-posta gönderilemedi" + `console.error` |
 | Alıcı yok (herkes kapatmış) | "Duyuru yayınlandı. E-posta bildirimi açık üye yok." |
-| Tavan aşıldı | "Duyuru yayınlandı. Üyelerine sabah ulaşacak." |
+| Tavan aşıldı | "Duyuru yayınlandı ama üye sayısı tek seferde e-posta göndermek için fazla. Sayfada görünüyor." |
 
 Gönderim hatası duyuruyu **geri almaz**: satır zaten yazılmıştır ve sayfada
 görünür. Sessizce yutulmaz, kullanıcıya söylenir — bu projede bir ay boyunca
