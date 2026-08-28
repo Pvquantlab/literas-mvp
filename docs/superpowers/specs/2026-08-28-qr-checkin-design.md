@@ -33,11 +33,21 @@ buluşmalarında (10–30 kişi) kazanç, maliyeti karşılamıyor.
 ### Token `rsvps`'te, kolon bazlı kilitli
 
 ```sql
-REVOKE SELECT (checkin_token) ON rsvps FROM anon, authenticated;
+REVOKE SELECT ON public.rsvps FROM authenticated;
+GRANT  SELECT (id, event_id, user_id, created_at, checked_in_at, checked_in_by)
+  ON public.rsvps TO authenticated;
 ```
 
 `rsvps` tablosunun okuma politikası `USING (true)` — yani herkese açık. Token
 oraya düz kolon olarak konsaydı herkes okuyabilirdi.
+
+**DİKKAT — Postgres tuzağı:** İlk yazdığım hâli
+`REVOKE SELECT (checkin_token) ... FROM authenticated` idi. Bu **çalışmaz**:
+`authenticated` rolünün `rsvps` üzerinde *tablo bazlı* SELECT yetkisi var ve
+Postgres'te kolon bazlı revoke, tablo bazlı grant'i geçersiz kılmaz. Komut
+hatasız geçer, hiçbir şey yapmaz, token okunabilir kalır. Doğrusu yukarıdaki
+gibi: tablo yetkisini kaldır, kolonları tek tek ver.
+(`anon` rolünün `rsvps` üzerinde zaten hiç SELECT yetkisi yok — doğrulandı.)
 
 Ayrı bir kilitli tablo (projede `app_secrets` ve `email_outbox` için kullanılan
 kasa deseni) de düşünüldü, ama orada kasaya kapatılan şey *gerçekten* gizliydi.
@@ -65,7 +75,11 @@ ALTER TABLE public.rsvps
 
 CREATE UNIQUE INDEX rsvps_checkin_token_key ON public.rsvps (checkin_token);
 
-REVOKE SELECT (checkin_token) ON public.rsvps FROM anon, authenticated;
+-- Kolon bazlı koruma: tablo yetkisi kaldırılıp kolonlar tek tek veriliyor.
+-- (Neden böyle olmak zorunda olduğu "Kararlar" bölümünde.)
+REVOKE SELECT ON public.rsvps FROM authenticated;
+GRANT  SELECT (id, event_id, user_id, created_at, checked_in_at, checked_in_by)
+  ON public.rsvps TO authenticated;
 ```
 
 Mevcut satırlar otomatik token alır: Postgres uçucu varsayılanı satır başına
