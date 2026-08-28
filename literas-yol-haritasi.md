@@ -265,8 +265,21 @@ olarak bırakıldı — arayüz metni şimdilik gerçeği söylüyor.
       `validationError` ölü kodu kaldırıldı — dosyanın ortasında `next/server`
       import ediyordu ve şema dosyasını düz Node ile test edilemez kılıyordu.
 
-**Kalan işler:**
-`push_*` kolon adlarının gerçekte e-postayı yönetmesi (adlandırma borcu).
+- [x] **Tercih kolonları gerçekte ne yaptıklarını söylüyor** (28.08.2026)
+      `push_event_reminders` → `email_event_reminders`,
+      `push_new_members` → `email_new_members`,
+      `push_community_announcements` → `email_community_announcements`.
+      Platformda push altyapısı yok; bu üç anahtar fiilen e-posta gönderimini
+      kapılıyor ve kodu okuyan biri haklı olarak push ayarı sanıyordu.
+      Diğer iki `push_*` kolonu (`push_new_messages`, `push_suggested_events`)
+      henüz var olmayan özellikler için duruyor ve hiçbir şeyi yönetmiyor —
+      adları o gün doğru olacak, dokunulmadı.
+      DEPLOY SIRASI: kod önce, migration hemen ardından. Kolon adı değişince
+      eski kod ile yeni şema uyuşmaz; ters sırada pencere ~2 dakika olurdu,
+      bu sırada saniyeler. Etkilenen tek yer /ayarlar/bildirimler (okuma
+      hatası, veri kaybı değil).
+
+**Kalan işler:** yok. Denetim listesi kapandı.
 
 ---
 

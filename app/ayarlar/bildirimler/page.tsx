@@ -6,9 +6,9 @@ import AyarlarDurum from "@/components/ayarlar-durum";
 // `yakinda: true` olanlar henüz gönderilmiyor — sözü tutulmayan bir anahtarı
 // çalışıyormuş gibi göstermemek için işaretleniyor.
 const TOGGLES = [
-  { name: "push_event_reminders", label: "Etkinlik hatırlatıcıları", desc: "Katılacağınız etkinlikten önce e-posta ile hatırlatırız", yakinda: false },
-  { name: "push_new_members", label: "Yeni üye katılımları", desc: "Yönettiğiniz bir topluluğa katılım isteği geldiğinde", yakinda: false },
-  { name: "push_community_announcements", label: "Topluluk duyuruları", desc: "Üyesi olduğunuz toplulukta yeni etkinlik açıldığında", yakinda: false },
+  { name: "email_event_reminders", label: "Etkinlik hatırlatıcıları", desc: "Katılacağınız etkinlikten önce e-posta ile hatırlatırız", yakinda: false },
+  { name: "email_new_members", label: "Yeni üye katılımları", desc: "Yönettiğiniz bir topluluğa katılım isteği geldiğinde", yakinda: false },
+  { name: "email_community_announcements", label: "Topluluk duyuruları", desc: "Üyesi olduğunuz toplulukta yeni etkinlik açıldığında", yakinda: false },
   { name: "push_new_messages", label: "Yeni mesajlar", desc: "Biri size mesaj gönderdiğinde", yakinda: true },
   { name: "push_suggested_events", label: "Önerilen etkinlikler", desc: "Size uygun olabilecek etkinlik önerileri", yakinda: true },
 ];
@@ -25,7 +25,7 @@ export default async function BildirimlerPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("push_new_messages, push_event_reminders, push_community_announcements, push_new_members, push_suggested_events")
+    .select("push_new_messages, email_event_reminders, email_community_announcements, email_new_members, push_suggested_events")
     .eq("id", user.id)
     .single();
 

@@ -12,14 +12,14 @@ const YOL = "/ayarlar/bildirimler";
  * Bu anahtarlar fiilen E-POSTA gönderimini yönetiyor (platformda push
  * altyapısı yok). Hangisinin hangi maili kapattığı DB'deki email_izni()
  * fonksiyonunda tanımlı:
- *   push_event_reminders          → etkinlik hatırlatması
- *   push_new_members              → topluluğuna katılım isteği
- *   push_community_announcements  → topluluğunda yeni etkinlik
+ *   email_event_reminders         → etkinlik hatırlatması
+ *   email_new_members             → topluluğuna katılım isteği
+ *   email_community_announcements → topluluğunda yeni etkinlik
  * Diğer ikisi henüz var olmayan özellikler için saklanıyor.
  */
 const FIELDS = [
-  "push_new_messages", "push_event_reminders", "push_community_announcements",
-  "push_new_members", "push_suggested_events",
+  "push_new_messages", "email_event_reminders", "email_community_announcements",
+  "email_new_members", "push_suggested_events",
 ] as const;
 
 export async function updateBildirimler(formData: FormData) {

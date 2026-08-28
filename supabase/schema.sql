@@ -108,9 +108,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email_surveys boolean DEFAULT false,
   email_connections boolean DEFAULT true,
   push_new_messages boolean DEFAULT true,
-  push_event_reminders boolean DEFAULT true,
-  push_community_announcements boolean DEFAULT true,
-  push_new_members boolean DEFAULT true,
+  email_event_reminders boolean DEFAULT true,
+  email_community_announcements boolean DEFAULT true,
+  email_new_members boolean DEFAULT true,
   push_suggested_events boolean DEFAULT false,
   is_admin boolean DEFAULT false
 );
@@ -558,9 +558,9 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'public'
           WHEN 'promotion'    THEN true
           WHEN 'event_change' THEN true
           WHEN 'event_cancel' THEN true
-          WHEN 'reminder'     THEN COALESCE(p.push_event_reminders, true)
-          WHEN 'join_request' THEN COALESCE(p.push_new_members, true)
-          WHEN 'announcement' THEN COALESCE(p.push_community_announcements, true)
+          WHEN 'reminder'     THEN COALESCE(p.email_event_reminders, true)
+          WHEN 'join_request' THEN COALESCE(p.email_new_members, true)
+          WHEN 'announcement' THEN COALESCE(p.email_community_announcements, true)
           ELSE true
         END
       FROM profiles p
