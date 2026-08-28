@@ -125,17 +125,23 @@
   --s-8: 64px;
   --s-9: 96px;
 
-  /* --- Köşe yarıçapı: dört değer, fazlası yok --- */
-  --r-sm: 8px;
-  --r-md: 14px;
-  --r-lg: 20px;
+  /* --- Köşe yarıçapı ---
+     ÖLÇÜLDÜ (week.wild.plus): baskın 4px (54 eleman), 8px (21), 50% daireler,
+     999px yalnızca 1 kez. Eski ölçek (8/14/20) referansın iki-üç katıydı ve
+     yumuşak/oyuncak bir his veriyordu. Matbaa dili keskin köşe ister. */
+  --r-sm: 3px;
+  --r-md: 4px;
+  --r-lg: 6px;
   --r-pill: 999px;
 
-  /* --- Gölge. Ofset gölge kaldırıldı: yeni palet Radix'in yumuşak
-     gölge diliyle çalışıyor, sert ofset o dille çelişiyordu. --- */
-  --shadow-press: 0 12px 26px -12px rgba(22, 22, 15, .28);
-  --shadow-press-sm: 0 8px 18px -10px rgba(22, 22, 15, .22);
-  --shadow-lift: 0 10px 26px -14px rgba(22, 22, 15, .18);
+  /* --- Gölge: YOK ---
+     ÖLÇÜLDÜ: referansta box-shadow taşıyan SIFIR eleman var. Ayrım gölgeyle
+     değil ZEMİN FARKIYLA kuruluyor (--paper-cream, --paper'dan açık).
+     Token'lar silinmedi çünkü 28 dosya onları kullanıyor; `none` yapıldı —
+     tek satırla geri alınabilir. */
+  --shadow-press: none;
+  --shadow-press-sm: none;
+  --shadow-lift: none;
 
   /* --- Genişlik: tek kaynak --- */
   --w-page: 1200px;

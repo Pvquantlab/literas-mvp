@@ -1,20 +1,37 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
-import { bySlug, sanitizeQuery } from '@/lib/categories'
+import { bySlug, sanitizeQuery, CATEGORIES } from '@/lib/categories'
 import { formatDayMonthShort } from '@/lib/date'
 import { bulunmaHali } from '@/lib/turkce'
 import CategoryStrip from './category-strip'
-import { HeroObjects } from '@/components/category-art'
 import HowItWorks from '@/components/how-it-works'
 import ClosingCta from '@/components/closing-cta'
 import CommunityCard, { type CommunitySummary } from '@/components/community-card'
 import UpcomingEvents, { type EventSummary } from '@/components/upcoming-events'
 import EventCard from '@/components/event-card'
-import TemaAnahtari from '@/components/tema-anahtari'
 import SearchBox from './search-box'
 import CityFilter from './city-filter'
 
 export const revalidate = 60
+
+/* --- Künye ızgarasının iki stil sabiti -------------------------------
+   week.wild.plus ölçümünden: etiketler minik/büyük harf/harf arası açık,
+   hücreler sıkı dolgulu, 4px köşe, gölge ve border YOK. */
+const kunyeEtiket = {
+  font: "400 10px 'IBM Plex Mono', monospace",
+  letterSpacing: '.16em',
+  textTransform: 'uppercase',
+  color: 'var(--ink)',
+} as const
+
+const kunyeHucre = {
+  background: 'var(--paper-cream)',
+  borderRadius: 4,
+  padding: '18px 20px',
+  display: 'flex',
+  flexDirection: 'column',
+} as const
+
 
 type SearchParams = { category?: string; city?: string; q?: string }
 
@@ -299,46 +316,113 @@ export default async function HomePage({
 
   return (
     <main id="content">
-      {/* ---- Hero ----
-           Tam genişlikte, .container DIŞINDA. Cümle ikiye bölündü:
-           üst satır + dev kelime. <h1> ikisini de içeriyor, yani ekran
-           okuyucu tam cümleyi okuyor. Yüzen nesneler sprite'tan geliyor. */}
-      <section className="hx">
-        <HeroObjects />
-        <div className="hx-inner">
-          <nav className="hx-nav" aria-label="Sayfa bölümleri">
-            <Link href="#etkinlikler" className="hx-nav-item on">Etkinlikler</Link>
-            <Link href="#topluluklar" className="hx-nav-item">Topluluklar</Link>
-            <Link href="/kesfet" className="hx-nav-item">Kategoriler</Link>
-          </nav>
+      {/* ---- Künye ızgarası ----
+           week.wild.plus/athens-26 ÖLÇÜLEREK çıkarılan DNA'dan
+           (docs/tasarim/wild-week-dna.json). Eski dev kelimeli kahramanın
+           yerine geçti.
 
-          <h1 className="hx-h1">
-            <span className="hx-eyebrow">Harflerden kelimeler, insanlardan</span>
-            <span className="hx-word">topluluklar</span>
+           Yapı referanstan: TAM GENİŞLİK 3 sütun, hücreler içeriğinden
+           yüksek, içerik üste/alta yaslı — boşluk dolgudan değil BOŞ
+           HÜCREDEN geliyor. Dolgu sıkı (18–20px), köşe 4px, gölge ve
+           border yok.
+
+           Yüzen 3B nesneler kaldırıldı: referansta illüstrasyon yok ve
+           iki nesne bu ızgara diliyle çakışıyordu. */}
+      <section
+        aria-label="Giriş"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 8,
+          padding: 8,
+        }}
+      >
+        {/* Hücre 1: içerik ALTA yaslı, üstü bilerek boş */}
+        <div style={{ ...kunyeHucre, minHeight: 380, justifyContent: 'space-between' }}>
+          <span style={kunyeEtiket}>literaslab — İstanbul</span>
+          <h1 style={{ margin: 0 }}>
+            <span
+              style={{
+                display: 'block',
+                fontSize: 24,
+                fontWeight: 400,
+                letterSpacing: '.04em',
+                lineHeight: 1.2,
+                color: 'var(--ink)',
+              }}
+            >
+              İnsanların kendi masalarını kurduğu yer.
+            </span>
+            <span
+              style={{
+                display: 'block',
+                fontSize: 16,
+                fontWeight: 400,
+                lineHeight: 1.5,
+                color: 'var(--night)',
+                marginTop: 14,
+              }}
+            >
+              {cityLocative ? `${cityLocative} ` : ''}
+              {events.length > 0
+                ? `yaklaşan ${events.length} buluşma var`
+                : 'buluşmalar başlıyor'}
+              . Katıl ya da kendi masanı kur.
+            </span>
           </h1>
+        </div>
 
-          <p className="hx-lede">İnsanların kendi masalarını kurduğu yer.</p>
-          <p className="hx-sub">
-            {cityLocative ? `${cityLocative} ` : ''}
-            {events.length > 0
-              ? `yaklaşan ${events.length} buluşma var`
-              : 'buluşmalar başlıyor'}.
-            {' '}Katıl ya da kendi masanı kur.
+        {/* Hücre 2: GERÇEKLER — referansın "THE FACTS" bloğu, tek harfli
+            alan etiketleriyle. */}
+        <div style={{ ...kunyeHucre, minHeight: 380 }}>
+          <span style={{ ...kunyeEtiket, marginBottom: 22 }}>Gerçekler</span>
+          <dl style={{ margin: 0, display: 'grid', gap: 10 }}>
+            {[
+              ['T', 'Topluluk', String(communities.length)],
+              ['E', 'Etkinlik', String(events.length)],
+              ['Ş', 'Şehir', String(cities.length)],
+              ['K', 'Kategori', String(CATEGORIES.length)],
+            ].map(([harf, ad, deger]) => (
+              <div
+                key={ad}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '20px 1fr auto',
+                  gap: 10,
+                  alignItems: 'baseline',
+                }}
+              >
+                <dt style={{ ...kunyeEtiket, color: 'var(--muted-light)' }}>{harf}.</dt>
+                <dd style={{ margin: 0, fontSize: 16 }}>{ad}</dd>
+                <dd style={{ margin: 0, fontSize: 16, color: 'var(--ink)' }}>{deger}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        {/* Hücre 3: davet. Referansın karşılama paragrafı BÜYÜK HARF. */}
+        <div style={{ ...kunyeHucre, minHeight: 380, justifyContent: 'center' }}>
+          <p
+            style={{
+              fontSize: 16,
+              lineHeight: 1.55,
+              letterSpacing: '.03em',
+              textTransform: 'uppercase',
+              color: 'var(--ink)',
+              margin: 0,
+            }}
+          >
+            Bir masanın etrafında toplanmak için bahane çok: kitap, yürüyüş,
+            kahve, fotoğraf. Birkaç kişiyle başlayıp şehre yayılan bir şey
+            olabilir.
           </p>
-
-          <div className="hx-cta">
-            <Link href="#etkinlikler" className="hx-btn">
-              Etkinlikleri gör<span className="hx-arrow" aria-hidden="true">›</span>
+          <div style={{ display: 'flex', gap: 20, marginTop: 26, flexWrap: 'wrap' }}>
+            <Link href="#etkinlikler" style={{ ...kunyeEtiket, fontSize: 11 }}>
+              Etkinlikleri gör →
             </Link>
-            <Link href="/community/new" className="hx-btn">
-              Topluluk kur<span className="hx-arrow" aria-hidden="true">›</span>
+            <Link href="/community/new" style={{ ...kunyeEtiket, fontSize: 11, color: 'var(--night)' }}>
+              Topluluk kur →
             </Link>
-          </div>
-
-          <div className="hx-strip">
-            <span>Bir masa aç</span><i />
-            <span>Buluşmayı planla</span><i />
-            <span>Tanışın</span>
           </div>
         </div>
       </section>
@@ -393,10 +477,6 @@ export default async function HomePage({
            çağırıyordu, iki CTA üst üste geliyordu. --- */}
       <ClosingCta />
 
-      {/* Tema denemesi: üç varyant arasında canlı geçiş. KARAR ARACI —
-          yalnızca geliştirmede render edilir, ürüne çıkmaz. Varyant
-          seçildikten sonra kazanan :root'a taşınıp bu blok silinecek. */}
-      {process.env.NODE_ENV === 'development' && <TemaAnahtari />}
     </main>
   )
 }
