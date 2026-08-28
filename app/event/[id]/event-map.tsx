@@ -5,10 +5,16 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
+/**
+ * Harita iğnesi. Eski hâli #C8EB4B lime + #1E3A2B koyu yeşildi — ikisi de
+ * Temmuz paletinden kalmıştı ve sitede başka hiçbir yerde kullanılmıyor.
+ * Leaflet ikonu ham HTML dizesi olarak istediği için burada CSS değişkeni
+ * geçmiyor; değerler --paper-cream ve --ink'in kendisi.
+ */
 const PIN_SVG = `
 <svg width="38" height="47" viewBox="0 0 38 47" xmlns="http://www.w3.org/2000/svg">
-  <path d="M19 46 C19 46 33.8 26.6 33.8 17 A14.8 14.8 0 1 0 4.2 17 C4.2 26.6 19 46 19 46 Z" fill="#C8EB4B" stroke="#1E3A2B" stroke-width="2.4" stroke-linejoin="round"/>
-  <circle cx="19" cy="17" r="5.6" fill="#1E3A2B"/>
+  <path d="M19 46 C19 46 33.8 26.6 33.8 17 A14.8 14.8 0 1 0 4.2 17 C4.2 26.6 19 46 19 46 Z" fill="#F1F0EA" stroke="#0755BB" stroke-width="2.4" stroke-linejoin="round"/>
+  <circle cx="19" cy="17" r="5.6" fill="#0755BB"/>
 </svg>`
 
 const icon = L.divIcon({
@@ -85,37 +91,37 @@ export default function EventMap(props: { location: string; city?: string }) {
       <style>{`
         .lit-pin { background: none; border: none; }
         .leaflet-popup-content-wrapper {
-          background: #1E3A2B;
-          color: #FAF4E8;
-          border-radius: 14px;
+          background: var(--ink);
+          color: #fff;
+          border-radius: var(--r-md);
           padding: 4px 6px;
-          box-shadow: 0 6px 20px rgba(30,58,43,.25);
+          box-shadow: none;
         }
         .leaflet-popup-content {
           margin: 10px 14px;
           font-family: 'Instrument Sans', system-ui, sans-serif;
         }
-        .leaflet-popup-tip { background: #1E3A2B; }
+        .leaflet-popup-tip { background: var(--ink); }
         .popup-title {
           font-weight: 600;
           font-size: 14.5px;
           margin: 0 0 2px;
-          letter-spacing: -0.01em;
+          letter-spacing: .02em;
         }
         .popup-sub {
           font-family: 'IBM Plex Mono', monospace;
           font-size: 11px;
-          color: rgba(250,244,232,.7);
+          color: rgba(255,255,255,.72);
         }
         .leaflet-control-zoom {
-          border: 1px solid rgba(30,58,43,.28) !important;
-          border-radius: 10px !important;
+          border: 1px solid var(--border) !important;
+          border-radius: var(--r-md) !important;
           overflow: hidden;
           box-shadow: none !important;
         }
         .leaflet-control-zoom a {
           background: rgba(255,255,255,.94);
-          color: #1E3A2B;
+          color: var(--ink);
           border: none !important;
           font-weight: 600;
           width: 30px;
@@ -123,7 +129,7 @@ export default function EventMap(props: { location: string; city?: string }) {
           line-height: 30px;
         }
         .leaflet-control-zoom a:first-child {
-          border-bottom: 1px solid rgba(30,58,43,.16) !important;
+          border-bottom: 1px solid var(--border) !important;
         }
         .leaflet-control-zoom a:hover { background: #FFFFFF; }
         .leaflet-control-attribution {

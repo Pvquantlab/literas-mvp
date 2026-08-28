@@ -45,7 +45,7 @@ export default function CalendarButton(props: Props) {
 
   const dropdownItemStyle = {
     padding: '10px 14px',
-    borderRadius: '8px',
+    borderRadius: 'var(--r-sm)',
     background: 'transparent',
     border: 'none',
     color: 'var(--ink)',
@@ -63,20 +63,7 @@ export default function CalendarButton(props: Props) {
         onClick={function () {
           setOpen(!open)
         }}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: 'transparent',
-          color: 'var(--ink)',
-          padding: '10px 18px',
-          borderRadius: '999px',
-          fontSize: '14px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          fontFamily: "'IBM Plex Mono', monospace",
-          border: '1.5px solid var(--ink)',
-        }}
+        className="btn-secondary btn-sm"
       >
         Takvime ekle
       </button>
@@ -99,9 +86,9 @@ export default function CalendarButton(props: Props) {
               top: 'calc(100% + 6px)',
               left: 0,
               background: 'var(--paper-cream)',
-              border: '1.5px solid var(--border)',
-              borderRadius: '12px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              border: '1px solid var(--border-mid)',
+              borderRadius: 'var(--r-md)',
+              boxShadow: 'none',
               padding: '6px',
               display: 'flex',
               flexDirection: 'column',
