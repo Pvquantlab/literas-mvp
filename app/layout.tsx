@@ -5,7 +5,7 @@ import Footer from '@/components/footer'
 import Header from '@/components/header'
 import { SITE_URL } from '@/lib/site'
 import RegisterSW from '@/components/register-sw'
-import { SisMotoru, SisSecici } from '@/components/sis'
+import { SisMotoru } from '@/components/sis'
 import { IconSprite } from '@/components/category-art'
 import type { Metadata, Viewport } from 'next'
 
@@ -135,8 +135,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* Sis: katmanlar hedeflerine id ile tutunur (#sis-logotype,
             #sis-hero). Ana sayfa dışındaki rotalarda hiçbir şey yapmaz. */}
         <SisMotoru />
-        {/* Sis modu seçici — YALNIZCA geliştirmede render edilir. */}
-        <SisSecici />
         <RegisterSW />
       </body>
     </html>

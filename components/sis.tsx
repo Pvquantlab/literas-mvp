@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useSyncExternalStore } from 'react'
+import { useEffect } from 'react'
 
 /**
  * SİS — yapım talimatı §6, referansın "imza etkileşimi".
@@ -23,46 +23,14 @@ import { useEffect, useSyncExternalStore } from 'react'
  * döngüyü durdurur. Dokunmatikte touchmove aynı işi görür.
  */
 
-export type SisModu = 'logotype' | 'tam' | 'yok'
-
-const VARSAYILAN: SisModu = 'logotype'
-const ANAHTAR = 'literas-sis'
-const OLAY = 'literas-sis-degisti'
+/**
+ * KARAR VERİLDİ: sis hem künye ızgarasının hem dev logotype hücresinin
+ * üstünde. Üç modlu deneme sistemi ve dev seçicisi kaldırıldı; karar
+ * verildikten sonra ölü koddu.
+ */
 
 /** Sis rengi — ölçülmüş değer (doküman §2, --fog). */
 const SIS_RENGI = [62, 61, 56] as const
-
-export function sisModuOku(): SisModu {
-  if (typeof window === 'undefined') return VARSAYILAN
-  const v = window.localStorage.getItem(ANAHTAR)
-  return v === 'tam' || v === 'yok' || v === 'logotype' ? v : VARSAYILAN
-}
-
-export function sisModuYaz(m: SisModu) {
-  window.localStorage.setItem(ANAHTAR, m)
-  window.dispatchEvent(new CustomEvent(OLAY))
-}
-
-/**
- * Sis modu bir DIŞ KAYNAK (localStorage) ve React'in bunu izleme yolu
- * useSyncExternalStore. Önce effect içinde setState ile okuyordum; lint
- * haklı olarak "efekt içinde senkron setState zincirleme render tetikler"
- * dedi. Sunucu anlık görüntüsü varsayılanı döndürüyor, yani hidrasyon
- * uyuşmazlığı da olmuyor.
- */
-function abone(cb: () => void) {
-  window.addEventListener(OLAY, cb)
-  window.addEventListener('storage', cb)
-  return () => {
-    window.removeEventListener(OLAY, cb)
-    window.removeEventListener('storage', cb)
-  }
-}
-const sunucuAnlik = () => VARSAYILAN
-
-function useSisModu(): SisModu {
-  return useSyncExternalStore(abone, sisModuOku, sunucuAnlik)
-}
 
 /** Sabit tohumlu karıştırma: sunucu/istemci farkı ve kare kare titreme olmasın. */
 function permTablosu(): Uint8Array {
@@ -145,48 +113,71 @@ function dokuUret(g: number, y: number): HTMLCanvasElement {
  * hidrasyon ve Suspense denklemden tamamen çıkıyor.
  */
 export function SisKatmani({
-  hedef,
   hedefId,
-  tavan,
+  tavan = 0.9,
 }: {
-  /** Bu katman hangi modda görünür. */
-  hedef: Exclude<SisModu, 'yok'>
   /** Canvas'ın ekleneceği elemanın id'si. Yoksa hiçbir şey yapılmaz. */
   hedefId: string
-  /** Sisin en yoğun hâli. logotype modunda marka okunur kalsın diye düşük. */
+  /** Sisin en yoğun hâli. */
   tavan?: number
 }) {
-  const mod = useSisModu()
-
-  const gorunur = mod === hedef
-  const yogunlukTavani = tavan ?? (hedef === 'tam' ? 0.92 : 0.45)
+  const yogunlukTavani = tavan
 
   useEffect(() => {
-    if (!gorunur) return
 
-    // HEDEF HENÜZ OLMAYABİLİR: layout, sayfanın akışlı (streaming) içeriğinden
-    // ÖNCE hidrasyona giriyor. Efekt ilk çalıştığında #sis-logotype daha
-    // DOM'da değildi ve tek seferlik arama sessizce başarısız oluyordu --
-    // belirti: hiç canvas yok, hata da yok. Hedef belirene kadar bekleniyor.
+    // HEDEF GEÇ GELİR VE DEĞİŞEBİLİR. İki ayrı tuzak yaşandı:
+    //   1. Layout, sayfanın akışlı (streaming) içeriğinden ÖNCE hidrasyona
+    //      giriyor; ilk aramada #sis-logotype henüz DOM'da yok.
+    //   2. Tek seferlik arama başarılı olsa bile canvas, akış sırasındaki
+    //      GEÇİCİ kopyaya ekleniyor; React nihai içeriği yerleştirince o
+    //      kopya (ve canvas) yok oluyor. Belirti: hedefler doğru boyutta
+    //      ama içlerinde canvas yok, hata da yok.
+    // Bu yüzden gözlemci KAPANMIYOR: hedef kaybolursa yeniden kuruluyor.
+    // Ayrıca hedef GÖRÜNÜR ve gerçek boyutta olmadan kurulum yapılmıyor.
     let temizle: (() => void) | null = null
-    let gozlemci: MutationObserver | null = null
+    let bagliKutu: HTMLElement | null = null
 
-    const dene = () => {
-      const k = document.getElementById(hedefId)
-      if (!k) return false
-      gozlemci?.disconnect()
-      gozlemci = null
+    // BOYUT KOŞULU YOK. Önce "gerçek boyutu olsun" diye şart koymuştum ve
+    // hiç bağlanmadı: bu ağaçta hedefler effect anında 0x0 ölçülüyor,
+    // gerçek boyuta ancak akış bittikten sonra kavuşuyorlar. Bağlanma
+    // elemanın VARLIĞINA bakıyor; doğru boyut, kare döngüsündeki yeniden
+    // ölçüm ve konteyneri izleyen ResizeObserver ile sonradan oturuyor.
+    const uygunHedef = (): HTMLElement | null =>
+      document.querySelector<HTMLElement>('#' + CSS.escape(hedefId))
+
+    const esitle = () => {
+      const k = uygunHedef()
+      if (!k) return
+      // Zaten doğru kutuya bağlıysak ve canvas hâlâ oradaysa dokunma.
+      if (bagliKutu === k && bagliKutu.querySelector('canvas')) return
+      temizle?.()
       temizle = kur(k)
-      return true
+      bagliKutu = k
     }
 
-    if (!dene()) {
-      gozlemci = new MutationObserver(() => { dene() })
-      gozlemci.observe(document.body, { childList: true, subtree: true })
+    // MutationObserver TEK BAŞINA YETMİYOR: hedef, son DOM mutasyonundan
+    // SONRA yerleşip ölçülebilir hâle gelebiliyor (akış biterken). O anda
+    // gözlemciyi tetikleyecek bir mutasyon kalmadığı için bağlanma hiç
+    // gerçekleşmiyordu. Kısa bir kare döngüsü bu boşluğu kapatıyor.
+    let denemeId = 0
+    const sonKare = performance.now() + 5000
+    const dogrula = () => {
+      esitle()
+      if (!bagliKutu && performance.now() < sonKare) {
+        denemeId = requestAnimationFrame(dogrula)
+      } else {
+        denemeId = 0
+      }
     }
+    dogrula()
+
+    // Gözlemci açık kalıyor: hedef sonradan değişirse yeniden bağlanır.
+    const gozlemci = new MutationObserver(esitle)
+    gozlemci.observe(document.body, { childList: true, subtree: true })
 
     return () => {
-      gozlemci?.disconnect()
+      if (denemeId) cancelAnimationFrame(denemeId)
+      gozlemci.disconnect()
       temizle?.()
     }
 
@@ -214,10 +205,23 @@ export function SisKatmani({
     let gorunurAlanda = true
     let x = 0
 
-    function boyutla() {
-      const r = cv!.getBoundingClientRect()
-      g = Math.max(1, Math.round(r.width))
-      y = Math.max(1, Math.round(r.height))
+    /** Ölçü geçerliyse kurar ve true döner; değilse DOKUNMAZ. */
+    function boyutla(): boolean {
+      // KONTEYNERİ ölç, canvas'ı DEĞİL. Canvas position:absolute + %100;
+      // layout'un effect'i sayfa yerleşmeden önce çalıştığı için canvas'ın
+      // kendi rect'i 0x0 çıkıyordu -> backing store 2x2 kalıyor ve 2x2'lik
+      // görüntü tüm alana geriliyordu. Ekranda "sis gibi" duruyordu ama
+      // bulut dokusu da, ortaya çıkarma da yoktu.
+      const r = kutu.getBoundingClientRect()
+      const gw = Math.round(r.width || kutu.offsetWidth || kutu.clientWidth)
+      const gy = Math.round(r.height || kutu.offsetHeight || kutu.clientHeight)
+      // GEÇERSİZ ÖLÇÜYE KURULUM YAPMA. Eskiden 0 ölçü 1x1'e yuvarlanıp
+      // 2x2'lik bir doku üretiyordu; o doku tüm alana gerilince ekranda
+      // "sis gibi" duran düz bir bulanıklık çıkıyor, bulut da ortaya
+      // çıkarma da olmuyordu. Artık ölçü oturana kadar bekleniyor.
+      if (gw < 8 || gy < 8) return false
+      g = gw
+      y = gy
       cv!.width = Math.round(g * dpr)
       cv!.height = Math.round(y * dpr)
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -232,10 +236,11 @@ export function SisKatmani({
       // Başlangıç: sis tam kapalı. Tavan zaten yoğunluğu sınırlıyor.
       mctx!.fillStyle = 'rgba(0,0,0,1)'
       mctx!.fillRect(0, 0, g, y)
+      return true
     }
 
     function ciz() {
-      if (!doku || !maske) return
+      if (!doku || !maske || g < 8 || y < 8) return
       ctx!.clearRect(0, 0, g, y)
       ctx!.imageSmoothingEnabled = true
       ctx!.globalAlpha = yogunlukTavani
@@ -251,6 +256,10 @@ export function SisKatmani({
 
     function kare() {
       if (!gorunurAlanda) { rafId = 0; return }
+      // Yerleşim geç oturur: ölçü geçerli olana kadar her karede dene.
+      if (g < 8 || y < 8) {
+        if (!boyutla()) { rafId = requestAnimationFrame(kare); return }
+      }
       x = (x + 0.18) % g
       // Sis yavaşça geri kapanıyor
       mctx!.globalCompositeOperation = 'source-over'
@@ -289,11 +298,24 @@ export function SisKatmani({
     boyutla()
 
     if (azMotion) {
-      // Tek statik kare: hareket yok, döngü yok.
-      ctx.globalAlpha = yogunlukTavani * 0.6
-      ctx.drawImage(doku!, 0, 0, g, y)
-      ctx.globalAlpha = 1
-      return () => { cv.remove() }
+      // Hareket istenmiyor: TEK statik kare, sürekli döngü yok, fare
+      // dinleyicisi yok. Ölçü henüz oturmadıysa yalnızca ölçü için birkaç
+      // kare beklenir, sonra bir kez çizilip durulur.
+      let sabitId = 0
+      const birKez = () => {
+        if (g < 8 || y < 8) {
+          if (!boyutla()) { sabitId = requestAnimationFrame(birKez); return }
+        }
+        ctx.globalAlpha = yogunlukTavani * 0.6
+        ctx.drawImage(doku!, 0, 0, g, y)
+        ctx.globalAlpha = 1
+        sabitId = 0
+      }
+      birKez()
+      return () => {
+        if (sabitId) cancelAnimationFrame(sabitId)
+        cv.remove()
+      }
     }
 
     // Açılışta sis %60 seyreltilmiş başlasın ki içerik hiç görünmez kalmasın
@@ -309,8 +331,9 @@ export function SisKatmani({
     }, { threshold: 0 })
     io.observe(cv)
 
+    // Konteyner izleniyor: boyutu o belirliyor.
     const ro = new ResizeObserver(() => { boyutla() })
-    ro.observe(cv)
+    ro.observe(kutu)
 
     window.addEventListener('pointermove', isaretci as EventListener, { passive: true })
     window.addEventListener('touchmove', isaretci as EventListener, { passive: true })
@@ -325,7 +348,7 @@ export function SisKatmani({
       cv.remove()
     }
     }
-  }, [gorunur, yogunlukTavani, hedefId])
+  }, [yogunlukTavani, hedefId])
 
   return null
 }
@@ -343,58 +366,13 @@ export function SisKatmani({
 export function SisMotoru() {
   return (
     <>
-      <SisKatmani hedef="logotype" hedefId="sis-logotype" />
-      <SisKatmani hedef="tam" hedefId="sis-hero" />
+      {/* Künye ızgarası: yoğun. Referansın kendi düzeni de bu. */}
+      <SisKatmani hedefId="sis-hero" tavan={0.9} />
+      {/* Logotype hücresi: tavan DAHA DÜŞÜK. Maske birkaç saniyede tavana
+          doluyor; 0.9 olsaydı fare hiç oynamadığında marka adı kalıcı
+          olarak sisin altında kalırdı. 0.55'te sis açıkça görünüyor ama
+          "literaslab" okunur kalıyor. */}
+      <SisKatmani hedefId="sis-logotype" tavan={0.55} />
     </>
-  )
-}
-
-/**
- * Dev-only seçici. Üç sis modunu canlı karşılaştırmak için.
- * Üretimde hiç render edilmez.
- */
-export function SisSecici() {
-  const mod = useSisModu()
-  if (process.env.NODE_ENV !== 'development') return null
-
-  const secenekler: { m: SisModu; ad: string }[] = [
-    { m: 'logotype', ad: 'Logotype' },
-    { m: 'tam', ad: 'Tam hero' },
-    { m: 'yok', ad: 'Sis yok' },
-  ]
-
-  return (
-    <div
-      style={{
-        position: 'fixed', left: 12, bottom: 12, zIndex: 9999,
-        display: 'flex', gap: 6, padding: 8,
-        background: 'var(--paper-cream)', borderRadius: 4,
-        border: '1px solid var(--border-mid)',
-      }}
-    >
-      <span style={{
-        font: "400 10px var(--font-mono), monospace", letterSpacing: '.16em',
-        textTransform: 'uppercase', color: 'var(--muted)', alignSelf: 'center',
-        marginRight: 4,
-      }}>
-        sis
-      </span>
-      {secenekler.map((s) => (
-        <button
-          key={s.m}
-          type="button"
-          onClick={() => sisModuYaz(s.m)}
-          style={{
-            font: "400 12px var(--font-sans), system-ui, sans-serif",
-            padding: '6px 10px', borderRadius: 4, cursor: 'pointer',
-            border: 'none',
-            background: mod === s.m ? 'var(--ink)' : 'var(--panel)',
-            color: mod === s.m ? '#fff' : 'var(--ink)',
-          }}
-        >
-          {s.ad}
-        </button>
-      ))}
-    </div>
   )
 }
