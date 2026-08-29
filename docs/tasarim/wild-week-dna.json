@@ -157,5 +157,14 @@
       "punto": "İlk ölçümde 'baskın 10px, en büyük 24px' yazmıştım. 1440px'te yeniden ölçüm: baskın 14px (1868 düğüm), en büyük 32px. Dev başlıklar ve wordmark SVG olduğu için DOM ölçümüne hiç girmiyor.",
       "zemin": "Gövde zemini #CBCBCB (#DCDBD5 değil). Kartlar SAYDAM (rgba(0,0,0,0), dolgu 0) - görsel taşıyorlar, kendi kenarlarını görsel veriyor."
     }
+  },
+  "_sis_efekti": {
+    "durum": "UYGULANDI VE DOĞRULANDI (2026-08-29)",
+    "nerede": "#sis-hero (tavan 0.9) ve #sis-logotype (tavan 0.55)",
+    "dosya": "components/sis.tsx",
+    "dogrulama": "Kullanıcı kendi tarayıcısında baktı: fare gezdirince dağılıp yavaşça geri kapanan bulut dokusu. Yani gerçek fBm dokusu üretiliyor, bozuk 2x2 gerilmesi değil.",
+    "neden_tavanlar_farkli": "Maske birkaç saniyede tavana doluyor. Logotype hücresinde 0.9 olsaydı fare hiç oynamadığında marka adı kalıcı olarak sisin altında kalırdı.",
+    "tariften_sapma": "Doküman §6 gürültüyü her kare üretmeyi söylüyor; 1400x400'de bu kare başına ~105 bin hesap. Doku bir kez üretilip her kare yalnızca kaydırılıyor. Görsel sonuç aynı, maliyet iki drawImage.",
+    "dev_sunucusu_uyarisi": "Turbopack dev sunucusunda 'Element type is invalid. Received a promise that resolves to: undefined' hatası çıkıyor ve HİDRASYONU TAMAMEN ÖLDÜRÜYOR (hiçbir istemci bileşeni çalışmıyor). Kodla ilgisi yok: üretim derlemesi sorunsuz. Doğrulama için ~/.claude/launch.json içindeki 'literas-uretim' (npm run start) kullanılmalı."
   }
 }
