@@ -24,7 +24,7 @@ export default function LoginPage() {
   // bu parametre hiç okunmuyordu: kullanıcı boş bir forma düşüp ne olduğunu
   // anlamıyordu.
   const CALLBACK_HATALARI: Record<string, string> = {
-    auth_failed: 'Giriş tamamlanamadı. Bağlantı süresi dolmuş olabilir — tekrar dene.',
+    auth_failed: 'Giriş tamamlanamadı. Bağlantı süresi dolmuş olabilir. Tekrar dene.',
     link_expired: 'Bağlantının süresi dolmuş. Yeni bir doğrulama maili iste.',
     no_code: 'Giriş bağlantısı eksik ya da bozuk görünüyor. Tekrar dene.',
   }

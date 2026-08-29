@@ -107,7 +107,7 @@ export default function ReportButton(props: Props) {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(30, 58, 43, 0.5)',
+            background: 'var(--paper-soft)',
             display: 'grid',
             placeItems: 'center',
             zIndex: 1000,

@@ -50,15 +50,17 @@ export default function CategoryStrip({ activeSlug, activeCity, query }: Props) 
     top: '36px',
     width: '36px',
     height: '36px',
-    borderRadius: '50%',
-    border: '1px solid var(--border-mid)',
+    // kesfet/kesfet-category-strip.tsx'teki eşi bir tur önce düzeltilmişti
+    // ama ana sayfanınki AYRI bir dosya ve gözden kaçmıştı: daire köşe +
+    // çerçeve. DNA'da çerçeve taşıyan sıfır eleman var, baskın köşe 4px.
+    borderRadius: 'var(--r-md)',
     background: 'var(--paper-cream)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     color: 'var(--ink)',
-    boxShadow: '0 2px 8px rgba(30,58,43,.10)',
+    boxShadow: "none",
     zIndex: 2,
   }
 

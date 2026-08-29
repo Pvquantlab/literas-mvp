@@ -1,4 +1,4 @@
-export const metadata = { title: "Sık Sorulan Sorular — literaslab" };
+export const metadata = { title: "Sık Sorulan Sorular · literaslab" };
 
 const FAQS = [
   {
@@ -11,7 +11,7 @@ const FAQS = [
   },
   {
     q: "Etkinlik oluşturmak için ne gerekiyor?",
-    a: "Önce bir topluluk kurman ya da bir topluluğa üye olman lazım. Sonra o topluluk altından etkinlik oluşturabilirsin. Etkinlik başlığı, tarih, yer, kısa bir açıklama — hepsi bu.",
+    a: "Önce bir topluluk kurman ya da bir topluluğa üye olman lazım. Sonra o topluluk altından etkinlik oluşturabilirsin. Etkinlik başlığı, tarih, yer, kısa bir açıklama. Hepsi bu.",
   },
   {
     q: "Etkinliklere nasıl katılırım?",
@@ -34,7 +34,7 @@ const FAQS = [
 export default function SSSPage() {
   return (
     <div style={pageStyle}>
-      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "rgba(30,58,43,0.55)", textTransform: "lowercase", marginBottom: 8 }}>
+      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase", marginBottom: 8 }}>
         yardım merkezi
       </div>
       <h1 style={h1Style}>Sık Sorulan Sorular</h1>
@@ -49,7 +49,7 @@ export default function SSSPage() {
               <span>{faq.q}</span>
               <span style={chevronStyle}>+</span>
             </summary>
-            <p style={{ margin: "10px 0 4px", fontSize: 15, lineHeight: 1.7, color: "rgba(30,58,43,0.8)" }}>
+            <p style={{ margin: "10px 0 4px", fontSize: 15, lineHeight: 1.7, color: "var(--ink)" }}>
               {faq.a}
             </p>
           </details>
@@ -60,8 +60,8 @@ export default function SSSPage() {
 }
 
 const pageStyle: React.CSSProperties = { maxWidth: 760, margin: "0 auto", padding: "40px 24px 80px" };
-const h1Style: React.CSSProperties = { fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(32px, 4.5vw, 48px)", fontWeight: 800, lineHeight: 1.15, margin: "4px 0 18px", letterSpacing: "-0.5px" };
-const leadStyle: React.CSSProperties = { fontSize: 16, lineHeight: 1.6, color: "rgba(30,58,43,0.75)", margin: 0, maxWidth: "60ch" };
+const h1Style: React.CSSProperties = { fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(32px, 4.5vw, 48px)", fontWeight: 400, lineHeight: 1.15, margin: "4px 0 18px", letterSpacing: "0.5px" };
+const leadStyle: React.CSSProperties = { fontSize: 16, lineHeight: 1.6, color: "var(--ink)", margin: 0, maxWidth: "60ch" };
 const detailsStyle: React.CSSProperties = { borderBottom: "1px solid var(--border)", padding: "18px 4px" };
 const summaryStyle: React.CSSProperties = { cursor: "pointer", listStyle: "none", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 16.5, fontWeight: 700, color: "var(--ink)" };
-const chevronStyle: React.CSSProperties = { fontSize: 22, fontWeight: 400, color: "rgba(30,58,43,0.5)", marginLeft: 12 };
+const chevronStyle: React.CSSProperties = { fontSize: 22, fontWeight: 400, color: "var(--muted)", marginLeft: 12 };

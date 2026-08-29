@@ -19,9 +19,7 @@ export default async function AyarlarLayout({
         top: 16,
         flex: "0 0 260px",
         background: "var(--paper-cream)",
-        border: "1px solid var(--border)",
-        borderRadius: 20,
-        boxShadow: "0 6px 24px rgba(30,58,43,0.07)",
+        borderRadius: 4,
         padding: 10,
       }}>
         <SettingsMenu />

@@ -162,8 +162,8 @@ export default function KonumStep() {
           gap: '8px',
           padding: '10px 16px',
           borderRadius: '999px',
-          background: 'var(--paper-soft, rgba(30, 58, 43, 0.06))',
-          border: '1.5px solid rgba(30, 58, 43, 0.15)',
+          background: 'var(--paper-soft, var(--panel))',
+          border: '1.5px solid var(--border)',
           color: 'var(--ink)',
           fontSize: '13.5px',
           fontFamily: "'IBM Plex Mono', monospace",
@@ -239,7 +239,7 @@ export default function KonumStep() {
             }}
             onFocus={() => query.length >= 2 && setShowDropdown(true)}
             onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-            placeholder="Şehir veya ilçe ara — örn. Kadıköy, Ankara, Bodrum"
+            placeholder="Şehir veya ilçe ara. Örn: Kadıköy, Ankara, Bodrum"
             style={{ width: '100%', paddingLeft: '40px' }}
             autoComplete="off"
           />
@@ -251,7 +251,7 @@ export default function KonumStep() {
                 left: 0,
                 right: 0,
                 background: 'var(--paper-cream, #FFFDF6)',
-                border: '1.5px solid rgba(30, 58, 43, 0.15)',
+                border: '1.5px solid var(--border)',
                 borderRadius: '12px',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
                 maxHeight: '320px',
@@ -283,12 +283,12 @@ export default function KonumStep() {
                       padding: '12px 16px',
                       background: 'transparent',
                       border: 'none',
-                      borderBottom: '1px solid rgba(30, 58, 43, 0.08)',
+                      borderBottom: '1px solid var(--border)',
                       cursor: 'pointer',
                       fontSize: '14px',
                       color: 'var(--ink)',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(30,58,43,0.05)')}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--panel)')}
                     onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                   >
                     <span style={{ marginRight: '8px' }}>
@@ -319,9 +319,9 @@ export default function KonumStep() {
           letterSpacing: '0.08em',
         }}
       >
-        <div style={{ flex: 1, height: '1px', background: 'rgba(30,58,43,0.1)' }} />
+        <div style={{ flex: 1, height: '1px', background: 'var(--panel)' }} />
         <span>ya da</span>
-        <div style={{ flex: 1, height: '1px', background: 'rgba(30,58,43,0.1)' }} />
+        <div style={{ flex: 1, height: '1px', background: 'var(--panel)' }} />
       </div>
 
       {/* Çevrimiçi grup */}
@@ -337,7 +337,7 @@ export default function KonumStep() {
           borderRadius: '12px',
           background: mode === 'online' ? 'var(--ink)' : 'transparent',
           color: mode === 'online' ? 'var(--paper-cream, #FFFDF6)' : 'var(--ink)',
-          border: mode === 'online' ? '1.5px solid var(--ink)' : '1.5px solid rgba(30, 58, 43, 0.2)',
+          border: mode === 'online' ? '1.5px solid var(--ink)' : '1.5px solid var(--border)',
           fontSize: '14px',
           fontWeight: 600,
           cursor: 'pointer',

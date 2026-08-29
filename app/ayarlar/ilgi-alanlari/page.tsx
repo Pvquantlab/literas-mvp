@@ -29,13 +29,13 @@ export default async function IlgiAlanlariPage({
 
   return (
     <>
-      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "rgba(30,58,43,0.55)", textTransform: "lowercase" }}>
+      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase" }}>
         hesap ayarları
       </div>
-      <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: "6px 0 10px" }}>
+      <h1 style={{ fontFamily: "var(--font-serif), Georgia, serif", fontSize: 32, fontWeight: 400, letterSpacing: ".02em", margin: "6px 0 10px" }}>
         İlgi Alanları
       </h1>
-      <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 28px", maxWidth: "56ch" }}>
+      <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 28px", maxWidth: "56ch" }}>
         Favori ilgi alanlarınızı seçin; size yakın toplulukları bunlara göre önerelim.
       </p>
 
@@ -43,7 +43,7 @@ export default async function IlgiAlanlariPage({
 
       <form action={updateIlgiAlanlari}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-          <span style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.05em", color: "rgba(30,58,43,0.65)" }}>
+          <span style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.05em", color: "var(--muted)" }}>
             eşleşme mesafesi:
           </span>
           <select name="match_distance_km" defaultValue={profile?.match_distance_km || 80} style={{
@@ -85,8 +85,7 @@ const saveButtonStyle = {
   border: "2px solid var(--ink)",
   borderRadius: 999,
   fontSize: 14.5,
-  fontWeight: 700,
+  fontWeight: 500,
   color: "var(--ink)",
   cursor: "pointer",
-  boxShadow: "4px 5px 0 var(--ink)",
 };

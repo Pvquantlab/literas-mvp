@@ -1,9 +1,9 @@
-export const metadata = { title: "İletişim — literaslab" };
+export const metadata = { title: "İletişim · literaslab" };
 
 export default function IletisimPage() {
   return (
     <div style={pageStyle}>
-      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "rgba(30,58,43,0.55)", textTransform: "lowercase", marginBottom: 8 }}>
+      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase", marginBottom: 8 }}>
         destek
       </div>
       <h1 style={h1Style}>İletişim</h1>
@@ -33,10 +33,10 @@ export default function IletisimPage() {
       </div>
 
       <div style={{ marginTop: 48, padding: 24, background: "var(--paper-cream)", border: "1px solid var(--border)", borderRadius: 16 }}>
-        <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "rgba(30,58,43,0.55)", textTransform: "lowercase", marginBottom: 8 }}>
+        <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase", marginBottom: 8 }}>
           yanıt süresi
         </div>
-        <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: "rgba(30,58,43,0.85)" }}>
+        <p style={{ margin: 0, fontSize: 15, lineHeight: 1.6, color: "var(--ink)" }}>
           Genellikle 1 iş günü içinde döneriz. Hafta sonu yazarsan pazartesi görürüz.
         </p>
       </div>
@@ -56,8 +56,8 @@ function ContactCard({ title, desc, contact, href }: { title: string; desc: stri
       color: "var(--ink)",
       transition: "all 0.15s",
     }}>
-      <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>{title}</div>
-      <div style={{ fontSize: 14, color: "rgba(30,58,43,0.65)", marginBottom: 8 }}>{desc}</div>
+      <div style={{ fontSize: 17, fontWeight: 400, marginBottom: 4 }}>{title}</div>
+      <div style={{ fontSize: 14, color: "var(--muted)", marginBottom: 8 }}>{desc}</div>
       <div style={{ fontSize: 14.5, fontWeight: 600, color: "var(--ink)", fontFamily: "'IBM Plex Mono', monospace" }}>
         {contact} →
       </div>
@@ -66,5 +66,5 @@ function ContactCard({ title, desc, contact, href }: { title: string; desc: stri
 }
 
 const pageStyle: React.CSSProperties = { maxWidth: 720, margin: "0 auto", padding: "40px 24px 80px" };
-const h1Style: React.CSSProperties = { fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(32px, 4.5vw, 48px)", fontWeight: 800, lineHeight: 1.15, margin: "4px 0 18px", letterSpacing: "-0.5px" };
-const leadStyle: React.CSSProperties = { fontSize: 16, lineHeight: 1.6, color: "rgba(30,58,43,0.75)", margin: 0, maxWidth: "58ch" };
+const h1Style: React.CSSProperties = { fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(32px, 4.5vw, 48px)", fontWeight: 400, lineHeight: 1.15, margin: "4px 0 18px", letterSpacing: "0.5px" };
+const leadStyle: React.CSSProperties = { fontSize: 16, lineHeight: 1.6, color: "var(--ink)", margin: 0, maxWidth: "58ch" };

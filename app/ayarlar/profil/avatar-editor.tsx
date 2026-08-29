@@ -87,7 +87,7 @@ export default function AvatarEditor({
               background: url ? "transparent" : "var(--paper-soft)",
               border: "1.5px solid var(--border)",
               display: "grid", placeItems: "center",
-              fontSize: 32, fontWeight: 800, color: "var(--ink)",
+              fontSize: 32, fontWeight: 400, color: "var(--ink)",
               cursor: uploading ? "wait" : "pointer",
               overflow: "hidden",
               padding: 0,
@@ -107,7 +107,7 @@ export default function AvatarEditor({
             {uploading && (
               <span style={{
                 position: "absolute", inset: 0,
-                background: "rgba(30,58,43,0.55)",
+                background: "var(--paper-soft)",
                 color: "white",
                 display: "grid", placeItems: "center",
                 fontSize: 11,
@@ -175,7 +175,7 @@ export default function AvatarEditor({
           <p style={{
             fontFamily: "'IBM Plex Mono', monospace",
             fontSize: 12,
-            color: "rgba(30,58,43,0.6)",
+            color: "var(--muted)",
             margin: 0,
           }}>
             jpg, png veya webp · en fazla {kovaLimitMb(BUCKET)} mb

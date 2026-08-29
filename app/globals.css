@@ -5,53 +5,126 @@
 
 :root {
   /* --- Marka renkleri ---
-     Palet lacivert–turkuaz–mor–magenta spektrumuna geçti. Token ADLARI
-     korundu (--ink, --lime, --coral): site her yerde bunları kullandığı
-     için değerleri değiştirmek tek başına siteyi yeniden renklendiriyor.
-     Adlar artık rengi tarif etmiyor — --lime turkuaz, --coral magenta. */
-  --ink: #0C1B8E;            /* lacivert — birincil marka ve eylem rengi */
-  --ink-hover: #0A1678;
-  --ink-deep: #060F52;
-  --night: #0F2E5C;          /* gövde metni */
+     Palet TEK sese indi: mürekkep mavisi + sıcak greige + sıcak siyah.
+     Referans Wild Week Athens (week.wild.plus) — gözü yormamasının sebebi
+     efekt değil, kısıtlama: dört renk, tek güçlü vurgu.
 
-  /* Zemin: sayfa çok açık lavanta-beyaz, kartlar saf beyaz.
-     Aradaki fark kartları gölgesiz ayırıyor. */
-  --paper: #F7F9FD;
-  --paper-cream: #FFFFFF;
-  --paper-soft: #EEF2FB;
+     Token ADLARI korundu (--lime, --coral): site 59 dosyada bunları
+     kullanıyor, değerleri değiştirmek tek başına siteyi yeniden renklendirdi.
+     UYARI: adlar rengi TARİF ETMİYOR — --lime artık açık mavi, --coral
+     mürekkep, --coral-deep kırmızı. Adları gerçeğe uydurmak ayrı bir iş. */
+  --ink: #0755BB;            /* mürekkep mavisi — birincil marka ve eylem rengi */
+  --ink-hover: #064A9F;
+  --ink-deep: #043B85;
+  --night: #16160F;          /* gövde metni — sıcak siyah */
+
+  /* Zemin: sayfa SICAK greige, kartlar ondan AÇIK.
+     Kartlar gölgeyle değil, zeminden yükselerek ayrılıyor.
+     Soğuk lavanta-beyaz yerine sıcak nötr: gözü yormayan şey bu. */
+  --paper: #DCDBD5;
+  --paper-cream: #F1F0EA;
+  --paper-soft: #E5E3DC;
+
+  /* İÇ PANEL — referansın "müze etiketi" katmanı.
+     Ölçüm: week.wild.plus'ta #E8E8E8 zeminli 20 eleman var; "The Facts"
+     kutusu (394x394, 24px dolgu) ve "I Passport" tipi hap satırları.
+     Kartın İÇİNDE ikinci bir yüzey; çift çerçeve hissini bu veriyor ve
+     bende hiç yoktu. Ayrım gölgeyle değil bu katmanla kuruluyor.
+
+     İKİ BİLİNÇLİ SAPMA:
+     1. Ölçülen değer #E8E8E8, soğuk gri. Paletimiz baştan sona sıcak greige;
+        soğuk gri araya yabancı düşüyordu. Aynı açıklıkta sıcak karşılığı.
+     2. Referansta panel EN AÇIK katman, çünkü kartları saydam (zeminle aynı).
+        Bizim kartlarımız metin taşıyor ve zeminden ayrılmaları gerekiyor, o
+        yüzden bir katman fazlamız var: zemin -> kart -> panel. Panel burada
+        ilerlemiyor, İÇERİ ÇÖKÜYOR. Çift çerçeve etkisi iki yönde de çalışır;
+        önemli olan iç içe iki yüzey olması. */
+  --panel: #E9E7E0;
+
+  /* Referansın --blue-soft'u: rgba(7,85,187,.32), 11 elemanda kullanılıyor.
+     BİZDE METİN İÇİN KULLANILAMAZ: bu alfa zeminlerimizde 1.61-1.67:1
+     veriyor, AA eşiği 4.5. Geçen en düşük alfa 0.94 çıktı, yani
+     kullanılabilir bir "soluk mavi" yok. Referans bunu karşılayabiliyor
+     çünkü bir kez göz gezdirilen mikrosite; biz okunan bir ürünüz.
+     Bu değişken YALNIZCA dekorasyon içindir: rölyef tonu, ince çizgi.
+     Okunması gereken hiçbir metinde kullanma. */
+  --ink-soft: rgba(7, 85, 187, .32);
 
   /* Metin hiyerarşisi tek kaynaktan: --night'ın opaklık kademeleri
      (Luma deseni). %78 ≈ eski #48587D (7.08:1 korunur),
      %58 ≈ eski #707E9E (4.28:1 korunur, yalnız 15px+ metin). */
   --muted: color-mix(in srgb, var(--night) 78%, transparent);
   --muted-light: color-mix(in srgb, var(--night) 58%, transparent);
-  --border: #DFE5F2;
-  --border-mid: #C7D0E6;
+  /* Çizgiler mürekkebin soluk hali — Wild Week'in ızgara çizgisi deseni.
+     Nötr griden farkı: çizgi de paletin parçası, yabancı bir renk değil. */
+  --border: rgba(7, 85, 187, 0.22);
+  --border-mid: rgba(7, 85, 187, 0.42);
 
   /* --- Vurgu ---
-     DİKKAT: turkuaz üstünde beyaz metin 2.14 — asla kullanma.
-     Turkuaz zemin yalnızca lacivert metin taşır. */
-  --lime: #4FC3B8;           /* turkuaz */
-  --lime-soft: #7FEDE0;
-  --lime-press: #3AA79D;
-  --coral: #E040A0;          /* magenta */
-  --coral-deep: #9B2FD0;     /* mor */
-  --yellow-highlight: #A8EDE4;
+     Palet TEK sese indirildi: mürekkep mavisi. Dekoratif renk yok.
+     Eski turkuaz/magenta/mor kaldırıldı — gözü yoran şey onlardı.
 
-  /* --- Degrade durakları: dev başlık ve rozetler bunları kullanır --- */
-  --grad-1: #4FC3B8;
-  --grad-2: #2B6FD4;
-  --grad-3: #5B35CE;
-  --grad-4: #9B2FD0;
-  --grad-5: #E040A0;
+     DİKKAT: --lime AÇIK kalmak ZORUNDA. Kod bu zeminlerin üstüne
+     `color: var(--ink)` koyuyor (9+ ayarlar sayfası). Mürekkep yapılırsa
+     mürekkep üstüne mürekkep gelir ve metin görünmez olur. */
+  --lime: #C7D7F2;           /* mürekkebin açık tonu — birincil eylem zemini */
+  --lime-soft: #DCE6F8;
+  --lime-press: #AFC6EA;
+  --coral: #0755BB;          /* vurgu etiketleri de mürekkep */
+  --coral-deep: #A62B22;     /* TEK işlevsel kırmızı: yıkıcı eylem */
+  --yellow-highlight: #E9E7DF;
 
-  /* --- Sticky rozet --- */
-  --sticky-blue-bg: #DCE6FB;
-  --sticky-blue-ink: #1B3E8C;
-  --sticky-pink-bg: #FBD9EE;
-  --sticky-pink-ink: #8E1F63;
-  --sticky-green-bg: #D2F3EE;
-  --sticky-green-ink: #0E5F70;
+  /* --- Degrade durakları ---
+     Beş renkli gökkuşağı yerine dar bir mürekkep rampası: degrade
+     hâlâ derinlik veriyor ama tek renk kalıyor. */
+  --grad-1: #0755BB;
+  --grad-2: #0A4EA6;
+  --grad-3: #084391;
+  --grad-4: #06397C;
+  --grad-5: #043B85;
+
+  /* --- Etkinlik kartı yüzeyi ---
+     Kart eskiden components/event-card.tsx içinde 24 sabit hex taşıyordu ve
+     sitenin paletinden TAMAMEN bağımsızdı (koyu tema). Buraya taşındı ki
+     "kart koyu mu kağıt mı" bir TEMA KARARI olsun, dosyaya gömülü bir gerçek
+     değil. Varsayılan: koyu kart (eski davranış birebir korundu). */
+  --card-bg: #14171F;
+  --card-panel: #1B1F29;
+  --card-inset: #272C38;
+  --card-line: #232733;
+  --card-line-hover: #394054;
+  --card-fg: #EDF1FA;
+  --card-fg-strong: #FFFFFF;
+  --card-fg-dim: #C3CBDD;
+  --card-fg-muted: #8B95AD;
+  --card-chip-bg: rgba(255, 255, 255, .10);
+  --card-chip-bg-soft: rgba(255, 255, 255, .07);
+  --card-chip-line: rgba(255, 255, 255, .14);
+  --card-art-shadow: rgba(0, 0, 0, .55);
+  --card-art-1: #3A4050;
+  --card-art-2: #22262F;
+  --card-art-3: #272B35;
+  --card-art-4: #14161C;
+  --card-dot: #6B7488;
+  --card-dot-now: #3DDC8A;            /* "şu an oluyor" — işlevsel sinyal */
+  --card-dot-now-halo: rgba(61, 220, 138, .22);
+
+  /* Kahraman ızgarası: elle yazılmış rgba yerine token. */
+  --grid-line: rgba(7, 85, 187, .16);
+  --grid-edge: rgba(7, 85, 187, .38);
+
+  /* Kategori nesnelerinin üç tonu. category-art.tsx bunları okur. */
+  --obj-hi: #5E93DA;
+  --obj-mid: #0755BB;
+  --obj-dk: #043B85;
+
+  /* --- Sticky rozet: sıcak nötr zemin, mürekkep metin --- */
+  --sticky-blue-bg: #D8E2F4;
+  --sticky-blue-ink: #0755BB;
+  --sticky-pink-bg: #E9E5DC;
+  --sticky-pink-ink: #6B4A2E;
+  --sticky-green-bg: #E1E4D8;
+  --sticky-green-ink: #40542F;
 
   /* --- Tip ölçeği ---
      Ara değer uydurmak yok. 13.5px, 14.5px, 15.5px gibi değerler
@@ -77,17 +150,23 @@
   --s-8: 64px;
   --s-9: 96px;
 
-  /* --- Köşe yarıçapı: dört değer, fazlası yok --- */
-  --r-sm: 8px;
-  --r-md: 14px;
-  --r-lg: 20px;
+  /* --- Köşe yarıçapı ---
+     ÖLÇÜLDÜ (week.wild.plus): baskın 4px (54 eleman), 8px (21), 50% daireler,
+     999px yalnızca 1 kez. Eski ölçek (8/14/20) referansın iki-üç katıydı ve
+     yumuşak/oyuncak bir his veriyordu. Matbaa dili keskin köşe ister. */
+  --r-sm: 3px;
+  --r-md: 4px;
+  --r-lg: 6px;
   --r-pill: 999px;
 
-  /* --- Gölge. Ofset gölge kaldırıldı: yeni palet Radix'in yumuşak
-     gölge diliyle çalışıyor, sert ofset o dille çelişiyordu. --- */
-  --shadow-press: 0 12px 26px -12px rgba(12, 27, 142, .7);
-  --shadow-press-sm: 0 8px 18px -10px rgba(12, 27, 142, .6);
-  --shadow-lift: 0 10px 26px -14px rgba(15, 46, 92, .3);
+  /* --- Gölge: YOK ---
+     ÖLÇÜLDÜ: referansta box-shadow taşıyan SIFIR eleman var. Ayrım gölgeyle
+     değil ZEMİN FARKIYLA kuruluyor (--paper-cream, --paper'dan açık).
+     Token'lar silinmedi çünkü 28 dosya onları kullanıyor; `none` yapıldı —
+     tek satırla geri alınabilir. */
+  --shadow-press: none;
+  --shadow-press-sm: none;
+  --shadow-lift: none;
 
   /* --- Genişlik: tek kaynak --- */
   --w-page: 1200px;
@@ -97,8 +176,8 @@
 
   /* --- Legacy: eski sayfalar kırılmasın --- */
   --seal: var(--coral);
-  --seal-soft: #FBE7F3;
-  --seal-deep: #8E1F63;
+  --seal-soft: #DCE6F8;
+  --seal-deep: #043B85;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -111,8 +190,17 @@ html {
 body {
 background-color: var(--paper);
 
-  color: var(--night);
-  font-family: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
+  /* METİN MÜREKKEP. Ölçüm: referansta 2037 metin düğümünün 1766'sı
+     #0755BB, yalnızca 43'ü siyah (onlar da gizli/varsayılan düğümler).
+     Yani "sitede siyah metin yok" gerçek. Sıcak siyahtan (--night)
+     mürekkebe geçiş kontrastı 13.10'dan 5.00'e düşürüyor; AA eşiği 4.5,
+     geçiyor.
+     GÖVDE SERİF. Referansın 1919 metin düğümü Albertus Nova Light'ta;
+     sitenin sesi bu. Sans'a çevirmekle referanstan uzaklaşmıştım.
+     Form denetimleri ve düğmeler aşağıda sans'ta bırakıldı: onlar
+     okunan metin değil, dokunulan nesne. */
+  color: var(--ink);
+  font-family: var(--font-serif), Georgia, serif;
   font-size: var(--t-md);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -180,7 +268,7 @@ input, textarea, select {
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--ink);
-  box-shadow: 0 0 0 3px rgba(79, 195, 184, .45);
+  box-shadow: 0 0 0 3px rgba(7, 85, 187, .28);
 }
 input::placeholder, textarea::placeholder {
   color: var(--muted-light);
@@ -232,14 +320,14 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
 }
 /* İmza hareketi: eğilme değil, butonun "basılması". Sitede tek yerde. */
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 30px -12px rgba(12, 27, 142, .8);
+  transform: translateY(-1px);
+  box-shadow: none;              /* DNA: gölge taşıyan sıfır eleman */
   background: var(--ink-hover);
   color: #fff;
 }
 .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 6px 14px -8px rgba(12, 27, 142, .7);
+  box-shadow: 0 6px 14px -8px rgba(22, 22, 15, .28);
   background: var(--ink-deep);
 }
 .btn-primary.btn-sm { padding: 9px 18px; font-size: var(--t-sm); box-shadow: var(--shadow-press-sm); }
@@ -260,7 +348,7 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   text-decoration: none;
   transition: background .15s var(--ease);
 }
-.btn-secondary:hover { background: rgba(12, 27, 142, .05); }
+.btn-secondary:hover { background: rgba(22, 22, 15, .05); }
 .btn-secondary.btn-sm { padding: 9px 18px; font-size: var(--t-sm); }
 
 .btn-nav {
@@ -318,7 +406,7 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   font-size: var(--t-xs);
   color: var(--coral-deep);
   border: 1px solid rgba(155, 47, 208, .3);
-  background: rgba(79, 195, 184, .16);
+  background: rgba(7, 85, 187, .12);
   padding: 5px 14px;
   border-radius: var(--r-pill);
 }
@@ -344,31 +432,51 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   font-size: var(--t-xs);
   font-weight: 500;
   color: var(--muted);
-  border: 1px dashed rgba(12, 27, 142, .28);
+  border: 1px dashed rgba(22, 22, 15, .28);
   padding: 2px 9px;
   border-radius: var(--r-pill);
 }
 
 /* --- Tipografi ---------------------------------------------------------- */
 
+/* Marcellus tek ağırlık taşıyor (400) ve harf aralığı POZİTİF.
+   Eski hâli Literata 600 / -0.015em idi: hem başka bir ses hem DNA'nın
+   tersi. Referansın "light" hissi ağırlık kademesinden değil, ince bir
+   yazıt karakterinden geliyor. */
 .serif {
   font-family: var(--font-serif), Georgia, serif;
-  font-weight: 600;              /* 800 → 600: Literata 800 tıknaz duruyordu */
-  letter-spacing: -0.015em;
-  line-height: 1.18;
+  font-weight: 400;
+  letter-spacing: .02em;
+  line-height: 1.2;
 }
 .mono {
   font-family: var(--font-mono), monospace;
-  letter-spacing: -0.01em;
+  letter-spacing: .02em;   /* DNA: harf aralığı POZİTİF */
 }
 
 /* Bölüm başlığı — sayfalar arası tek stil. */
+/* Bölüm başlığı: DNA'ya göre yeniden yazıldı.
+   ÖLÇÜLDÜ (week.wild.plus): en büyük metin 24px, ağırlık 300, harf aralığı
+   POZİTİF (~0.04em), satır 1.2. Eskiden 27px serif, 600 ağırlık, NEGATİF
+   aralıktı — üç boyutta da referansın tersi. */
+/* Bölüm başlığı. ÖLÇÜLDÜ (week.wild.plus "The Facts" / "FAQs" /
+   "What you should bring"): 18px, ağırlık 300, harf aralığı 0.72px (=.04em),
+   BÜYÜK HARF, serif, mürekkep.
+   Doküman "0.9rem ve 0.15em ve ortalanmış" diyordu; üçü de yanlış çıktı.
+   Bizde eksik olan tek şey büyük harfti.
+
+   TÜRKÇE TUZAĞI: text-transform:uppercase "i" harfini varsayılan olarak
+   "I" yapar. <html lang="tr"> ayarlı olduğu için tarayıcı Türkçe kasa
+   eşlemesini uyguluyor ve doğru "İ" üretiyor. Tarayıcıda doğrulandı:
+   lang="tr" ile YAKLAŞAN ETKİNLİKLER, lang'siz YAKLAŞAN ETKINLIKLER.
+   lang özniteliği kaldırılırsa bu başlıklar bozulur. */
 .h-section {
   font-family: var(--font-serif), Georgia, serif;
-  font-weight: 600;
-  font-size: var(--t-2xl);
-  letter-spacing: -0.02em;
+  font-weight: 400;
+  font-size: 18px;
+  letter-spacing: .04em;
   line-height: 1.2;
+  text-transform: uppercase;
   color: var(--ink);
 }
 
@@ -380,13 +488,14 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   letter-spacing: .02em;
 }
 
+/* Vurgu bandı KALDIRILDI: rengi nane yeşiliydi (adı "yellow" ama değeri
+   #A8EDE4) ve tek sesli palete yabancıydı. Referansta böyle bir vurgu aracı
+   yok — vurgu ağırlıkla değil, mürekkep rengiyle yapılıyor.
+   Sınıf duruyor çünkü birkaç sayfa kullanıyor; artık sadece renk veriyor. */
 .highlight-yellow {
-  background: linear-gradient(100deg,
-    rgba(168,237,228,0) 1%, rgba(168,237,228,.8) 6%,
-    rgba(168,237,228,.9) 50%, rgba(168,237,228,.8) 94%,
-    rgba(168,237,228,0) 99%);
-  border-radius: var(--r-sm);
-  padding: 0 .1em;
+  background: none;
+  color: var(--ink);
+  padding: 0;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
@@ -410,9 +519,8 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
 .empty-state {
   text-align: center;
   padding: var(--s-7) var(--s-5);
-  border: 1.5px dashed var(--border-mid);
-  border-radius: var(--r-lg);
-  background: var(--paper-cream);
+  border-radius: var(--r-md);
+  background: var(--panel);   /* kesikli çerçeve kalktı: DNA'da çerçeve yok */
 }
 .empty-state p { color: var(--muted); margin-bottom: var(--s-4); }
 
@@ -754,7 +862,12 @@ p, .seats-label {
 
 /* --- Kaydırmayla beliriş --------------------------------------------------
    JS yok, kütüphane yok. Desteklenmeyen tarayıcıda içerik zaten görünür
-   durumda kalır — @supports bunu garanti eder. */
+   durumda kalır; @supports bunu garanti eder.
+
+   Yapım talimatı §4 burada GSAP ScrollTrigger öneriyor. Gerekmedi: CSS'in
+   kendi scroll-driven animasyonu aynı işi kütüphanesiz yapıyor ve her öğe
+   kendi konumuna göre ilerlediği için kademelenme (stagger) bedavaya
+   geliyor. Dokümanın değerleri: opaklık 0->1, y 24->0, ~0.6s, abartma yok. */
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
@@ -764,7 +877,7 @@ p, .seats-label {
       animation-range: entry 10% cover 26%;
     }
     @keyframes reveal-in {
-      from { opacity: 0; transform: translateY(14px); }
+      from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: none; }
     }
   }
@@ -910,27 +1023,29 @@ p, .seats-label {
   padding: 0;
 }
 
+/* DNA'ya çekildi: 22px köşe + gölge + çerçeve, referansın diliyle
+   bağdaşmıyordu (ölçüm: baskın köşe 4px, gölge taşıyan sıfır eleman).
+   Ayrım artık yalnızca zemin farkıyla — paper-cream, paper'dan açık. */
 .ct-sq {
   display: grid;
   place-items: center;
-  border-radius: 22px;
+  border-radius: 4px;
   background: var(--paper-cream);
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 20px -10px rgba(15, 46, 92, .26);
   transition: transform .3s var(--ease), box-shadow .3s var(--ease),
               background .3s var(--ease), border-color .3s var(--ease);
 }
 .ct-item:hover .ct-sq {
   transform: translateY(-4px);
-  box-shadow: 0 16px 30px -12px rgba(15, 46, 92, .32);
+  box-shadow: 0 16px 30px -12px rgba(22, 22, 15, .32);
 }
 .ct-sq.on {
   background: var(--ink);
-  border-color: var(--ink);
-  box-shadow: 0 14px 28px -12px rgba(12, 27, 142, .5);
 }
 
+/* Şerit etiketi bir gezinme denetimi: sans. Marcellus'ta 500/600 yok,
+   serif miras alınca sahte kalın üretiliyordu. */
 .ct-lbl {
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-size: var(--t-sm);
   font-weight: 500;
   color: var(--muted);
@@ -976,11 +1091,11 @@ p, .seats-label {
   padding: var(--s-8) var(--s-5);
   background-color: var(--paper-cream);
   background-image:
-    linear-gradient(rgba(43, 111, 212, .20) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(43, 111, 212, .20) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 24px 24px;
-  border-top: 1.5px solid rgba(43, 111, 212, .5);
-  border-bottom: 1.5px solid rgba(43, 111, 212, .5);
+  border-top: 1.5px solid var(--grid-edge);
+  border-bottom: 1.5px solid var(--grid-edge);
 }
 .hx-inner { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; }
 
@@ -1042,6 +1157,9 @@ p, .seats-label {
 /* .hx-inner::before (beyaz radyal isik) kaldirildi: izgara netlestikten
    sonra izgaranin uzerinde bulanik bir leke birakiyordu. */
 
+/* ÖLÜ: .hx-title, .hx-lede, .sticky-blue, .sticky-note artık hiçbir TSX
+   dosyasında kullanılmıyor - eski hero'dan kalma. Negatif harf aralıkları
+   bu yüzden ekrana hiç ulaşmıyor. Silmek ayrı bir temizlik turu. */
 .hx-lede {
   font-size: clamp(16px, 2.6vw, 24px);
   font-weight: 700;
@@ -1083,7 +1201,7 @@ p, .seats-label {
   color: #fff;
   background: var(--ink-hover);
   transform: translateY(-2px);
-  box-shadow: 0 18px 32px -14px rgba(12, 27, 142, .8);
+  box-shadow: 0 18px 32px -14px rgba(22, 22, 15, .8);
 }
 .hx-arrow {
   display: grid;
@@ -1108,7 +1226,7 @@ p, .seats-label {
   padding: 15px 12px;
   background: var(--paper-cream);
   border-radius: var(--r-pill);
-  box-shadow: 0 14px 34px -18px rgba(15, 46, 92, .4);
+  box-shadow: 0 14px 34px -18px rgba(22, 22, 15, .4);
 }
 .hx-strip span {
   padding: 2px clamp(12px, 3vw, 28px);
@@ -1123,11 +1241,61 @@ p, .seats-label {
 .hx-objs { position: absolute; inset: 0; pointer-events: none; }
 .hx-obj { position: absolute; height: auto; }
 .hx-obj-far { opacity: .30; filter: blur(1.4px); }
-.hx-obj-near { filter: drop-shadow(0 8px 12px rgba(15, 46, 92, .22)); }
+.hx-obj-near { filter: drop-shadow(0 8px 12px rgba(22, 22, 15, .22)); }
 
 /* Dar ekranda nesneler metnin üstüne biniyor — tamamen gizle. */
 @media (max-width: 960px) {
   .hx-objs { display: none; }
   .hx { padding: var(--s-7) var(--s-4); background-size: 18px 18px; }
   .hx-strip { margin-top: var(--s-6); }
+}
+
+/* ==========================================================================
+   KATEGORİ NESNELERİ: DÜZ
+   ==========================================================================
+   Varyant 4 (DNA'dan üretilen) seçildi. Üç tema bloğu karar aracıydı,
+   kaldırıldı — kazanan palet :root'ta duruyor.
+
+   ÖLÇÜLDÜ (week.wild.plus): sayfada illüstrasyon YOK, gölge taşıyan sıfır
+   eleman var. Şekilleri tuttuk çünkü kategori kimliğini onlar taşıyor, ama
+   hacim katmanları kapatıldı: nesne artık süs değil, ayırt edici işaret.
+
+   Katmanlar (components/category-art.tsx):
+     ci-shadow      → altındaki bulanık gölge elipsi
+     ci-sheen-layer → sol üstteki beyaz parlama
+     ci-detail      → opacity'li iç detaylar
+     ci-body        → gövde; degrade yerine tek düz mürekkep */
+.ci-shadow,
+.ci-sheen-layer { display: none; }
+
+.ci-detail { opacity: 0; }
+
+/* `fill` hem SVG attribute hem CSS property olduğu için degradeyi buradan
+   ezebiliyoruz. */
+.ci-body { fill: var(--obj-mid); stroke: none; }
+
+/* --- Serif gövdenin istisnaları ------------------------------------------
+   Gövde Marcellus'a geçti (referansın sesi). Ama Marcellus bir YAZIT
+   karakteri: dokunulan nesnelerde ve yoğun veri girişinde okunurluğu
+   düşüyor. Form denetimleri, düğmeler ve mono etiketler sans/mono kalır.
+   Referans da bunu yapıyor: küçük caps etiketleri Albert Sans'ta. */
+input, textarea, select, button, .btn-primary, .btn-secondary, .btn-nav,
+.btn-google, label, .mono, .eyebrow,
+header, footer, nav {
+  font-family: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
+}
+
+/* SAHTE KALIN TUZAĞI: Marcellus tek ağırlık taşıyor (400). Bir öğe serif
+   miras alıp 500+ ağırlık isterse tarayıcı harfleri yapay olarak
+   şişiriyor ve yazıt karakteri bozuluyor. Sayfa kabuğu (başlık, altlık,
+   gezinme) bu yüzden sans'ta: oradaki ağırlık kademeleri işlevsel. */
+.mono, .eyebrow { font-family: var(--font-mono), monospace; }
+
+/* SAYILAR MONO. Marcellus bir yazıt karakteri: rakam 1'i büyük I'dan
+   ayırt edilmiyor, "14" ekranda "I4" okunuyor. Veri sütunlarında bu
+   kabul edilemez. DNA notu zaten "mono yalnız etiket ve VERİ için"
+   diyordu; sayılar oraya ait. */
+.sayi, .ed-dl dd:last-child, .cm-count b {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
 }

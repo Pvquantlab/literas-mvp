@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Gizlilik Politikası — literaslab',
+  title: 'Gizlilik Politikası · literaslab',
   description: 'Gizlilik Politikası ve KVKK Aydınlatma Metni.',
 }
 
@@ -93,7 +93,7 @@ export default function GizlilikPage() {
               </tr>
               <tr>
                 <td style={tdStyle}>Erişim/trafik log kayıtlarının tutulması</td>
-                <td style={tdStyle}>Hukuki yükümlülüğün yerine getirilmesi — 5651 sayılı Kanun (m.5/2-ç)</td>
+                <td style={tdStyle}>Hukuki yükümlülüğün yerine getirilmesi, 5651 sayılı Kanun (m.5/2-ç)</td>
               </tr>
               <tr>
                 <td style={tdStyle}>Hizmetin geliştirilmesi ve güvenliğin sağlanması</td>
@@ -101,7 +101,7 @@ export default function GizlilikPage() {
               </tr>
               <tr>
                 <td style={tdStyle}>Tanıtım ve kampanya e-postaları (varsa)</td>
-                <td style={tdStyle}><strong>Açık rızan</strong> (m.5/1) — ayrı onay kutusuyla alınır, dilediğinde geri çekebilirsin</td>
+                <td style={tdStyle}><strong>Açık rızan</strong> (m.5/1): ayrı onay kutusuyla alınır, dilediğinde geri çekebilirsin</td>
               </tr>
             </tbody>
           </table>
@@ -115,10 +115,10 @@ export default function GizlilikPage() {
       <Section title="Kimlerle paylaşılıyor ve yurt dışına aktarım">
         <p>Bilgilerini üçüncü şahıslara satmıyoruz. Hizmetin çalışması için gerekli olan servis sağlayıcılarla paylaşıyoruz:</p>
         <ul style={listStyle}>
-          <li><strong>Supabase</strong> — veritabanı ve kullanıcı doğrulama</li>
-          <li><strong>Vercel</strong> — site barındırma</li>
-          <li><strong>Resend</strong> — e-posta gönderimi</li>
-          <li><strong>Google</strong> — yalnızca Google ile giriş yaparsan kimlik doğrulama için</li>
+          <li><strong>Supabase</strong>: veritabanı ve kullanıcı doğrulama</li>
+          <li><strong>Vercel</strong>: site barındırma</li>
+          <li><strong>Resend</strong>: e-posta gönderimi</li>
+          <li><strong>Google</strong>: yalnızca Google ile giriş yaparsan kimlik doğrulama için</li>
         </ul>
         <p>{`Bu servis sağlayıcıların sunucuları yurt dışında bulunduğundan, verilerin KVKK'nın 9. maddesi kapsamında yurt dışına aktarılmaktadır. Bu aktarım, ilgili sağlayıcılarla imzalanan ve Kişisel Verileri Koruma Kurumu'na bildirilen standart sözleşmeler ile Kanun'da öngörülen uygun güvenceler çerçevesinde gerçekleştirilir.`}</p>
         <p>Yasal zorunluluk halinde yetkili kamu kurum ve kuruluşlarıyla veri paylaşılabilir.</p>

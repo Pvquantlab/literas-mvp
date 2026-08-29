@@ -49,7 +49,7 @@ export default async function AdminTopluluklarPage() {
           padding: '32px',
           textAlign: 'center',
           borderRadius: '14px',
-          background: 'var(--paper-soft, rgba(30, 58, 43, 0.04))',
+          background: 'var(--paper-soft, var(--panel))',
           color: 'var(--muted)',
           marginBottom: '40px',
         }}>
@@ -63,7 +63,7 @@ export default async function AdminTopluluklarPage() {
           style={{
             padding: '24px',
             borderRadius: '14px',
-            border: '1.5px solid rgba(30, 58, 43, 0.15)',
+            border: '1.5px solid var(--border)',
             marginBottom: '16px',
             background: 'var(--paper-cream, #FFFDF6)',
           }}
@@ -92,7 +92,7 @@ export default async function AdminTopluluklarPage() {
                 color: 'var(--muted)',
                 marginBottom: '12px',
               }}>
-                📍 {c.location_name ?? '—'} ({c.location_type}) · kurucu: {(c.founder as any)?.name ?? '—'} ({(c.founder as any)?.email ?? '—'})
+                📍 {c.location_name ?? '-'} ({c.location_type}) · kurucu: {(c.founder as any)?.name ?? '-'} ({(c.founder as any)?.email ?? '-'})
                 {' · '}
                 {formatDateTimeShort(c.created_at)}
               </div>
@@ -105,7 +105,7 @@ export default async function AdminTopluluklarPage() {
                       style={{
                         padding: '3px 10px',
                         borderRadius: '999px',
-                        background: 'rgba(30, 58, 43, 0.06)',
+                        background: 'var(--panel)',
                         fontSize: '11.5px',
                         color: 'var(--ink)',
                       }}
@@ -148,7 +148,7 @@ export default async function AdminTopluluklarPage() {
           </h3>
           <div style={{
             borderRadius: '12px',
-            border: '1.5px solid rgba(30, 58, 43, 0.1)',
+            border: '1.5px solid var(--border)',
             overflow: 'hidden',
           }}>
             {recent.map((c: any) => (
@@ -156,7 +156,7 @@ export default async function AdminTopluluklarPage() {
                 key={c.id}
                 style={{
                   padding: '12px 16px',
-                  borderBottom: '1px solid rgba(30, 58, 43, 0.08)',
+                  borderBottom: '1px solid var(--border)',
                   display: 'grid',
                   gridTemplateColumns: '1fr auto auto',
                   gap: '16px',
@@ -182,7 +182,7 @@ export default async function AdminTopluluklarPage() {
                   fontSize: '11px',
                   color: 'var(--muted)',
                 }}>
-                  {c.reviewed_at ? formatDateTimeShort(c.reviewed_at) : '—'}
+                  {c.reviewed_at ? formatDateTimeShort(c.reviewed_at) : '-'}
                 </span>
               </div>
             ))}

@@ -27,7 +27,7 @@ WhatsApp-first paylaşım ve Türkçe-öncelikli UX ile farklılaşma; tüm kate
 | Doğrulama | zod v4, `lib/validations.ts` (şemalar rotalara bağlı) |
 | Rate limit | Upstash Redis, `lib/rate-limit.ts` (`checkRateLimit`) |
 | Deploy | Vercel |
-| Stil | Global CSS + inline style; CSS değişkenleri `--ink`, `--paper-cream`; vurgu fontu IBM Plex Mono; kategori renk paleti `app/kesfet/page.tsx` içindeki `CATS` dizisi |
+| Stil | Global CSS + inline style; tek kaynak `app/globals.css`. Ölçülmüş tasarım DNA'sı: `docs/tasarim/wild-week-dna.json` |
 
 Ortam değişkenleri (`.env.example`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `RESEND_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `CRON_SECRET`. `service_role` anahtarı **hiçbir yerde kullanılmaz** — yetki her zaman RLS ile çözülür.
 
@@ -96,7 +96,15 @@ kullanıcıya profil satırı onunla açılıyor; hiçbir migration'da yoktu,
 3. E-posta HTML'inde her değişken `escapeHtml()` ile kaçırılır.
 4. Yeni tablo/kolon = migration dosyası + RLS politikası + gerekli index. İstisnasız.
 5. Hata mesajları Türkçe: `{ error: 'Giriş yapmalısın' }` gibi kısa ve net.
-6. Tasarım dili korunur: mevcut renk değişkenleri, IBM Plex Mono vurguları, CATS paleti.
+6. Tasarım dili `docs/tasarim/wild-week-dna.json`'dan gelir ve ÖLÇÜLMÜŞTÜR —
+   göz kararı değiştirme. Özeti: tek vurgu rengi `--ink` (#0755BB), zeminler
+   sıcak greige, köşe 4px, **gölge yok, çerçeve yok**, başlık ağırlığı 400 ve
+   harf aralığı POZİTİF, mono yalnız etiket/veri için. Ayrım renkle değil zemin
+   tonu ve tipografiyle kurulur.
+   Kategori başına renk atama YOK — `CATS` dizisindeki 28 renk (soft/ink)
+   bu yüzden silindi.
+   Sabit hex yazma; `var(--…)` kullan. Marka rengi gerektiren istisnalar
+   (WhatsApp gibi) da paletin diline çekildi.
 7. Tek görev = tek commit ölçeği. Görev dışına taşan "iyileştirme" yapma, öner.
 8. Her görev sonu: `npm run build` geçmeli.
 9. `vercel.json`'a YORUM ya da açıklama anahtarı ekleme. JSON yorum

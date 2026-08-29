@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
-import { bySlug, sanitizeQuery } from '@/lib/categories'
+import { bySlug, sanitizeQuery, CATEGORIES } from '@/lib/categories'
+import { DevLogotype } from '@/components/kunye'
+import { RolyefKap, RolyefMasa, RolyefKahve, RolyefKitap, RolyefSehir } from '@/components/rolyef'
 import { formatDayMonthShort } from '@/lib/date'
 import { bulunmaHali } from '@/lib/turkce'
 import CategoryStrip from './category-strip'
-import { HeroObjects } from '@/components/category-art'
 import HowItWorks from '@/components/how-it-works'
 import ClosingCta from '@/components/closing-cta'
 import CommunityCard, { type CommunitySummary } from '@/components/community-card'
@@ -14,6 +15,25 @@ import SearchBox from './search-box'
 import CityFilter from './city-filter'
 
 export const revalidate = 60
+
+/* --- Künye ızgarasının iki stil sabiti -------------------------------
+   week.wild.plus ölçümünden: etiketler minik/büyük harf/harf arası açık,
+   hücreler sıkı dolgulu, 4px köşe, gölge ve border YOK. */
+const kunyeEtiket = {
+  font: "400 10px 'IBM Plex Mono', monospace",
+  letterSpacing: '.16em',
+  textTransform: 'uppercase',
+  color: 'var(--ink)',
+} as const
+
+const kunyeHucre = {
+  background: 'var(--paper-cream)',
+  borderRadius: 4,
+  padding: '18px 20px',
+  display: 'flex',
+  flexDirection: 'column',
+} as const
+
 
 type SearchParams = { category?: string; city?: string; q?: string }
 
@@ -298,46 +318,175 @@ export default async function HomePage({
 
   return (
     <main id="content">
-      {/* ---- Hero ----
-           Tam genişlikte, .container DIŞINDA. Cümle ikiye bölündü:
-           üst satır + dev kelime. <h1> ikisini de içeriyor, yani ekran
-           okuyucu tam cümleyi okuyor. Yüzen nesneler sprite'tan geliyor. */}
-      <section className="hx">
-        <HeroObjects />
-        <div className="hx-inner">
-          <nav className="hx-nav" aria-label="Sayfa bölümleri">
-            <Link href="#etkinlikler" className="hx-nav-item on">Etkinlikler</Link>
-            <Link href="#topluluklar" className="hx-nav-item">Topluluklar</Link>
-            <Link href="/kesfet" className="hx-nav-item">Kategoriler</Link>
-          </nav>
+      {/* ---- Künye ızgarası ----
+           week.wild.plus/athens-26 uyarlaması (docs/tasarim/wild-week-dna.json).
 
-          <h1 className="hx-h1">
-            <span className="hx-eyebrow">Harflerden kelimeler, insanlardan</span>
-            <span className="hx-word">topluluklar</span>
+           DÜZELTME: ilk sürümde DOM ölçümüne bakıp "illüstrasyon yok, en büyük
+           metin 24px" sonucuna varıp nesneleri TAMAMEN kaldırmıştım. Ekran
+           görüntüsü tersini gösterdi — ölçüm metni ve CSS'i görüyor, GÖRSELİ
+           görmüyor:
+             · dev "WILD WEEK" yazısı metin değil SVG, o yüzden ölçüme takılmadı
+             · her hücre büyük, tek renk bir KABARTMA taşıyor; sayfanın
+               güzelliğinin çoğu bu
+           Doğrusu: dev logotype + büyük sessiz illüstrasyon + minik yazı.
+
+           Kabartmaların karşılığı olarak mevcut kategori şekilleri dev ve
+           soluk kullanılıyor — yeni bir çizim seti üretmedik, var olan
+           kimliğin ölçeği ve sesi değişti. */}
+
+      {/* Satır 1: dev logotype, tam genişlik. Arkasında soluk bir şekil —
+          referansta "WILD WEEK"in arkasındaki vazonun karşılığı. */}
+      <section
+        id="sis-logotype"
+        aria-label="literaslab"
+        style={{
+          ...kunyeHucre,
+          position: 'relative',
+          overflow: 'hidden',
+          margin: '8px 8px 0',
+          padding: 'clamp(28px, 5vw, 64px) 20px',
+          justifyContent: 'center',
+        }}
+      >
+        <RolyefKap cizim={RolyefMasa} konum="orta" olcek={0.62} opaklik={0.10} />
+        <div style={{ position: 'relative' }}>
+          <DevLogotype />
+        </div>
+      </section>
+
+      <section
+        id="sis-hero"
+        aria-label="Giriş"
+        style={{
+          position: 'relative',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 8,
+          padding: 8,
+        }}
+      >
+        {/* Hücre 1: içerik ALTA yaslı, üstü bilerek boş */}
+        <div
+          className="reveal"
+          style={{
+            ...kunyeHucre,
+            minHeight: 380,
+            justifyContent: 'space-between',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <RolyefKap cizim={RolyefKitap} konum="sag-alt" olcek={1.05} opaklik={0.14} />
+          <span style={{ ...kunyeEtiket, position: 'relative' }}>literaslab · İstanbul</span>
+          <h1 style={{ margin: 0 }}>
+            <span
+              style={{
+                display: 'block',
+                fontSize: 24,
+                fontWeight: 400,
+                letterSpacing: '.04em',
+                lineHeight: 1.2,
+                color: 'var(--ink)',
+              }}
+            >
+              İnsanların kendi masalarını kurduğu yer.
+            </span>
+            <span
+              style={{
+                display: 'block',
+                fontSize: 16,
+                fontWeight: 400,
+                lineHeight: 1.5,
+                color: 'var(--ink)',
+                marginTop: 14,
+              }}
+            >
+              {cityLocative ? `${cityLocative} ` : ''}
+              {events.length > 0
+                ? `yaklaşan ${events.length} buluşma var`
+                : 'buluşmalar başlıyor'}
+              . Katıl ya da kendi masanı kur.
+            </span>
           </h1>
+        </div>
 
-          <p className="hx-lede">İnsanların kendi masalarını kurduğu yer.</p>
-          <p className="hx-sub">
-            {cityLocative ? `${cityLocative} ` : ''}
-            {events.length > 0
-              ? `yaklaşan ${events.length} buluşma var`
-              : 'buluşmalar başlıyor'}.
-            {' '}Katıl ya da kendi masanı kur.
-          </p>
-
-          <div className="hx-cta">
-            <Link href="#etkinlikler" className="hx-btn">
-              Etkinlikleri gör<span className="hx-arrow" aria-hidden="true">›</span>
-            </Link>
-            <Link href="/community/new" className="hx-btn">
-              Topluluk kur<span className="hx-arrow" aria-hidden="true">›</span>
-            </Link>
+        {/* Hücre 2: GERÇEKLER — referansın "THE FACTS" bloğu, tek harfli
+            alan etiketleriyle. */}
+        <div className="reveal" style={{ ...kunyeHucre, minHeight: 380, position: 'relative', overflow: 'hidden' }}>
+          <RolyefKap cizim={RolyefSehir} konum="sag-alt" olcek={1.0} opaklik={0.12} />
+          {/* İÇ PANEL. Referansın "The Facts" kutusu kartın İÇİNDE ikinci bir
+              yüzey: #E8E8E8, 4px köşe, 24px dolgu (394x394 ölçüldü). Çift
+              çerçeve etkisini, yani o müze etiketi hissini bu veriyor ve
+              bende hiç yoktu. Ayrım gölgeyle değil bu katmanla kuruluyor. */}
+          <div style={{
+            position: 'relative',
+            background: 'var(--panel)',
+            borderRadius: 'var(--r-md)',
+            padding: 24,
+          }}>
+          <span style={{ ...kunyeEtiket, display: 'block', marginBottom: 22 }}>Gerçekler</span>
+          <dl style={{ margin: 0, display: 'grid', gap: 10 }}>
+            {[
+              ['T', 'Topluluk', String(communities.length)],
+              ['E', 'Etkinlik', String(events.length)],
+              ['Ş', 'Şehir', String(cities.length)],
+              ['K', 'Kategori', String(CATEGORIES.length)],
+            ].map(([harf, ad, deger]) => (
+              <div
+                key={ad}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '20px 1fr auto',
+                  gap: 10,
+                  alignItems: 'baseline',
+                }}
+              >
+                <dt style={{ ...kunyeEtiket, color: 'var(--muted-light)' }}>{harf}.</dt>
+                <dd style={{ margin: 0, fontSize: 16 }}>{ad}</dd>
+                <dd className="sayi" style={{ margin: 0, fontSize: 16, color: 'var(--ink)' }}>{deger}</dd>
+              </div>
+            ))}
+          </dl>
           </div>
+        </div>
 
-          <div className="hx-strip">
-            <span>Bir masa aç</span><i />
-            <span>Buluşmayı planla</span><i />
-            <span>Tanışın</span>
+        {/* Hücre 3: davet. Referansın karşılama paragrafı BÜYÜK HARF. */}
+        {/* Referansta karşılama paragrafı MAVİ SÜTUN üstünde beyaz metin —
+            ekranda tek dolu mavi alan o. Aynı rol burada. */}
+        <div
+          className="reveal"
+          style={{
+            ...kunyeHucre,
+            minHeight: 380,
+            justifyContent: 'center',
+            background: 'var(--ink)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Mavi zeminde rölyef BEYAZ. */}
+          <RolyefKap cizim={RolyefKahve} konum="sag-alt" olcek={1.0} opaklik={0.18} renk="#fff" />
+          <p
+            style={{
+              fontSize: 16,
+              lineHeight: 1.55,
+              letterSpacing: '.03em',
+              textTransform: 'uppercase',
+              color: '#fff',
+              margin: 0,
+            }}
+          >
+            Bir masanın etrafında toplanmak için bahane çok: kitap, yürüyüş,
+            kahve, fotoğraf. Birkaç kişiyle başlayıp şehre yayılan bir şey
+            olabilir.
+          </p>
+          <div style={{ display: 'flex', gap: 20, marginTop: 26, flexWrap: 'wrap' }}>
+            <Link href="#etkinlikler" style={{ ...kunyeEtiket, fontSize: 11, color: '#fff' }}>
+              Etkinlikleri gör →
+            </Link>
+            <Link href="/community/new" style={{ ...kunyeEtiket, fontSize: 11, color: 'rgba(255,255,255,.72)' }}>
+              Topluluk kur →
+            </Link>
           </div>
         </div>
       </section>
@@ -391,6 +540,7 @@ export default async function HomePage({
            Eski lacivert bandın yerine geçti — ikisi de topluluk kurmaya
            çağırıyordu, iki CTA üst üste geliyordu. --- */}
       <ClosingCta />
+
     </main>
   )
 }

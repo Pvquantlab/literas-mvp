@@ -86,7 +86,7 @@ export default function NewEventForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          placeholder="Örn: Tutunamayanlar — bir kitap"
+          placeholder="Örn: Tutunamayanlar üzerine buluşma"
         />
       </div>
 

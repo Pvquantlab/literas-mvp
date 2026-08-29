@@ -19,6 +19,18 @@ export default function RegisterSW() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
 
+    // GELİŞTİRMEDE KAYDETME. Dev derlemesinde /_next/static/* adları içerik
+    // hash'i taşımıyor; service worker onları önbelleğe alınca sonraki
+    // derlemeye BAYAT JS servis ediyor ve sayfa "yükleniyor..."da kalıyor.
+    // Ayrıca zaten kayıtlı olan varsa kaldırılıyor: bir kez zehirlenen
+    // tarayıcı kendini böyle toparlıyor.
+    if (process.env.NODE_ENV !== 'production') {
+      navigator.serviceWorker.getRegistrations().then((rs) => {
+        rs.forEach((r) => r.unregister())
+      }).catch(() => {})
+      return
+    }
+
     // Sayfa yüklemesiyle yarışmasın: kayıt kritik yolda değil.
     const kaydet = () => {
       navigator.serviceWorker.register('/sw.js').catch((err) => {

@@ -271,7 +271,7 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
                     background: 'var(--paper-cream)',
                     border: '1px solid var(--border)',
                     borderRadius: '14px',
-                    boxShadow: '0 14px 34px rgba(30,58,43,.16)',
+                    boxShadow: "none",
                     padding: '6px',
                     zIndex: 60,
                     display: 'flex',

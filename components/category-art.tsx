@@ -31,10 +31,12 @@ import { CATEGORIES, byValue, NEUTRAL_COVER } from '@/lib/categories'
  * bu yüzden burada özel durum olarak duruyor.
  */
 export const TUMU_SLUG = 'tumu'
-const TUMU_COLORS: [string, string, string] = ['#A9C4EE', '#2B6FD4', '#14306B']
 
-/** Gövde şekli. viewBox 0 0 100 100. */
-const SHAPES: Record<string, React.ReactNode> = {
+/** Gövde şekli. viewBox 0 0 100 100.
+ *  Dışa aktarıldı: düz (parlaklıksız) kullanım isteyen yerler aynı şekil
+ *  kütüphanesini tek renkle render edebilsin diye. Şekiller kategori
+ *  kimliğini taşıyor; ikinci bir set çizmek onları ayrıştırırdı. */
+export const SHAPES: Record<string, React.ReactNode> = {
   tumu: (
     <>
       <rect x="20" y="20" width="26" height="26" rx="9" />
@@ -197,9 +199,23 @@ function details(slug: string, hi: string, dk: string): React.ReactNode {
 /**
  * Bütün tanımlar. layout.tsx'te BİR KEZ render edilir, görsel çıktısı yok.
  */
+/**
+ * Nesneler TEK renk: mürekkebin üç tonu.
+ *
+ * NEDEN: eskiden her kategori kendi üçlüsünü taşıyordu ve şerit yan yana 14
+ * farklı renkli nesne diziyordu — sayfadaki renk gürültüsünün asıl kaynağı
+ * buydu. Kategori kimliği zaten ŞEKİL ve ETİKET ile taşınıyor; renk oraya
+ * ikinci bir iş yüklemiyordu, sadece bağırıyordu.
+ *
+ * Kategori rengi kaldırılmadı, yeri değişti: etkinlik kartlarının kapak
+ * zeminlerinde (event-card.tsx, cat.colors) yaşamaya devam ediyor — orada
+ * gerçekten yön buldurma işi yapıyor, burada yapmıyordu.
+ */
+const INK_RAMP: [string, string, string] = ['var(--obj-hi)', 'var(--obj-mid)', 'var(--obj-dk)']
+
 const SPRITE_ITEMS: { slug: string; colors: [string, string, string] }[] = [
-  { slug: TUMU_SLUG, colors: TUMU_COLORS },
-  ...CATEGORIES.map((c) => ({ slug: c.slug, colors: c.colors })),
+  { slug: TUMU_SLUG, colors: INK_RAMP },
+  ...CATEGORIES.map((c) => ({ slug: c.slug, colors: INK_RAMP })),
 ]
 
 export function IconSprite() {
@@ -241,14 +257,22 @@ export function IconSprite() {
         ))}
 
         {SPRITE_ITEMS.map(({ slug, colors: [hi, base, dk] }) => (
+          /* Katmanlara class veriliyor ki tema onları kapatabilsin.
+             Öncesinde hiçbirinde class yoktu — sadece inline SVG attribute
+             vardı ve CSS'ten temiz hedeflemek mümkün değildi.
+               ci-shadow     → altındaki bulanık gölge elipsi
+               ci-body       → gövde: degrade dolgu + koyu kontur
+               ci-sheen-layer→ sol üstteki beyaz parlama
+               ci-detail     → opacity'li iç detaylar (kitap sırtı, perde ışığı…)
+             "Düz" temalar gölgeyi/parlamayı gizler, gövdeyi tek renge çeker. */
           <symbol key={slug} id={`ci-icon-${slug}`} viewBox="-6 -6 112 112">
-            <ellipse cx="50" cy="90" rx="30" ry="8" fill={base} opacity=".35" filter="url(#ci-softblur)" />
-            <g fill={`url(#ci-grad-${slug})`} stroke={dk}>
+            <ellipse className="ci-shadow" cx="50" cy="90" rx="30" ry="8" fill={base} opacity=".35" filter="url(#ci-softblur)" />
+            <g className="ci-body" fill={`url(#ci-grad-${slug})`} stroke={dk}>
               {SHAPES[slug]}
             </g>
             <g clipPath={`url(#ci-clip-${slug})`}>
-              <rect x="-6" y="-6" width="112" height="112" fill="url(#ci-sheen)" />
-              {details(slug, hi, dk)}
+              <rect className="ci-sheen-layer" x="-6" y="-6" width="112" height="112" fill="url(#ci-sheen)" />
+              <g className="ci-detail">{details(slug, hi, dk)}</g>
             </g>
           </symbol>
         ))}
@@ -393,5 +417,9 @@ export function HeroObjects() {
  * Çağıran taraf sarmalayıcı <g> üzerinde fill="none" stroke="#fff" verir.
  */
 export function WireShape({ slug }: { slug: string }) {
-  return <>{SHAPES[slug] ?? null}</>
+  // Object.hasOwn: düz indeksleme Object.prototype'ı da okuyor. slug URL'den
+  // gelebiliyor (?kategori=), yani `__proto__` veya `constructor` verildiğinde
+  // SHAPES[slug] bir NESNE dönüyor, `??` onu yakalamıyor (null değil) ve
+  // React geçersiz çocukla çöküyor. checkin sayfasındaki hatanın aynısı.
+  return <>{Object.hasOwn(SHAPES, slug) ? SHAPES[slug] : null}</>
 }

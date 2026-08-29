@@ -1,0 +1,170 @@
+{
+  "_kaynak": "https://week.wild.plus/athens-26",
+  "_yontem": "Tarayıcıda getComputedStyle + getBoundingClientRect ile ÖLÇÜLDÜ. Göz kararı yok. design-dna skill'inin Faz 2 çıktısı; renk için piksel kümeleme yerine DOM ölçümü kullanıldı (daha kesin: hesaplanmış değerler zaten birebir).",
+  "_olcum_tarihi": "2026-08-28",
+  "design_system": {
+    "color": {
+      "accent": {
+        "hex": "#0755BB",
+        "rol": "baskın — metin, çizgi VE dolgu; 2160 düğümde geçiyor"
+      },
+      "surface": {
+        "background": "#CBCBCB",
+        "panel": "#DCDBD5",
+        "beyaz": "#FFFFFF"
+      },
+      "neutral": {
+        "scale": [
+          "#FFFFFF",
+          "#DCDBD5",
+          "#CBCBCB",
+          "#000000"
+        ],
+        "usage": "siyah ikincil metin (876 düğüm), beyaz mavi üstünde (269)"
+      },
+      "accent_alpha": "rgba(7,85,187,0.32) — soluk çizgi/ikincil",
+      "toplam_kromatik_renk": 1
+    },
+    "typography": {
+      "family": "Albertus Nova Light (lapidary/Roma yazıtı hissi veren sans)",
+      "en_buyuk": "24px — SAYFADA BUNDAN BÜYÜĞÜ YOK",
+      "olcek": {
+        "9px": 223,
+        "10px": 1645,
+        "12px": 72,
+        "14px": 91,
+        "16px": 8,
+        "18px": 3,
+        "24px": 3
+      },
+      "baskin_boyut": "10px",
+      "weight": {
+        "300": 1919,
+        "400": 116,
+        "500": 10
+      },
+      "letter_spacing": "POZİTİF: 0.72px (18px'te), 0.96px (24px'te) ≈ 0.04em",
+      "line_height": "1.2 (21.6/18, 28.8/24)",
+      "not": "İddialı his büyük tipografiden DEĞİL; küçük+ince yazı ile geniş alan arasındaki ölçek farkından."
+    },
+    "spacing": {
+      "dikey_dolgu": {
+        "6px": 52,
+        "8px": 18,
+        "3px": 17,
+        "2px": 13,
+        "24px": 12,
+        "16px": 10
+      },
+      "gap": {
+        "10px": 64,
+        "8px": 61,
+        "16px": 22,
+        "24px": 17
+      },
+      "not": "Dolgu ÇOK SIKI. Boşluk dolgudan değil, içeriğinden çok daha büyük ızgara hücrelerinden geliyor."
+    },
+    "layout": {
+      "kap": "TAM GENİŞLİK — ortalanmış max-width YOK",
+      "grid": "3 sütun, her biri 473.664px (1421px içinde)",
+      "hucre_yuksekligi": [
+        474,
+        827,
+        947,
+        948,
+        1682
+      ],
+      "yerlesim": "Bloklar 1 veya 2 sütun kaplıyor; içerik hücrenin üstüne/altına yaslı, ortası boş",
+      "sayfa_genisligi_olculen": 1425
+    },
+    "shape": {
+      "radius": {
+        "4px": 54,
+        "50%": 36,
+        "8px": 21,
+        "999px": 1
+      },
+      "baskin": "4px",
+      "border": "SIFIR eleman border taşıyor"
+    },
+    "elevation": {
+      "shadow": "SIFIR eleman box-shadow taşıyor",
+      "ayrim_yontemi": "Gölge veya çizgi değil — zemin farkı ve boşluk"
+    }
+  },
+  "design_style": {
+    "mood": "sakin, matbaa, sergi afişi / duvara asılan program",
+    "arketip": "editorial-modular, İsviçre ızgarası",
+    "susleme": "yok denecek kadar az",
+    "boşluk_felsefesi": "boşluk bir öğe değil, ızgaranın kendisi",
+    "ses": "kuru ve esprili (Emergency Pizza, Aristo alıntıları)",
+    "imza": "tek harfli alan etiketleri (D. P. H. I.) ve Roma rakamlı listeler"
+  },
+  "visual_effects": {
+    "overview": {
+      "effect_intensity": "düşük",
+      "performance_tier": "hafif"
+    },
+    "svg": {
+      "enabled": true,
+      "adet": 48,
+      "not": "logo ve çizgiler SVG; border yerine SVG/arka plan kullanılıyor"
+    },
+    "canvas_webgl": {
+      "enabled": false
+    },
+    "particles": {
+      "enabled": false
+    },
+    "glassmorphism": {
+      "enabled": false
+    },
+    "scroll": {
+      "enabled": true,
+      "not": "içerik kaydırmada beliriyor"
+    }
+  },
+  "_literasa_uyarlama_kisitlari": {
+    "onceki_notlar": [
+      "10px gövde metni ALINMAZ — ui-ux-pro-max kuralı: gövde en az 16px. Referans bir kez göz gezdirilen mikrosite; literas okunan bir ürün. 10px yalnızca ETİKET.",
+      "Yazı karakteri Albertus Nova Light bizde yok ve mevcut sans 300 ağırlık taşımıyor (en incesi 400).",
+      "Kontrast: #0755BB / #CBCBCB = 4.22:1, AA eşiğinin (4.5) ALTINDA. Zemin #D2D1CB'ye açılmalı (4.53)."
+    ],
+    "soluk_mavi_KULLANILAMAZ": "Referansın rgba(7,85,187,.32) değeri bizim zeminlerimizde 1.61-1.67:1 veriyor; AA eşiği 4.5. Geçen en düşük alfa 0.94 çıktı, yani kullanılabilir bir 'soluk mavi' YOK. Referans bunu karşılayabiliyor çünkü bir kez göz gezdirilen mikrosite; biz okunan bir ürünüz. --ink-soft yalnız DEKORASYON için tanımlı.",
+    "panel_yonu_ters": "Referansta panel EN AÇIK katman çünkü kartları saydam. Bizim kartlarımız metin taşıyor ve zeminden ayrılmaları gerek, o yüzden bir katman fazlamız var: zemin -> kart -> panel. Panel bizde ilerlemiyor, içeri çöküyor. Çift çerçeve iki yönde de çalışır.",
+    "panel_rengi_sicaklastirildi": "Ölçülen #E8E8E8 soğuk gri; paletimiz baştan sona sıcak greige. Aynı açıklıkta sıcak karşılığı #E9E7E0 (mürekkeple 5.61:1).",
+    "serif_Marcellus": "Albertus Nova ticari. Marcellus ücretsiz karşılığı: aynı Roma yazıtı kökeni, aynı yayvan çıkışlar, tek ağırlık (400). latin-ext taşıyor, Türkçe ğ/ı/ş/İ tam.",
+    "rakamlar_mono": "Marcellus bir yazıt karakteri: rakam 1'i büyük I'dan ayırt edilmiyor, '14' ekranda 'I4' okunuyor. Sayılar IBM Plex Mono'da, tabular-nums ile.",
+    "form_ve_dugmeler_sans": "Gövde Marcellus'a geçti ama form denetimleri, düğmeler ve etiketler sans/mono kaldı: onlar okunan metin değil, dokunulan nesne. Referans da küçük caps etiketlerini Albert Sans'ta tutuyor.",
+    "govde_metni_kontrast": "Sıcak siyahtan mürekkebe geçiş kontrastı 13.10'dan 5.00'e düşürüyor. AA eşiği 4.5, geçiyor; ama okuma konforu payı daraldı. Uzun metinli sayfalarda göz at."
+  },
+  "_ikinci_olcum": {
+    "tarih": "2026-08-29",
+    "neden": "Kullanıcı wild-week-athens-yapim-talimati.md dosyasını verdi. Doküman altı noktada ilk ölçümümle çelişiyordu; hepsi referansta yeniden ölçüldü.",
+    "sonuc": "Doküman 4, ilk ölçümüm 3 maddede haklı çıktı.",
+    "dogrulanan_kendi_olcumum": {
+      "kose": "4px baskın (54 eleman). Doküman 10px diyordu, YANLIŞ.",
+      "golge": "SIFIR eleman. Doküman 'çok hafif box-shadow' diyordu, YANLIŞ.",
+      "cerceve": "SIFIR eleman. Doküman '1px açık çerçeve' diyordu, YANLIŞ."
+    },
+    "dokumanin_hakli_ciktigi": {
+      "metin_rengi": "2037 metin düğümünün 1766'sı #0755BB, yalnız 43'ü siyah (gizli/varsayılan düğümler). 'Sitede siyah metin yok' GERÇEK. Bende gövde --night #16160F idi.",
+      "ic_panel": "#E8E8E8 zeminli 20 eleman: 'The Facts' kutusu (394x394, 24px dolgu) ve hap satırları. Kartın İÇİNDE ikinci yüzey. Bende HİÇ YOKTU.",
+      "soluk_metin": "rgba(7,85,187,.32), 11 eleman. Referansın --blue-soft'u.",
+      "tipografi": "1919 düğüm Albertus Nova Light, yani SERİF. Ben serifi tamamen kaldırmıştım; sitenin sesini kaybetmişim."
+    },
+    "duzeltilen_ilk_olcum_hatasi": {
+      "punto": "İlk ölçümde 'baskın 10px, en büyük 24px' yazmıştım. 1440px'te yeniden ölçüm: baskın 14px (1868 düğüm), en büyük 32px. Dev başlıklar ve wordmark SVG olduğu için DOM ölçümüne hiç girmiyor.",
+      "zemin": "Gövde zemini #CBCBCB (#DCDBD5 değil). Kartlar SAYDAM (rgba(0,0,0,0), dolgu 0) - görsel taşıyorlar, kendi kenarlarını görsel veriyor."
+    }
+  },
+  "_sis_efekti": {
+    "durum": "UYGULANDI VE DOĞRULANDI (2026-08-29)",
+    "nerede": "#sis-hero (tavan 0.9) ve #sis-logotype (tavan 0.55)",
+    "dosya": "components/sis.tsx",
+    "dogrulama": "Kullanıcı kendi tarayıcısında baktı: fare gezdirince dağılıp yavaşça geri kapanan bulut dokusu. Yani gerçek fBm dokusu üretiliyor, bozuk 2x2 gerilmesi değil.",
+    "neden_tavanlar_farkli": "Maske birkaç saniyede tavana doluyor. Logotype hücresinde 0.9 olsaydı fare hiç oynamadığında marka adı kalıcı olarak sisin altında kalırdı.",
+    "tariften_sapma": "Doküman §6 gürültüyü her kare üretmeyi söylüyor; 1400x400'de bu kare başına ~105 bin hesap. Doku bir kez üretilip her kare yalnızca kaydırılıyor. Görsel sonuç aynı, maliyet iki drawImage.",
+    "dev_sunucusu_uyarisi": "Turbopack dev sunucusunda 'Element type is invalid. Received a promise that resolves to: undefined' hatası çıkıyor ve HİDRASYONU TAMAMEN ÖLDÜRÜYOR (hiçbir istemci bileşeni çalışmıyor). Kodla ilgisi yok: üretim derlemesi sorunsuz. Doğrulama için ~/.claude/launch.json içindeki 'literas-uretim' (npm run start) kullanılmalı."
+  }
+}

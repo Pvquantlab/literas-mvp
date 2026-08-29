@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
-import { byValue } from '@/lib/categories'
 import { GlossyIcon } from '@/components/category-art'
+import { RolyefMasa, RolyefKahve, RolyefKitap, RolyefSandalye, RolyefSehir, RolyefKap } from '@/components/rolyef'
 import RsvpForm from './rsvp-form'
 import CheckinQr from './checkin-qr'
 import AttendeeList from './attendee-list'
@@ -73,6 +73,18 @@ export async function generateMetadata({
 }
 
 export const dynamic = 'force-dynamic'
+
+/**
+ * Kategori → rölyef. Kapak görseli olmayan etkinlikte hücreyi bu dolduruyor.
+ * Önceki hâli degradeli sahte 3B altıgendi (#3A4050→#22262F): parlaklık dili
+ * sitenin geri kalanından kaldırılmıştı, burada kalmıştı.
+ */
+const ROLYEF: Record<string, (p: { className?: string; style?: React.CSSProperties }) => React.JSX.Element> = {
+  kitap: RolyefKitap, dil: RolyefKitap, sinema: RolyefKitap,
+  lezzet: RolyefKahve, sosyal: RolyefKahve, kariyer: RolyefKahve,
+  doga: RolyefSehir, fotograf: RolyefSehir, gonulluluk: RolyefSehir,
+  muzik: RolyefSandalye, sanat: RolyefSandalye, oyun: RolyefSandalye, spor: RolyefSandalye,
+}
 
 const MONTHS_TR_FULL = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
 const MONTHS_TR_SHORT = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
@@ -192,7 +204,6 @@ export default async function EventPage({
 
   const dayNum = Number(_p('day'))
   const monthIdx = Number(_p('month')) - 1
-  const monthShort = MONTHS_TR_SHORT[monthIdx]
   const monthFull = MONTHS_TR_FULL[monthIdx]
   const year = Number(_p('year'))
   const dayName = new Date(event.event_date).toLocaleDateString('tr-TR', {
@@ -203,8 +214,6 @@ export default async function EventPage({
   const longDate = `${dayName}, ${dayNum} ${monthFull} ${year}`
 
   const hasImage = !!event.cover_image_url
-  const cat = byValue((event.community as any)?.category ?? null)
-  const c2 = cat?.colors[1] ?? '#2B6FD4'
 
   // Sayi rsvps dizisinden degil events.attendee_count sutunundan gelir.
   // rsvps anonim kullaniciya kapali oldugu icin dizi bos donuyor ve
@@ -215,84 +224,79 @@ export default async function EventPage({
 
   return (
     <main id="content">
-      {/* ============ ÜST ŞERİT ============
-          Koyu zemin + ince ızgara. Solda kimlik + tarih/konum, sağda kapak.
-          Kart diliyle aynı koyu tonlar (event-card.tsx). */}
+      {/* ============ KÜNYE IZGARASI ============
+          Ana sayfayla aynı dil: tam genişlik 3 sütun, kağıt hücreler, sıkı
+          dolgu, 4px köşe, gölge ve çerçeve YOK.
+          Önceki hâli koyu bir #14171F banttı — 12 sabit hex taşıyordu ve
+          paletin tamamen dışındaydı. Ölçüm referansta ne koyu bant, ne gölge,
+          ne çerçeve buldu; bant o yüzden kaldırıldı, koyu tonlar değişkene
+          bağlandı. */}
       <section className="ed-hero">
-        <div className="ed-hero-in">
-          <div className="ed-head">
-            <Link href="/" className="ed-back">← tüm etkinlikler</Link>
-
+        {/* --- künye: kimlik + başlık --- */}
+        <div className="ed-cell ed-kunye">
+          <div className="ed-eyebrow ed-crumb">
+            <Link href="/kesfet">← Etkinlikler</Link>
             {event.community && (
-              <Link href={`/community/${event.community.id}`} className="ed-chip">
-                {cat && <GlossyIcon value={cat.slug} size={16} />}
-                {event.community.name}
-              </Link>
+              <>
+                <span aria-hidden="true">/</span>
+                <Link href={`/community/${event.community.id}`}>{event.community.name}</Link>
+              </>
             )}
-
+          </div>
+          <div>
+            {/* Başlık ana sayfanın 24px h1'inden büyük: burada sayfanın ÖZNESİ.
+                Referansın dev "WILD WEEK"i de 24px değil — o ölçüme takılmayan
+                bir SVG'ydi. Ağırlık ve harf aralığı yine DNA'dan: 400, pozitif. */}
             <h1 className="ed-title">{event.title}</h1>
-
-            <div className="ed-meta">
-              <span className="ed-cal" aria-hidden="true">
-                <b>{monthShort}</b>
-                <i>{dayNum}</i>
-              </span>
-              <span className="ed-meta-txt">
-                <b>{longDate}</b>
-                <i>{timeStr}&apos;de başlar · Europe/Istanbul</i>
-              </span>
-            </div>
-
-            {event.location && (
-              <div className="ed-meta">
-                <span className="ed-pin" aria-hidden="true">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
-                  </svg>
-                </span>
-                <span className="ed-meta-txt">
-                  <b>{event.location}</b>
-                  {(event.community as any)?.city && <i>{(event.community as any).city}</i>}
-                </span>
-              </div>
-            )}
-
             {organizer?.name && (
               <p className="ed-org">
-                <Link href={`/profile/${organizer.id}`}>{organizer.name}</Link> tarafından
+                <Link href={`/profile/${organizer.id}`}>{organizer.name}</Link> düzenliyor
               </p>
             )}
           </div>
+          <RolyefKap cizim={RolyefSandalye} konum="sol-alt" olcek={0.9} opaklik={0.1} />
+        </div>
 
-          <div className="ed-cover">
-            {hasImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={event.cover_image_url} alt={event.title} />
-            ) : (
-              <span className="ed-cover-art">
-                <span className="ed-cover-glow" style={{ background: c2 }} />
-                <svg viewBox="0 0 200 150" aria-hidden="true">
-                  <defs>
-                    <linearGradient id="ed-top" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#3A4050" />
-                      <stop offset="100%" stopColor="#22262F" />
-                    </linearGradient>
-                    <linearGradient id="ed-side" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#272B35" />
-                      <stop offset="100%" stopColor="#14161C" />
-                    </linearGradient>
-                  </defs>
-                  <polygon points="100,58 168,90 168,104 100,136 32,104 32,90" fill="none" stroke={c2} strokeWidth="3" opacity=".5" />
-                  <polygon points="46,96 100,124 100,138 46,110" fill="url(#ed-side)" />
-                  <polygon points="154,96 100,124 100,138 154,110" fill="url(#ed-side)" opacity=".8" />
-                  <polygon points="100,70 154,96 100,124 46,96" fill="url(#ed-top)" />
-                </svg>
-                <span className="ed-cover-icon">
-                  <GlossyIcon value={(event.community as any)?.category ?? null} size={92} />
-                </span>
-              </span>
+        {/* --- gerçekler: ana sayfadaki "GERÇEKLER" bloğunun aynısı --- */}
+        <div className="ed-cell ed-facts">
+          <div className="ed-panel">
+          <div className="ed-eyebrow" style={{ marginBottom: 18 }}>Gerçekler</div>
+          <dl className="ed-dl">
+            <div><dt>T.</dt><dd>Tarih</dd><dd>{dayNum} {monthFull} {year}</dd></div>
+            <div><dt>G.</dt><dd>Gün</dd><dd>{dayName}</dd></div>
+            <div><dt>S.</dt><dd>Saat</dd><dd>{timeStr}</dd></div>
+            {event.location && (
+              <div><dt>Y.</dt><dd>Yer</dd><dd>{event.location}</dd></div>
             )}
+            {(event.community as any)?.city && (
+              <div><dt>Ş.</dt><dd>Şehir</dd><dd>{(event.community as any).city}</dd></div>
+            )}
+            <div>
+              <dt>K.</dt><dd>Katılım</dd>
+              <dd>
+                {attendeeCount}
+                {event.max_attendees ? ` / ${event.max_attendees}` : ''}
+                {isFull ? ' · doldu' : ''}
+              </dd>
+            </div>
+          </dl>
           </div>
+          <RolyefKap cizim={RolyefSehir} konum="sag-alt" olcek={0.95} opaklik={0.09} />
+        </div>
+
+        {/* --- kapak: görsel varsa görsel, yoksa rölyef --- */}
+        <div className="ed-cell ed-cover">
+          {hasImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={event.cover_image_url} alt={event.title} />
+          ) : (
+            <RolyefKap
+              cizim={ROLYEF[(event.community as any)?.category ?? ''] ?? RolyefMasa}
+              konum="orta"
+              olcek={1.05}
+              opaklik={0.2}
+            />
+          )}
         </div>
       </section>
 
@@ -459,95 +463,87 @@ export default async function EventPage({
       </div>
 
       <style>{`
-        /* ---------- Üst şerit ---------- */
+        /* ---------- Künye ızgarası ----------
+           Ana sayfayla birebir aynı yapı: tam genişlik 3 sütun, gap ve dolgu
+           8px, hücre köşesi 4px. Ortalanmış kap yok — DNA'nın yapısı bu. */
         .ed-hero {
-          background-color: #14171F;
-          background-image:
-            linear-gradient(rgba(79, 195, 184, .07) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(79, 195, 184, .07) 1px, transparent 1px);
-          background-size: 24px 24px;
-          border-bottom: 1.5px solid rgba(43, 111, 212, .5);
-          color: #EDF1FA;
-        }
-        .ed-hero-in {
-          max-width: var(--w-page);
-          margin: 0 auto;
-          padding: var(--s-6) var(--s-5) var(--s-7);
           display: grid;
-          grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
-          gap: var(--s-7);
-          align-items: center;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          padding: 8px;
+          font-weight: 400;
         }
-        .ed-back {
-          display: inline-block;
+        .ed-cell {
+          position: relative;
+          overflow: hidden;
+          background: var(--paper-cream);
+          border-radius: var(--r-md);
+          padding: 18px 20px;
+          min-height: 320px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: var(--s-5);
+        }
+
+        /* Minik mono etiket — referansın kendi etiket rolü, gövde metni değil. */
+        .ed-eyebrow {
+          position: relative;
+          z-index: 1;
           font-family: var(--font-mono), monospace;
-          font-size: var(--t-sm);
-          color: #8B95AD;
-          margin-bottom: var(--s-5);
+          font-size: 10px;
+          font-weight: 400;
+          letter-spacing: .16em;
+          text-transform: uppercase;
+          color: var(--ink);
         }
-        .ed-back:hover { color: #C3CBDD; }
-        .ed-chip {
-          display: inline-flex; align-items: center; gap: 7px;
-          font-size: var(--t-xs); font-weight: 600; color: #D6DDEC;
-          background: rgba(255,255,255,.09);
-          border: 1px solid rgba(255,255,255,.13);
-          padding: 5px 12px 5px 6px; border-radius: var(--r-pill);
-          max-width: 100%;
-        }
-        .ed-chip:hover { color: #fff; border-color: rgba(255,255,255,.3); }
+        .ed-crumb { display: flex; flex-wrap: wrap; gap: 8px; }
+        .ed-crumb a { color: var(--ink); }
+        .ed-crumb a:hover { color: var(--ink-deep); }
+        .ed-crumb span { color: var(--muted-light); }
+
+        .ed-kunye > div, .ed-facts > * { position: relative; z-index: 1; }
+
         .ed-title {
-          font-family: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
-          font-weight: 700;
-          font-size: clamp(30px, 4.4vw, 52px);
-          line-height: 1.06;
-          letter-spacing: -.032em;
-          color: #FFFFFF;
-          margin: var(--s-4) 0 var(--s-5);
+          font-family: var(--font-serif), Georgia, serif;
+          font-weight: 400;
+          font-size: clamp(26px, 3.2vw, 40px);
+          line-height: 1.16;
+          letter-spacing: .02em;
+          color: var(--ink);
+          margin: 0;
           text-wrap: balance;
         }
-        .ed-meta {
-          display: flex; align-items: center; gap: var(--s-3);
-          margin-top: var(--s-3);
-        }
-        .ed-cal {
-          flex: none; display: grid; place-items: center;
-          width: 46px; padding: 6px 0; border-radius: 10px;
-          background: #272C38; line-height: 1.1;
-        }
-        .ed-cal b { font-family: var(--font-mono), monospace; font-size: 9px; letter-spacing: .08em; color: #9AA5BE; text-transform: uppercase; }
-        .ed-cal i { font-style: normal; font-size: 19px; font-weight: 700; color: #fff; }
-        .ed-pin {
-          flex: none; display: grid; place-items: center;
-          width: 46px; height: 46px; border-radius: 10px;
-          background: #272C38; color: #9AA5BE;
-        }
-        .ed-meta-txt { display: flex; flex-direction: column; min-width: 0; }
-        .ed-meta-txt b { font-size: var(--t-md); font-weight: 600; color: #EDF1FA; }
-        .ed-meta-txt i { font-style: normal; font-size: var(--t-xs); color: #8B95AD; }
-        .ed-org { margin-top: var(--s-5); font-size: var(--t-sm); color: #8B95AD; }
-        .ed-org a { color: #D6DDEC; font-weight: 600; }
-        .ed-org a:hover { color: #fff; }
+        .ed-org { margin-top: var(--s-3); font-size: 16px; color: var(--ink); }
+        .ed-org a { color: var(--ink); }
+        .ed-org a:hover { text-decoration: underline; }
 
-        .ed-cover {
-          border-radius: var(--r-lg);
-          overflow: hidden;
-          aspect-ratio: 4 / 3;
+        /* Gerçekler listesi: tek harfli alan etiketi, ad, değer. */
+        /* İÇ PANEL — referansın "The Facts" kutusunun karşılığı.
+           Kartın içinde ikinci yüzey: #E8E8E8, 4px köşe, 24px dolgu. */
+        .ed-panel {
           position: relative;
-          background: #1B1F29;
-          border: 1px solid #232733;
+          background: var(--panel);
+          border-radius: var(--r-md);
+          padding: 24px;
         }
+        .ed-dl { margin: 0; display: grid; gap: 10px; align-content: start; }
+        .ed-dl > div {
+          display: grid;
+          grid-template-columns: 20px minmax(0, auto) minmax(0, 1fr);
+          gap: 10px;
+          align-items: baseline;
+        }
+        .ed-dl dt {
+          font-family: var(--font-mono), monospace;
+          font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+          color: var(--muted-light);
+        }
+        .ed-dl dd { margin: 0; font-size: 16px; color: var(--ink); }
+        .ed-dl dd:last-child { color: var(--ink); text-align: right; }
+
+        .ed-cover { padding: 0; }
         .ed-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .ed-cover-art { position: absolute; inset: 0; display: block; }
-        .ed-cover-glow {
-          position: absolute; right: -12%; top: -38%;
-          width: 80%; aspect-ratio: 1; border-radius: 50%;
-          filter: blur(52px); opacity: .4;
-        }
-        .ed-cover-art > svg { position: absolute; left: 50%; top: 56%; width: 78%; transform: translate(-50%, -50%); }
-        .ed-cover-icon {
-          position: absolute; left: 50%; top: 34%; transform: translate(-50%, -50%);
-          filter: drop-shadow(0 14px 18px rgba(0,0,0,.55));
-        }
 
         /* ---------- Gövde ---------- */
         .ed-body {
@@ -568,25 +564,25 @@ export default async function EventPage({
         .ed-block { margin-top: var(--s-7); }
         .ed-main > .ed-block:first-child { margin-top: 0; }
 
-        /* Luma'daki gibi: başlığın altında bölümü açan ince çizgi. */
+        /* Bölüm başlığı = .h-section: 400 ağırlık, POZİTİF harf aralığı.
+           Önceki hâli 700 / -.02em idi, yani DNA'nın tam tersi. */
         .ed-h2 {
-          font-family: var(--font-sans), system-ui, sans-serif;
-          font-size: var(--t-lg);
-          font-weight: 700;
-          letter-spacing: -.02em;
+          font-family: var(--font-serif), Georgia, serif;
+          font-size: 18px;
+          font-weight: 400;
+          letter-spacing: .04em;
+          line-height: 1.2;
+          text-transform: uppercase;   /* ölçüldü: referansta bölüm başlıkları büyük harf */
           color: var(--ink);
           padding-bottom: var(--s-3);
-          border-bottom: 1px solid var(--border-mid);
           margin-bottom: var(--s-4);
         }
 
-        /* ---------- Kayıt kartı (Luma düzeni) ---------- */
+        /* ---------- Kayıt kartı ---------- */
         .ed-reg {
-          border: 1px solid var(--border);
-          border-radius: var(--r-lg);
+          border-radius: var(--r-md);
           overflow: hidden;
           background: var(--paper-cream);
-          box-shadow: var(--shadow-lift);
         }
         .ed-reg-head {
           display: flex;
@@ -595,17 +591,19 @@ export default async function EventPage({
           gap: var(--s-3);
           padding: var(--s-3) var(--s-5);
           background: var(--paper-soft);
-          border-bottom: 1px solid var(--border);
-          font-size: var(--t-sm);
-          font-weight: 600;
+          font-family: var(--font-mono), monospace;
+          font-size: 10px;
+          letter-spacing: .16em;
+          text-transform: uppercase;
           color: var(--ink);
         }
         .ed-reg-count {
           font-family: var(--font-mono), monospace;
-          font-size: var(--t-xs);
-          font-weight: 500;
+          font-size: 10px;
+          letter-spacing: .1em;
           color: var(--muted);
           text-align: right;
+          text-transform: none;
         }
         .ed-reg-body {
           padding: var(--s-5);
@@ -614,18 +612,18 @@ export default async function EventPage({
           gap: var(--s-4);
         }
         .ed-reg-msg {
-          font-size: var(--t-md);
-          color: var(--night);
+          font-size: 16px;
+          color: var(--ink);
           line-height: 1.55;
           margin: 0;
         }
         .ed-desc {
           font-size: 16px;
           line-height: 1.7;
-          color: var(--night);
+          color: var(--ink);
           white-space: pre-wrap;
         }
-        .ed-loc { font-size: var(--t-sm); color: var(--muted); margin-bottom: var(--s-3); }
+        .ed-loc { font-size: 16px; color: var(--ink); margin-bottom: var(--s-3); }
 
         /* ---------- Kenar ---------- */
         .ed-sticky {
@@ -634,31 +632,37 @@ export default async function EventPage({
         }
         .ed-card {
           background: var(--paper-cream);
-          border: 1px solid var(--border);
-          border-radius: var(--r-lg);
+          border-radius: var(--r-md);
           padding: var(--s-5);
           display: flex; flex-direction: column; gap: var(--s-4);
         }
         .ed-cta { text-align: center; width: 100%; }
-        .ed-note { font-family: var(--font-mono), monospace; font-size: var(--t-sm); color: var(--muted); text-align: center; margin: 0; }
+        .ed-note {
+          font-family: var(--font-mono), monospace;
+          font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+          color: var(--muted); text-align: center; margin: 0;
+        }
 
         .ed-comm { flex-direction: row; align-items: center; gap: var(--s-3); text-decoration: none; }
-        .ed-comm:hover { border-color: var(--border-mid); }
+        .ed-comm:hover { background: var(--paper-soft); }
         .ed-comm-icon { flex: none; }
         .ed-comm-txt { display: flex; flex-direction: column; min-width: 0; }
-        .ed-comm-txt b { font-size: var(--t-md); font-weight: 600; color: var(--ink); }
-        .ed-comm-txt i { font-style: normal; font-size: var(--t-xs); color: var(--muted); }
+        .ed-comm-txt b { font-size: 16px; font-weight: 400; letter-spacing: .02em; color: var(--ink); }
+        .ed-comm-txt i {
+          font-style: normal; font-family: var(--font-mono), monospace;
+          font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted);
+        }
 
         .ed-tools { display: flex; flex-direction: column; gap: var(--s-3); }
 
         /* ---------- Diğer etkinlikler ---------- */
         .ed-up { gap: var(--s-3); }
         .ed-up-h {
-          font-size: var(--t-sm);
-          font-weight: 600;
+          font-family: var(--font-mono), monospace;
+          font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+          font-weight: 400;
           color: var(--ink);
           padding-bottom: var(--s-2);
-          border-bottom: 1px solid var(--border);
         }
         .ed-up-list { list-style: none; display: flex; flex-direction: column; gap: var(--s-2); }
         .ed-up-row {
@@ -671,14 +675,17 @@ export default async function EventPage({
         .ed-up-row:hover { background: var(--paper-soft); }
         .ed-up-cal {
           flex: none; display: grid; place-items: center;
-          width: 40px; padding: 4px 0; border-radius: 9px;
-          background: var(--paper-soft); border: 1px solid var(--border);
+          width: 40px; padding: 4px 0; border-radius: var(--r-sm);
+          background: var(--paper-soft);
           line-height: 1.1;
         }
-        .ed-up-cal b { font-family: var(--font-mono), monospace; font-size: 8.5px; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
-        .ed-up-cal i { font-style: normal; font-size: 15px; font-weight: 700; color: var(--ink); }
+        .ed-up-cal b {
+          font-family: var(--font-mono), monospace; font-size: 9px;
+          letter-spacing: .16em; color: var(--muted); text-transform: uppercase;
+        }
+        .ed-up-cal i { font-style: normal; font-size: 15px; font-weight: 400; color: var(--ink); }
         .ed-up-title {
-          font-size: var(--t-sm); font-weight: 600; color: var(--ink);
+          font-size: 16px; font-weight: 400; letter-spacing: .02em; color: var(--ink);
           overflow: hidden; text-overflow: ellipsis;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
         }
@@ -686,10 +693,10 @@ export default async function EventPage({
 
         /* ---------- Mobil ---------- */
         @media (max-width: 900px) {
-          .ed-hero-in { grid-template-columns: 1fr; gap: var(--s-5); padding-bottom: var(--s-6); }
-          .ed-cover { order: -1; aspect-ratio: 16 / 9; }
-          .ed-back { margin-bottom: var(--s-4); }
-          .ed-title { font-size: clamp(26px, 7.5vw, 38px); }
+          .ed-hero { grid-template-columns: 1fr; }
+          .ed-cell { min-height: 0; }
+          .ed-cover { min-height: 220px; aspect-ratio: 16 / 9; }
+          .ed-title { font-size: clamp(24px, 6.5vw, 34px); }
           .ed-body { padding-top: var(--s-6); }
         }
       `}</style>

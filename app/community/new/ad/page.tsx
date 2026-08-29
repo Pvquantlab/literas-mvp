@@ -143,19 +143,19 @@ export default function AdStep() {
                   padding: '8px 14px',
                   borderRadius: '999px',
                   background: 'transparent',
-                  border: '1.5px solid rgba(30, 58, 43, 0.2)',
+                  border: '1.5px solid var(--border)',
                   color: 'var(--ink)',
                   fontSize: '13.5px',
                   cursor: 'pointer',
                   transition: 'all 0.15s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(30,58,43,0.05)'
-                  e.currentTarget.style.borderColor = 'rgba(30,58,43,0.4)'
+                  e.currentTarget.style.background = 'var(--panel)'
+                  e.currentTarget.style.borderColor = 'var(--border)'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.borderColor = 'rgba(30,58,43,0.2)'
+                  e.currentTarget.style.borderColor = 'var(--border)'
                 }}
               >
                 {s}
@@ -172,7 +172,7 @@ export default function AdStep() {
         alignItems: 'center',
         marginTop: '32px',
         paddingTop: '20px',
-        borderTop: '1px solid rgba(30, 58, 43, 0.1)',
+        borderTop: '1px solid var(--border)',
       }}>
         <Link
           href="/community/new/konular"

@@ -15,23 +15,17 @@ const plexMono = readFileSync(
   join(process.cwd(), 'assets/fonts/IBMPlexMono-Regular.ttf')
 )
 
-const CAT_COLORS: Record<string, { bg: string; ink: string }> = {
-  kitap: { bg: '#F5E9D0', ink: '#3E6B21' },
-  doğa: { bg: '#DDE9D5', ink: '#A35A1E' },
-  müzik: { bg: '#E7DBEB', ink: '#5B3EA6' },
-  lezzet: { bg: '#F3D8CE', ink: '#8A6A00' },
-  dil: { bg: '#DCE4EE', ink: '#2A5B8F' },
-  spor: { bg: '#E5E0D2', ink: '#1F6E52' },
-  sanat: { bg: '#EFD9DC', ink: '#A83A6E' },
-  oyun: { bg: '#DFE8DE', ink: '#B04330' },
-  tech: { bg: '#DAE0E6', ink: '#33566B' },
-  sinema: { bg: '#E4DED4', ink: '#544A86' },
-  fotoğraf: { bg: '#E0DEDC', ink: '#23697A' },
-  gönüllülük: { bg: '#E1EBDA', ink: '#A34A22' },
-  kariyer: { bg: '#E5DED0', ink: '#46603A' },
-  sosyal: { bg: '#EBDFD3', ink: '#A8354F' },
-}
-const FALLBACK = { bg: '#E8E4D8', ink: '#1a1a1a' }
+/**
+ * OG görselinin paleti sitenin paletiyle AYNI olmalı: WhatsApp'ta paylaşılan
+ * kart, sitenin ilk izlenimi.
+ *
+ * Buradaki 28 renklik CAT_COLORS tablosu kesfet/page.tsx'teki CATS dizisinin
+ * kopyasıydı. O dizi ölçülmüş DNA gereği silindi (tek vurgu rengi); kopyası
+ * burada yaşamaya devam ediyordu. Artık tek ses: sıcak greige zemin,
+ * mürekkep metin.
+ */
+const ZEMIN = '#DCDBD5'
+const MUREKKEP = '#0755BB'
 
 function trUpper(s: string) {
   return s.replace(/i/g, 'İ').replace(/ı/g, 'I').toUpperCase()
@@ -64,8 +58,8 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
     .maybeSingle()
 
   const community = (event?.community as any) ?? {}
-  const c = CAT_COLORS[(community.category ?? '').toLowerCase()] ?? FALLBACK
-  const title = event?.title ?? 'literaslab — etkinlik'
+  const c = { bg: ZEMIN, ink: MUREKKEP }
+  const title = event?.title ?? 'literaslab · etkinlik'
 
   return new ImageResponse(
     (
@@ -77,7 +71,7 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
           flexDirection: 'column',
           justifyContent: 'space-between',
           background: c.bg,
-          color: '#1a1a1a',
+          color: MUREKKEP,
           padding: 64,
           fontFamily: 'IBM Plex Sans',
         }}
@@ -99,14 +93,14 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
           <div style={{ display: 'flex' }}>{community.name ?? ''}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <svg width="36" height="36" viewBox="0 0 32 32">
-              <rect width="32" height="32" rx="9" fill="#1E3A2B" />
-              <rect x="8.4" y="5.5" width="4" height="13.2" rx="2" fill="#C8EB4B" />
-              <rect x="8.4" y="18.5" width="15.2" height="3.8" rx="1.9" fill="#C8EB4B" />
-              <rect x="9.2" y="22.3" width="2.4" height="4" rx="1.2" fill="#C8EB4B" />
-              <rect x="19.6" y="22.3" width="2.4" height="4" rx="1.2" fill="#C8EB4B" />
+              <rect width="32" height="32" rx="9" fill="#0755BB" />
+              <rect x="8.4" y="5.5" width="4" height="13.2" rx="2" fill="#FFFFFF" />
+              <rect x="8.4" y="18.5" width="15.2" height="3.8" rx="1.9" fill="#FFFFFF" />
+              <rect x="9.2" y="22.3" width="2.4" height="4" rx="1.2" fill="#FFFFFF" />
+              <rect x="19.6" y="22.3" width="2.4" height="4" rx="1.2" fill="#FFFFFF" />
               <circle cx="18.4" cy="14.8" r="2.6" fill="#FFFFFF" />
             </svg>
-            <div style={{ display: 'flex', fontWeight: 700, color: '#1a1a1a' }}>literaslab</div>
+            <div style={{ display: 'flex', fontWeight: 700, color: MUREKKEP }}>literaslab</div>
           </div>
         </div>
       </div>

@@ -84,7 +84,7 @@ export default function ReviewButtons({ communityId, communityName }: { communit
           <textarea
             value={rejectNote}
             onChange={(e) => setRejectNote(e.target.value)}
-            placeholder="Ret sebebi (opsiyonel — kurucuya iletilir)"
+            placeholder="Ret sebebi (opsiyonel, kurucuya iletilir)"
             rows={2}
             style={{ width: '100%', fontSize: '13px' }}
           />

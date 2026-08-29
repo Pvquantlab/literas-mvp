@@ -1,13 +1,13 @@
-export const metadata = { title: "Kullanım Şartları — literaslab" };
+export const metadata = { title: "Kullanım Şartları · literaslab" };
 
 export default function KosullarPage() {
   return (
     <div style={pageStyle}>
-      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "rgba(30,58,43,0.55)", textTransform: "lowercase", marginBottom: 8 }}>
+      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase", marginBottom: 8 }}>
         yasal
       </div>
       <h1 style={h1Style}>Kullanım Şartları</h1>
-      <p style={{ fontSize: 13.5, color: "rgba(30,58,43,0.55)", fontFamily: "'IBM Plex Mono', monospace", margin: "0 0 32px" }}>
+      <p style={{ fontSize: 13.5, color: "var(--muted)", fontFamily: "'IBM Plex Mono', monospace", margin: "0 0 32px" }}>
         Son güncelleme: 10 Temmuz 2026 · v1
       </p>
 
@@ -53,12 +53,12 @@ export default function KosullarPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section style={{ marginBottom: 28 }}>
-      <h2 style={{ fontSize: 18, fontWeight: 800, margin: "0 0 8px" }}>{title}</h2>
-      <div style={{ fontSize: 14.5, lineHeight: 1.7, color: "rgba(30,58,43,0.82)" }}>{children}</div>
+      <h2 style={{ fontSize: 18, fontWeight: 400, margin: "0 0 8px" }}>{title}</h2>
+      <div style={{ fontSize: 14.5, lineHeight: 1.7, color: "var(--ink)" }}>{children}</div>
     </section>
   );
 }
 
 const pageStyle: React.CSSProperties = { maxWidth: 720, margin: "0 auto", padding: "40px 24px 80px" };
-const h1Style: React.CSSProperties = { fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(32px, 4.5vw, 48px)", fontWeight: 800, lineHeight: 1.15, margin: "4px 0 6px", letterSpacing: "-0.5px" };
+const h1Style: React.CSSProperties = { fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(32px, 4.5vw, 48px)", fontWeight: 400, lineHeight: 1.15, margin: "4px 0 6px", letterSpacing: "0.5px" };
 const linkStyle: React.CSSProperties = { color: "var(--ink)", fontWeight: 700, textDecoration: "underline" };

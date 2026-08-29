@@ -61,7 +61,7 @@ export default async function DuyuruListesi({
       <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: '0.08em', color: 'var(--muted)', textTransform: 'lowercase' }}>
         {topluluk?.name ?? 'topluluk'}
       </div>
-      <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', margin: '6px 0 18px' }}>
+      <h1 style={{ fontSize: 30, fontWeight: 400, letterSpacing: '0.02em', margin: '6px 0 18px' }}>
         Duyurular
       </h1>
 

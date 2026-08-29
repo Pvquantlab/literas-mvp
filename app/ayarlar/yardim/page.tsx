@@ -4,19 +4,19 @@ const HELP_ITEMS = [
   { title: "Yardım merkezi", desc: "Sık sorulan konular ve rehberler", href: "/sss" },
   { title: "Topluluk kuralları", desc: "literaslab'de birlikte nasıl var oluyoruz", href: "/topluluk-kurallari" },
   { title: "SSS", desc: "Üyelik, etkinlikler ve topluluk kurma hakkında", href: "/sss" },
-  { title: "İletişim", desc: "Destek ekibine yazın — genellikle 1 iş günü içinde döneriz", href: "/iletisim" },
+  { title: "İletişim", desc: "Destek ekibine yazın, genellikle 1 iş günü içinde döneriz", href: "/iletisim" },
 ];
 
 export default function YardimPage() {
   return (
     <>
-      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "rgba(30,58,43,0.55)", textTransform: "lowercase" }}>
+      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase" }}>
         hesap ayarları
       </div>
-      <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: "6px 0 10px" }}>
+      <h1 style={{ fontFamily: "var(--font-serif), Georgia, serif", fontSize: 32, fontWeight: 400, letterSpacing: ".02em", margin: "6px 0 10px" }}>
         Yardım
       </h1>
-      <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 28px", maxWidth: "56ch" }}>
+      <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 28px", maxWidth: "56ch" }}>
         Bir sorunuz mu var? Aşağıdaki kaynaklardan yanıt bulabilir veya bize ulaşabilirsiniz.
       </p>
 
@@ -33,10 +33,10 @@ export default function YardimPage() {
             transition: "all 0.15s",
           }}>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{item.title}</div>
-              <div style={{ fontSize: 13.5, color: "rgba(30,58,43,0.65)" }}>{item.desc}</div>
+              <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 4 }}>{item.title}</div>
+              <div style={{ fontSize: 13.5, color: "var(--muted)" }}>{item.desc}</div>
             </div>
-            <span style={{ fontSize: 20, fontWeight: 700, color: "var(--ink)" }}>→</span>
+            <span style={{ fontSize: 20, fontWeight: 500, color: "var(--ink)" }}>→</span>
           </Link>
         ))}
       </div>

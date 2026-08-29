@@ -21,13 +21,13 @@ export default async function HesapPage({
 
   return (
     <>
-      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "rgba(30,58,43,0.55)", textTransform: "lowercase" }}>
+      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase" }}>
         hesap ayarları
       </div>
-      <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: "6px 0 10px" }}>
+      <h1 style={{ fontFamily: "var(--font-serif), Georgia, serif", fontSize: 32, fontWeight: 400, letterSpacing: ".02em", margin: "6px 0 10px" }}>
         Hesap Yönetimi
       </h1>
-      <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 28px", maxWidth: "56ch" }}>
+      <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 28px", maxWidth: "56ch" }}>
         Oturum bilgileriniz, dil ve saat dilimi tercihlerinizi yönetin.
       </p>
 
@@ -44,7 +44,7 @@ export default async function HesapPage({
             aria-describedby="eposta-not"
             style={{ ...inputStyle, opacity: 0.65, cursor: "not-allowed" }}
           />
-          <p id="eposta-not" style={{ fontSize: 13, color: "rgba(30,58,43,0.6)", marginTop: 8 }}>
+          <p id="eposta-not" style={{ fontSize: 13, color: "var(--muted)", marginTop: 8 }}>
             E-posta adresi buradan değiştirilemez: bildirimlerinizin gittiği adres
             budur ve doğrulama gerektirir. Değiştirmek için bizimle{" "}
             <a href="/iletisim" style={{ color: "var(--ink)" }}>iletişime geçin</a>.
@@ -62,12 +62,12 @@ export default async function HesapPage({
         <div style={{ marginBottom: 26 }}>
           <label style={labelStyle}>Birincil saat dilimi</label>
           <select name="timezone" defaultValue={profile?.timezone || "Europe/Istanbul"} style={inputStyle}>
-            <option value="Europe/Istanbul">(GMT+03:00) İstanbul — Türkiye Standart Saati</option>
+            <option value="Europe/Istanbul">(GMT+03:00) İstanbul, Türkiye Standart Saati</option>
             <option value="Europe/London">(GMT+00:00) London</option>
             <option value="Europe/Berlin">(GMT+01:00) Berlin</option>
             <option value="America/New_York">(GMT-05:00) New York</option>
           </select>
-          <p style={{ fontSize: 13, color: "rgba(30,58,43,0.6)", marginTop: 8 }}>
+          <p style={{ fontSize: 13, color: "var(--muted)", marginTop: 8 }}>
             Seçiminiz, etkinlik saatlerinin nasıl görüntüleneceğini etkiler.
           </p>
         </div>
@@ -93,7 +93,7 @@ export default async function HesapPage({
           Hesabınız gizlenir; geri dönmek isterseniz e-postanızla yeniden etkinleştirebilirsiniz.
         </p>
         <form action={deactivateAccount}>
-          <button type="submit" style={{ ...linkStyle, background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit", fontSize: 14, fontWeight: 700, color: "var(--coral-deep)" }}>
+          <button type="submit" style={{ ...linkStyle, background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit", fontSize: 14, fontWeight: 500, color: "var(--coral-deep)" }}>
             Hesabı devre dışı bırak
           </button>
         </form>
@@ -122,7 +122,7 @@ const inputStyle = {
   outline: "none",
   fontFamily: "inherit",
 };
-const labelStyle = { display: "block", fontSize: 14, fontWeight: 700, marginBottom: 8 };
+const labelStyle = { display: "block", fontSize: 14, fontWeight: 500, marginBottom: 8 };
 const saveButtonStyle = {
   marginTop: 8,
   padding: "13px 26px",
@@ -130,11 +130,10 @@ const saveButtonStyle = {
   border: "2px solid var(--ink)",
   borderRadius: 999,
   fontSize: 14.5,
-  fontWeight: 700,
+  fontWeight: 500,
   color: "var(--ink)",
   cursor: "pointer",
-  boxShadow: "4px 5px 0 var(--ink)",
 };
-const sectionTitleStyle = { fontSize: 18, fontWeight: 800, margin: "0 0 8px", letterSpacing: "-0.01em" };
-const sectionTextStyle = { fontSize: 14.5, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 12px" };
-const linkStyle = { fontSize: 14, fontWeight: 700, color: "var(--ink)", textDecoration: "underline" };
+const sectionTitleStyle = { fontSize: 18, fontWeight: 400, margin: "0 0 8px", letterSpacing: ".02em" };
+const sectionTextStyle = { fontSize: 14.5, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 12px" };
+const linkStyle = { fontSize: 14, fontWeight: 500, color: "var(--ink)", textDecoration: "underline" };

@@ -26,7 +26,15 @@ export default async function CheckinPage({
   const { t, hata } = await searchParams
   const supabase = await createClient()
 
-  const hataMesaji = hata ? (HATA_MESAJLARI[hata] ?? HATA_MESAJLARI.basarisiz) : undefined
+  // PROTOTİP ZİNCİRİ TUZAĞI: düz indeksleme (HATA_MESAJLARI[hata]) yalnızca
+  // kendi anahtarlarımızı değil Object.prototype'ı da okur. `?hata=__proto__`
+  // ya da `?hata=constructor` bir NESNE döndürüyordu; `??` bunu yakalamıyor
+  // (null/undefined değil), sonuçta React'e geçersiz çocuk gidiyor ve
+  // SAYFA ÇÖKÜYORDU. Kapıda giriş yapan organizatör bunu tetikleyebilirdi.
+  // Object.hasOwn yalnızca gerçek anahtarlara bakar.
+  const hataMesaji = hata
+    ? (Object.hasOwn(HATA_MESAJLARI, hata) ? HATA_MESAJLARI[hata] : HATA_MESAJLARI.basarisiz)
+    : undefined
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
@@ -149,5 +157,5 @@ function Mesaj({ baslik, alt }: { baslik: string; alt: string }) {
 }
 
 const sayfaStil = { maxWidth: 520, margin: '0 auto', padding: '48px 24px 80px' } as const
-const baslikStil = { fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 10px' } as const
+const baslikStil = { fontSize: 30, fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 10px' } as const
 const altStil = { fontSize: 15, lineHeight: 1.6, color: 'var(--muted)' } as const
