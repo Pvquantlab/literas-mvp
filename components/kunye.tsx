@@ -75,8 +75,10 @@ export function DevLogotype({ metin = 'literaslab' }: { metin?: string }) {
         textAnchor="middle"
         fill="var(--ink)"
         style={{
-          // Ağırlık ince, harf arası açık — referansın imza dili.
-          font: "400 132px var(--font-sans), system-ui, sans-serif",
+          // Referansın "WILD WEEK"i özel çizilmiş bir yazıt harfi; bizde
+          // karşılığı Marcellus. Sans'ta duruyordu, sayfanın geri kalanıyla
+          // aynı sesi konuşmuyordu.
+          font: "400 132px var(--font-serif), Georgia, serif",
           letterSpacing: '.02em',
         }}
       >

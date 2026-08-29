@@ -1,4 +1,4 @@
-export const metadata = { title: "İletişim — literaslab" };
+export const metadata = { title: "İletişim · literaslab" };
 
 export default function IletisimPage() {
   return (

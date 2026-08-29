@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 
 export const metadata = {
-  title: 'Topluluk gönderildi — literaslab',
+  title: 'Topluluk gönderildi · literaslab',
 }
 
 export default async function BasariliPage({
@@ -48,7 +48,7 @@ export default async function BasariliPage({
         margin: '0 auto 24px',
       }}>
         <strong style={{ color: 'var(--ink)' }}>{community.name}</strong>{' '}
-        incelemeye gönderildi. Onaylandığında {community.location_name ?? 'bölgendeki'} insanlara duyuracağız — genelde birkaç saat sürer.
+        incelemeye gönderildi. Onaylandığında {community.location_name ?? 'bölgendeki'} insanlara duyuracağız. Genelde birkaç saat sürer.
       </p>
 
       <div style={{

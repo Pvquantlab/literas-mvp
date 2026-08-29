@@ -53,7 +53,7 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
     .maybeSingle()
 
   const c = CAT_COLORS[(community?.category ?? '').toLowerCase()] ?? FALLBACK
-  const name = community?.name ?? 'literaslab — topluluk'
+  const name = community?.name ?? 'literaslab · topluluk'
   const desc = community?.description
     ? (community.description.length > 120 ? community.description.slice(0, 120) + '…' : community.description)
     : null

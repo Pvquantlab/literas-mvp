@@ -65,7 +65,7 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
 
   const community = (event?.community as any) ?? {}
   const c = CAT_COLORS[(community.category ?? '').toLowerCase()] ?? FALLBACK
-  const title = event?.title ?? 'literaslab — etkinlik'
+  const title = event?.title ?? 'literaslab · etkinlik'
 
   return new ImageResponse(
     (

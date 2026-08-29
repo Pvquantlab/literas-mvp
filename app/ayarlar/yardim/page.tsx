@@ -4,7 +4,7 @@ const HELP_ITEMS = [
   { title: "Yardım merkezi", desc: "Sık sorulan konular ve rehberler", href: "/sss" },
   { title: "Topluluk kuralları", desc: "literaslab'de birlikte nasıl var oluyoruz", href: "/topluluk-kurallari" },
   { title: "SSS", desc: "Üyelik, etkinlikler ve topluluk kurma hakkında", href: "/sss" },
-  { title: "İletişim", desc: "Destek ekibine yazın — genellikle 1 iş günü içinde döneriz", href: "/iletisim" },
+  { title: "İletişim", desc: "Destek ekibine yazın, genellikle 1 iş günü içinde döneriz", href: "/iletisim" },
 ];
 
 export default function YardimPage() {

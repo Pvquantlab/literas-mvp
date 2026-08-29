@@ -5,7 +5,7 @@ import { WizardProvider } from './wizard-context'
 import WizardShell from './wizard-shell'
 
 export const metadata = {
-  title: 'Topluluk kur — literaslab',
+  title: 'Topluluk kur · literaslab',
   description: 'Adım adım kendi topluluğunu oluştur.',
 }
 

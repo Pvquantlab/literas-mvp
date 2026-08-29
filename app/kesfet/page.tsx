@@ -224,6 +224,7 @@ export default async function KesfetPage({
             için 24px'i aşıyor, ağırlık ve harf aralığı DNA'dan. */}
         <h1 style={{
           margin: 0,
+          fontFamily: 'var(--font-serif), Georgia, serif',
           fontWeight: 400,
           fontSize: 'clamp(26px, 3.2vw, 40px)',
           lineHeight: 1.16,

@@ -1,4 +1,4 @@
-export const metadata = { title: "Sık Sorulan Sorular — literaslab" };
+export const metadata = { title: "Sık Sorulan Sorular · literaslab" };
 
 const FAQS = [
   {
@@ -11,7 +11,7 @@ const FAQS = [
   },
   {
     q: "Etkinlik oluşturmak için ne gerekiyor?",
-    a: "Önce bir topluluk kurman ya da bir topluluğa üye olman lazım. Sonra o topluluk altından etkinlik oluşturabilirsin. Etkinlik başlığı, tarih, yer, kısa bir açıklama — hepsi bu.",
+    a: "Önce bir topluluk kurman ya da bir topluluğa üye olman lazım. Sonra o topluluk altından etkinlik oluşturabilirsin. Etkinlik başlığı, tarih, yer, kısa bir açıklama. Hepsi bu.",
   },
   {
     q: "Etkinliklere nasıl katılırım?",

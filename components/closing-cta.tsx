@@ -84,15 +84,16 @@ export default function ClosingCta() {
         .cc-mark svg { width: 100%; height: auto; display: block; }
 
         .cc-title {
-          /* DNA: en büyük metin 24px, ağırlık en ince, harf aralığı POZİTİF.
-             Eskiden 62px'e kadar çıkan serif bir başlıktı — referansın
-             tipografi ölçeğiyle bağdaşmıyordu. Tavan 34px'e çekildi:
-             24px'ten okunur, 62px'ten uzak. */
+          /* Ağırlık en ince, harf aralığı POZİTİF, tavan 34px.
+             DÜZELTME: serifi bir kez kaldırmıştım, yanlıştı. Ölçüm
+             referansın 1919 metin düğümünün serif olduğunu gösterdi;
+             ses o. Gövde artık Marcellus, bu başlık da onu izliyor.
+             Renk sıcak siyahtan mürekkebe geçti: referansta siyah metin yok. */
           font-weight: 400;
           font-size: clamp(24px, 3vw, 34px);
           letter-spacing: .04em;
           line-height: 1.06;
-          color: var(--night);
+          color: var(--ink);
           margin: 0;
         }
         .cc-sub {

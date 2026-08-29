@@ -64,7 +64,7 @@ export default function GonderStep() {
         overflow: 'hidden',
         marginBottom: '24px',
       }}>
-        <SummaryRow label="Konum" value={draft.location_name ?? '—'} editHref="/community/new/konum" />
+        <SummaryRow label="Konum" value={draft.location_name ?? '-'} editHref="/community/new/konum" />
         <SummaryRow
           label="Konular"
           value={
@@ -74,7 +74,7 @@ export default function GonderStep() {
           }
           editHref="/community/new/konular"
         />
-        <SummaryRow label="Ad" value={draft.name ?? '—'} editHref="/community/new/ad" />
+        <SummaryRow label="Ad" value={draft.name ?? '-'} editHref="/community/new/ad" />
         <SummaryRow
           label="Açıklama"
           value={
@@ -82,7 +82,7 @@ export default function GonderStep() {
               ? draft.description.length > 180
                 ? draft.description.slice(0, 180) + '…'
                 : draft.description
-              : '—'
+              : '-'
           }
           editHref="/community/new/aciklama"
           multiline

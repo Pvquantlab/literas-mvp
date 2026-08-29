@@ -373,7 +373,7 @@ export default async function HomePage({
           }}
         >
           <RolyefKap cizim={RolyefKitap} konum="sag-alt" olcek={1.05} opaklik={0.14} />
-          <span style={{ ...kunyeEtiket, position: 'relative' }}>literaslab — İstanbul</span>
+          <span style={{ ...kunyeEtiket, position: 'relative' }}>literaslab · İstanbul</span>
           <h1 style={{ margin: 0 }}>
             <span
               style={{
@@ -393,7 +393,7 @@ export default async function HomePage({
                 fontSize: 16,
                 fontWeight: 400,
                 lineHeight: 1.5,
-                color: 'var(--night)',
+                color: 'var(--ink)',
                 marginTop: 14,
               }}
             >
@@ -410,7 +410,17 @@ export default async function HomePage({
             alan etiketleriyle. */}
         <div style={{ ...kunyeHucre, minHeight: 380, position: 'relative', overflow: 'hidden' }}>
           <RolyefKap cizim={RolyefSehir} konum="sag-alt" olcek={1.0} opaklik={0.12} />
-          <span style={{ ...kunyeEtiket, marginBottom: 22, position: 'relative' }}>Gerçekler</span>
+          {/* İÇ PANEL. Referansın "The Facts" kutusu kartın İÇİNDE ikinci bir
+              yüzey: #E8E8E8, 4px köşe, 24px dolgu (394x394 ölçüldü). Çift
+              çerçeve etkisini, yani o müze etiketi hissini bu veriyor ve
+              bende hiç yoktu. Ayrım gölgeyle değil bu katmanla kuruluyor. */}
+          <div style={{
+            position: 'relative',
+            background: 'var(--panel)',
+            borderRadius: 'var(--r-md)',
+            padding: 24,
+          }}>
+          <span style={{ ...kunyeEtiket, display: 'block', marginBottom: 22 }}>Gerçekler</span>
           <dl style={{ margin: 0, display: 'grid', gap: 10 }}>
             {[
               ['T', 'Topluluk', String(communities.length)],
@@ -429,10 +439,11 @@ export default async function HomePage({
               >
                 <dt style={{ ...kunyeEtiket, color: 'var(--muted-light)' }}>{harf}.</dt>
                 <dd style={{ margin: 0, fontSize: 16 }}>{ad}</dd>
-                <dd style={{ margin: 0, fontSize: 16, color: 'var(--ink)' }}>{deger}</dd>
+                <dd className="sayi" style={{ margin: 0, fontSize: 16, color: 'var(--ink)' }}>{deger}</dd>
               </div>
             ))}
           </dl>
+          </div>
         </div>
 
         {/* Hücre 3: davet. Referansın karşılama paragrafı BÜYÜK HARF. */}

@@ -1,4 +1,4 @@
-export const metadata = { title: "Kullanım Şartları — literaslab" };
+export const metadata = { title: "Kullanım Şartları · literaslab" };
 
 export default function KosullarPage() {
   return (

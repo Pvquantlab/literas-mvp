@@ -16,7 +16,7 @@ const ORNEKLER = [
   },
   {
     baslik: 'İstanbul Doğa Yürüyüşleri',
-    metin: 'Şehrin gürültüsünden bir günlüğüne uzaklaşmak isteyenler için. Belgrad Ormanı, Polonezköy, Ağva rotalarında pazar günleri buluşuyoruz. Her seviyeye uygun rotalar hazırlıyoruz — yeni başlayanlar da bize katılabilir. Ekip ruhuna ve doğaya saygıya değer veriyoruz.',
+    metin: 'Şehrin gürültüsünden bir günlüğüne uzaklaşmak isteyenler için. Belgrad Ormanı, Polonezköy, Ağva rotalarında pazar günleri buluşuyoruz. Her seviyeye uygun rotalar hazırlıyoruz, yeni başlayanlar da katılabilir. Ekip ruhuna ve doğaya saygıya değer veriyoruz.',
   },
   {
     baslik: 'Teknoloji Sohbetleri İstanbul',

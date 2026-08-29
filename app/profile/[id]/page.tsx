@@ -189,7 +189,7 @@ export default async function ProfilePage({
                   style={{ color: 'var(--ink)', textDecoration: 'underline', fontWeight: 600 }}
                 >
                   Kendinden bahset
-                </Link> — birkaç cümle profile bir yüz katar.
+                </Link>. Birkaç cümle profile bir yüz katar.
               </p>
             )}
           </section>

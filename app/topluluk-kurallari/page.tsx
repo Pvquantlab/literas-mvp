@@ -1,4 +1,4 @@
-export const metadata = { title: "Topluluk Kuralları — literaslab" };
+export const metadata = { title: "Topluluk Kuralları · literaslab" };
 
 const RULES = [
   { title: "Birbirine saygı", desc: "Herkesin farklı bir yaşam öyküsü var. Aşağılayıcı, tehditkâr, ayrımcı dil kullanma. Nezaket bulaşıcıdır." },
@@ -6,9 +6,9 @@ const RULES = [
   { title: "Nefret yok", desc: "Irk, cinsiyet, cinsel yönelim, din, engellilik ya da milliyet üzerinden nefret söylemine yer yok." },
   { title: "Taciz yok", desc: "Kimseyi rahatsız etme, takip etme, tehdit etme. 'Şaka' bahanesi kabul edilmez." },
   { title: "Reklam ve spam yok", desc: "Etkinlikler ve topluluklar samimi buluşmalar için. Ürün satmak, MLM işi, toplu üye avı burada olmaz." },
-  { title: "Yasadışı içerik yok", desc: "Yasadışı faaliyetler, telif ihlali, uyuşturucu, silah — hepsi yasak." },
+  { title: "Yasadışı içerik yok", desc: "Yasadışı faaliyetler, telif ihlali, uyuşturucu, silah. hepsi yasak." },
   { title: "Çocuk güvenliği", desc: "18 yaş altı kullanıcıları etkileyecek içerik kesinlikle yasak. Bu konuda sıfır tolerans." },
-  { title: "Söz verdiğine git", desc: "Katılacağını söylediğin etkinliğe gitmeye çalış. Gidemezsen katılımını iptal et — kontenjan başkasına açılsın." },
+  { title: "Söz verdiğine git", desc: "Katılacağını söylediğin etkinliğe gitmeye çalış. Gidemezsen katılımını iptal et, kontenjan başkasına açılsın." },
 ];
 
 export default function TopKurallariPage() {

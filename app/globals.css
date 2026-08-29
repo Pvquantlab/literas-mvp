@@ -25,6 +25,31 @@
   --paper-cream: #F1F0EA;
   --paper-soft: #E5E3DC;
 
+  /* İÇ PANEL — referansın "müze etiketi" katmanı.
+     Ölçüm: week.wild.plus'ta #E8E8E8 zeminli 20 eleman var; "The Facts"
+     kutusu (394x394, 24px dolgu) ve "I Passport" tipi hap satırları.
+     Kartın İÇİNDE ikinci bir yüzey; çift çerçeve hissini bu veriyor ve
+     bende hiç yoktu. Ayrım gölgeyle değil bu katmanla kuruluyor.
+
+     İKİ BİLİNÇLİ SAPMA:
+     1. Ölçülen değer #E8E8E8, soğuk gri. Paletimiz baştan sona sıcak greige;
+        soğuk gri araya yabancı düşüyordu. Aynı açıklıkta sıcak karşılığı.
+     2. Referansta panel EN AÇIK katman, çünkü kartları saydam (zeminle aynı).
+        Bizim kartlarımız metin taşıyor ve zeminden ayrılmaları gerekiyor, o
+        yüzden bir katman fazlamız var: zemin -> kart -> panel. Panel burada
+        ilerlemiyor, İÇERİ ÇÖKÜYOR. Çift çerçeve etkisi iki yönde de çalışır;
+        önemli olan iç içe iki yüzey olması. */
+  --panel: #E9E7E0;
+
+  /* Referansın --blue-soft'u: rgba(7,85,187,.32), 11 elemanda kullanılıyor.
+     BİZDE METİN İÇİN KULLANILAMAZ: bu alfa zeminlerimizde 1.61-1.67:1
+     veriyor, AA eşiği 4.5. Geçen en düşük alfa 0.94 çıktı, yani
+     kullanılabilir bir "soluk mavi" yok. Referans bunu karşılayabiliyor
+     çünkü bir kez göz gezdirilen mikrosite; biz okunan bir ürünüz.
+     Bu değişken YALNIZCA dekorasyon içindir: rölyef tonu, ince çizgi.
+     Okunması gereken hiçbir metinde kullanma. */
+  --ink-soft: rgba(7, 85, 187, .32);
+
   /* Metin hiyerarşisi tek kaynaktan: --night'ın opaklık kademeleri
      (Luma deseni). %78 ≈ eski #48587D (7.08:1 korunur),
      %58 ≈ eski #707E9E (4.28:1 korunur, yalnız 15px+ metin). */
@@ -165,8 +190,17 @@ html {
 body {
 background-color: var(--paper);
 
-  color: var(--night);
-  font-family: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
+  /* METİN MÜREKKEP. Ölçüm: referansta 2037 metin düğümünün 1766'sı
+     #0755BB, yalnızca 43'ü siyah (onlar da gizli/varsayılan düğümler).
+     Yani "sitede siyah metin yok" gerçek. Sıcak siyahtan (--night)
+     mürekkebe geçiş kontrastı 13.10'dan 5.00'e düşürüyor; AA eşiği 4.5,
+     geçiyor.
+     GÖVDE SERİF. Referansın 1919 metin düğümü Albertus Nova Light'ta;
+     sitenin sesi bu. Sans'a çevirmekle referanstan uzaklaşmıştım.
+     Form denetimleri ve düğmeler aşağıda sans'ta bırakıldı: onlar
+     okunan metin değil, dokunulan nesne. */
+  color: var(--ink);
+  font-family: var(--font-serif), Georgia, serif;
   font-size: var(--t-md);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -405,11 +439,15 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
 
 /* --- Tipografi ---------------------------------------------------------- */
 
+/* Marcellus tek ağırlık taşıyor (400) ve harf aralığı POZİTİF.
+   Eski hâli Literata 600 / -0.015em idi: hem başka bir ses hem DNA'nın
+   tersi. Referansın "light" hissi ağırlık kademesinden değil, ince bir
+   yazıt karakterinden geliyor. */
 .serif {
   font-family: var(--font-serif), Georgia, serif;
-  font-weight: 600;              /* 800 → 600: Literata 800 tıknaz duruyordu */
-  letter-spacing: -0.015em;
-  line-height: 1.18;
+  font-weight: 400;
+  letter-spacing: .02em;
+  line-height: 1.2;
 }
 .mono {
   font-family: var(--font-mono), monospace;
@@ -422,6 +460,7 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
    POZİTİF (~0.04em), satır 1.2. Eskiden 27px serif, 600 ağırlık, NEGATİF
    aralıktı — üç boyutta da referansın tersi. */
 .h-section {
+  font-family: var(--font-serif), Georgia, serif;
   font-weight: 400;
   font-size: var(--t-xl);
   letter-spacing: .04em;
@@ -1212,3 +1251,23 @@ p, .seats-label {
 /* `fill` hem SVG attribute hem CSS property olduğu için degradeyi buradan
    ezebiliyoruz. */
 .ci-body { fill: var(--obj-mid); stroke: none; }
+
+/* --- Serif gövdenin istisnaları ------------------------------------------
+   Gövde Marcellus'a geçti (referansın sesi). Ama Marcellus bir YAZIT
+   karakteri: dokunulan nesnelerde ve yoğun veri girişinde okunurluğu
+   düşüyor. Form denetimleri, düğmeler ve mono etiketler sans/mono kalır.
+   Referans da bunu yapıyor: küçük caps etiketleri Albert Sans'ta. */
+input, textarea, select, button, .btn-primary, .btn-secondary, .btn-nav,
+.btn-google, label, .mono, .eyebrow {
+  font-family: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
+}
+.mono, .eyebrow { font-family: var(--font-mono), monospace; }
+
+/* SAYILAR MONO. Marcellus bir yazıt karakteri: rakam 1'i büyük I'dan
+   ayırt edilmiyor, "14" ekranda "I4" okunuyor. Veri sütunlarında bu
+   kabul edilemez. DNA notu zaten "mono yalnız etiket ve VERİ için"
+   diyordu; sayılar oraya ait. */
+.sayi, .ed-dl dd:last-child, .cm-count b {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+}

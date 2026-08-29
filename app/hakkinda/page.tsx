@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "Hakkında — literaslab" };
+export const metadata = { title: "Hakkında · literaslab" };
 
 export default function HakkindaPage() {
   return (

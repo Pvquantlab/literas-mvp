@@ -213,7 +213,7 @@ export default function KonularStep() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Konuları ara — örn. şiir, doğa yürüyüşü, python"
+          placeholder="Konuları ara. Örn: şiir, doğa yürüyüşü, python"
           style={{ width: '100%', paddingLeft: '40px' }}
           autoComplete="off"
         />

@@ -239,7 +239,7 @@ export default function KonumStep() {
             }}
             onFocus={() => query.length >= 2 && setShowDropdown(true)}
             onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-            placeholder="Şehir veya ilçe ara — örn. Kadıköy, Ankara, Bodrum"
+            placeholder="Şehir veya ilçe ara. Örn: Kadıköy, Ankara, Bodrum"
             style={{ width: '100%', paddingLeft: '40px' }}
             autoComplete="off"
           />

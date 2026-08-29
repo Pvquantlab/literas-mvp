@@ -62,7 +62,7 @@ export default async function HesapPage({
         <div style={{ marginBottom: 26 }}>
           <label style={labelStyle}>Birincil saat dilimi</label>
           <select name="timezone" defaultValue={profile?.timezone || "Europe/Istanbul"} style={inputStyle}>
-            <option value="Europe/Istanbul">(GMT+03:00) İstanbul — Türkiye Standart Saati</option>
+            <option value="Europe/Istanbul">(GMT+03:00) İstanbul, Türkiye Standart Saati</option>
             <option value="Europe/London">(GMT+00:00) London</option>
             <option value="Europe/Berlin">(GMT+01:00) Berlin</option>
             <option value="America/New_York">(GMT-05:00) New York</option>

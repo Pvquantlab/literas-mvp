@@ -92,7 +92,7 @@ export default async function AdminTopluluklarPage() {
                 color: 'var(--muted)',
                 marginBottom: '12px',
               }}>
-                📍 {c.location_name ?? '—'} ({c.location_type}) · kurucu: {(c.founder as any)?.name ?? '—'} ({(c.founder as any)?.email ?? '—'})
+                📍 {c.location_name ?? '-'} ({c.location_type}) · kurucu: {(c.founder as any)?.name ?? '-'} ({(c.founder as any)?.email ?? '-'})
                 {' · '}
                 {formatDateTimeShort(c.created_at)}
               </div>
@@ -182,7 +182,7 @@ export default async function AdminTopluluklarPage() {
                   fontSize: '11px',
                   color: 'var(--muted)',
                 }}>
-                  {c.reviewed_at ? formatDateTimeShort(c.reviewed_at) : '—'}
+                  {c.reviewed_at ? formatDateTimeShort(c.reviewed_at) : '-'}
                 </span>
               </div>
             ))}

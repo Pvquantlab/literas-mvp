@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Yönetici — literaslab',
+  title: 'Yönetici · literaslab',
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

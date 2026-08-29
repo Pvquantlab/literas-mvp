@@ -1,5 +1,5 @@
 import './globals.css'
-import { Literata, Instrument_Sans, IBM_Plex_Mono } from 'next/font/google'
+import { Marcellus, Instrument_Sans, IBM_Plex_Mono } from 'next/font/google'
 import { createClient } from '@/lib/supabase-server'
 import Footer from '@/components/footer'
 import Header from '@/components/header'
@@ -17,10 +17,23 @@ import type { Metadata, Viewport } from 'next'
  * otomatik, layout shift sıfır. globals.css'teki @import satırını sil.
  */
 
-const serif = Literata({
+/**
+ * MARCELLUS — referansın sesi.
+ *
+ * week.wild.plus'ın yazı karakteri Albertus Nova Light: Roma yazıtı kökenli,
+ * uçları yayvan bir serif. Ölçüm 2045 metin düğümünün 1919'unun bu fontta
+ * olduğunu gösterdi — yani sitenin sesi BU, ben onu sans'a çevirmekle
+ * referanstan uzaklaşmıştım.
+ *
+ * Albertus ticari. Marcellus ücretsiz karşılığı: aynı yazıt kökeni, aynı
+ * yayvan çıkışlar. Tek ağırlığı var (400) — referansın "light" hissi zaten
+ * ince bir karakterden geliyordu, ağırlık kademesinden değil.
+ *
+ * Literata'nın yerini aldı: o çağdaş bir kitap serifi, bambaşka bir ses.
+ */
+const serif = Marcellus({
   subsets: ['latin-ext'],   // Türkçe ğ ı ş için latin-ext şart
-  weight: ['400', '600'],
-  style: ['normal', 'italic'],
+  weight: ['400'],
   variable: '--font-serif',
   display: 'swap',
 })
@@ -46,8 +59,8 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'literaslab — kendi topluluğunu kur',
-    template: '%s — literaslab',
+    default: 'literaslab · kendi topluluğunu kur',
+    template: '%s · literaslab',
   },
   description: 'Kitap kulübü, yürüyüş, dil pratiği. Topluluk burada başlar.',
   alternates: { canonical: '/' },
@@ -55,13 +68,13 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'tr_TR',
     siteName: 'literaslab',
-    title: 'literaslab — kendi topluluğunu kur',
+    title: 'literaslab · kendi topluluğunu kur',
     description: 'Kitap kulübü, yürüyüş, dil pratiği. Topluluk burada başlar.',
     url: SITE_URL,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'literaslab — kendi topluluğunu kur',
+    title: 'literaslab · kendi topluluğunu kur',
     description: 'Kitap kulübü, yürüyüş, dil pratiği. Topluluk burada başlar.',
   },
   icons: {

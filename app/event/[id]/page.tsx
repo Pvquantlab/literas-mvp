@@ -259,7 +259,8 @@ export default async function EventPage({
 
         {/* --- gerçekler: ana sayfadaki "GERÇEKLER" bloğunun aynısı --- */}
         <div className="ed-cell ed-facts">
-          <div className="ed-eyebrow">Gerçekler</div>
+          <div className="ed-panel">
+          <div className="ed-eyebrow" style={{ marginBottom: 18 }}>Gerçekler</div>
           <dl className="ed-dl">
             <div><dt>T.</dt><dd>Tarih</dd><dd>{dayNum} {monthFull} {year}</dd></div>
             <div><dt>G.</dt><dd>Gün</dd><dd>{dayName}</dd></div>
@@ -279,6 +280,7 @@ export default async function EventPage({
               </dd>
             </div>
           </dl>
+          </div>
           <RolyefKap cizim={RolyefSehir} konum="sag-alt" olcek={0.95} opaklik={0.09} />
         </div>
 
@@ -503,7 +505,7 @@ export default async function EventPage({
         .ed-kunye > div, .ed-facts > * { position: relative; z-index: 1; }
 
         .ed-title {
-          font-family: var(--font-sans), system-ui, sans-serif;
+          font-family: var(--font-serif), Georgia, serif;
           font-weight: 400;
           font-size: clamp(26px, 3.2vw, 40px);
           line-height: 1.16;
@@ -512,11 +514,19 @@ export default async function EventPage({
           margin: 0;
           text-wrap: balance;
         }
-        .ed-org { margin-top: var(--s-3); font-size: 16px; color: var(--night); }
+        .ed-org { margin-top: var(--s-3); font-size: 16px; color: var(--ink); }
         .ed-org a { color: var(--ink); }
         .ed-org a:hover { text-decoration: underline; }
 
         /* Gerçekler listesi: tek harfli alan etiketi, ad, değer. */
+        /* İÇ PANEL — referansın "The Facts" kutusunun karşılığı.
+           Kartın içinde ikinci yüzey: #E8E8E8, 4px köşe, 24px dolgu. */
+        .ed-panel {
+          position: relative;
+          background: var(--panel);
+          border-radius: var(--r-md);
+          padding: 24px;
+        }
         .ed-dl { margin: 0; display: grid; gap: 10px; align-content: start; }
         .ed-dl > div {
           display: grid;
@@ -529,7 +539,7 @@ export default async function EventPage({
           font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
           color: var(--muted-light);
         }
-        .ed-dl dd { margin: 0; font-size: 16px; color: var(--night); }
+        .ed-dl dd { margin: 0; font-size: 16px; color: var(--ink); }
         .ed-dl dd:last-child { color: var(--ink); text-align: right; }
 
         .ed-cover { padding: 0; }
@@ -557,7 +567,7 @@ export default async function EventPage({
         /* Bölüm başlığı = .h-section: 400 ağırlık, POZİTİF harf aralığı.
            Önceki hâli 700 / -.02em idi, yani DNA'nın tam tersi. */
         .ed-h2 {
-          font-family: var(--font-sans), system-ui, sans-serif;
+          font-family: var(--font-serif), Georgia, serif;
           font-size: var(--t-xl);
           font-weight: 400;
           letter-spacing: .04em;
@@ -602,17 +612,17 @@ export default async function EventPage({
         }
         .ed-reg-msg {
           font-size: 16px;
-          color: var(--night);
+          color: var(--ink);
           line-height: 1.55;
           margin: 0;
         }
         .ed-desc {
           font-size: 16px;
           line-height: 1.7;
-          color: var(--night);
+          color: var(--ink);
           white-space: pre-wrap;
         }
-        .ed-loc { font-size: 16px; color: var(--night); margin-bottom: var(--s-3); }
+        .ed-loc { font-size: 16px; color: var(--ink); margin-bottom: var(--s-3); }
 
         /* ---------- Kenar ---------- */
         .ed-sticky {
