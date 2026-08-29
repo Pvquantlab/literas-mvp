@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
+import { byValue } from '@/lib/categories'
 import { GlossyIcon } from '@/components/category-art'
 import { RolyefMasa, RolyefKahve, RolyefKitap, RolyefSandalye, RolyefSehir, RolyefKap } from '@/components/rolyef'
 import MemberActions from './member-actions'
@@ -77,7 +78,16 @@ function istTime(date: Date): string {
   }).format(date)
 }
 
-/** Kategori -> rölyef. Etkinlik detayındaki eşlemenin aynısı. */
+/**
+ * Kategori -> rölyef. ANAHTAR: kanonik ASCII slug.
+ *
+ * DİKKAT: ham `category` değerini indeksleme. Veritabanı TÜRKÇE AKSANLI
+ * değer tutuyor ('fotoğraf', 'yürüyüş'), bu tablonun anahtarları ise ASCII.
+ * Ham değerle indeksleyince neredeyse her kategori masaya düşüyordu --
+ * canlıda "Fotoğraf" ve "Doğa" kartları aynı rölyefi gösteriyordu.
+ * byValue() eşlemeyi zaten doğru yapıyor (değer, slug, Türkçe küçültme ve
+ * takma ad sırasıyla); slug'ı ondan al.
+ */
 const ROLYEF: Record<string, (p: { className?: string; style?: React.CSSProperties }) => React.JSX.Element> = {
   kitap: RolyefKitap, dil: RolyefKitap, sinema: RolyefKitap,
   lezzet: RolyefKahve, sosyal: RolyefKahve, kariyer: RolyefKahve,
@@ -239,7 +249,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
             <img src={community.cover_image_url} alt="" className="cp-banner-img" />
           ) : (
             <RolyefKap
-              cizim={ROLYEF[(community as any).category ?? ''] ?? RolyefMasa}
+              cizim={ROLYEF[byValue((community as any).category)?.slug ?? ''] ?? RolyefMasa}
               konum="sag-alt"
               olcek={0.42}
               opaklik={0.16}

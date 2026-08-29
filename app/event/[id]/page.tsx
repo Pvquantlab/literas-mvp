@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
+import { byValue } from '@/lib/categories'
 import { GlossyIcon } from '@/components/category-art'
 import { RolyefMasa, RolyefKahve, RolyefKitap, RolyefSandalye, RolyefSehir, RolyefKap } from '@/components/rolyef'
 import RsvpForm from './rsvp-form'
@@ -75,9 +76,17 @@ export async function generateMetadata({
 export const dynamic = 'force-dynamic'
 
 /**
- * Kategori → rölyef. Kapak görseli olmayan etkinlikte hücreyi bu dolduruyor.
- * Önceki hâli degradeli sahte 3B altıgendi (#3A4050→#22262F): parlaklık dili
- * sitenin geri kalanından kaldırılmıştı, burada kalmıştı.
+ * Kategori -> rölyef. ANAHTAR: kanonik ASCII slug.
+ *
+ * DİKKAT: ham `category` değerini indeksleme. Veritabanı TÜRKÇE AKSANLI
+ * değer tutuyor ('fotoğraf', 'yürüyüş'), bu tablonun anahtarları ise ASCII.
+ * Ham değerle indeksleyince neredeyse her kategori masaya düşüyordu --
+ * canlıda "Fotoğraf" ve "Doğa" kartları aynı rölyefi gösteriyordu.
+ * byValue() eşlemeyi zaten doğru yapıyor (değer, slug, Türkçe küçültme ve
+ * takma ad sırasıyla); slug'ı ondan al.
+ *
+ * Önceki hâli degradeli sahte 3B altıgendi (#3A4050->#22262F): parlaklık
+ * dili sitenin geri kalanından kaldırılmıştı, burada kalmıştı.
  */
 const ROLYEF: Record<string, (p: { className?: string; style?: React.CSSProperties }) => React.JSX.Element> = {
   kitap: RolyefKitap, dil: RolyefKitap, sinema: RolyefKitap,
@@ -291,7 +300,7 @@ export default async function EventPage({
             <img src={event.cover_image_url} alt={event.title} />
           ) : (
             <RolyefKap
-              cizim={ROLYEF[(event.community as any)?.category ?? ''] ?? RolyefMasa}
+              cizim={ROLYEF[byValue((event.community as any)?.category)?.slug ?? ''] ?? RolyefMasa}
               konum="orta"
               olcek={1.05}
               opaklik={0.2}

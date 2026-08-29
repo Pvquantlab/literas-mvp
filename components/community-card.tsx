@@ -3,7 +3,16 @@ import Image from 'next/image'
 import { byValue } from '@/lib/categories'
 import { RolyefMasa, RolyefKahve, RolyefKitap, RolyefSandalye, RolyefSehir } from '@/components/rolyef'
 
-/** Kategori -> rölyef. Etkinlik ve topluluk sayfalarındaki eşlemenin aynısı. */
+/**
+ * Kategori -> rölyef. ANAHTAR: kanonik ASCII slug.
+ *
+ * DİKKAT: ham `category` değerini indeksleme. Veritabanı TÜRKÇE AKSANLI
+ * değer tutuyor ('fotoğraf', 'yürüyüş'), bu tablonun anahtarları ise ASCII.
+ * Ham değerle indeksleyince neredeyse her kategori masaya düşüyordu --
+ * canlıda "Fotoğraf" ve "Doğa" kartları aynı rölyefi gösteriyordu.
+ * byValue() eşlemeyi zaten doğru yapıyor (değer, slug, Türkçe küçültme ve
+ * takma ad sırasıyla); slug'ı ondan al.
+ */
 const ROLYEF: Record<string, (p: { className?: string; style?: React.CSSProperties }) => React.JSX.Element> = {
   kitap: RolyefKitap, dil: RolyefKitap, sinema: RolyefKitap,
   lezzet: RolyefKahve, sosyal: RolyefKahve, kariyer: RolyefKahve,
@@ -53,7 +62,7 @@ export default function CommunityCard({ community }: { community: CommunitySumma
   const fresh = members < FRESH_BELOW
   const upcoming = community.upcoming_count ?? 0
 
-  const Rolyef = ROLYEF[community.category ?? ''] ?? RolyefMasa
+  const Rolyef = (cat && ROLYEF[cat.slug]) ?? RolyefMasa
 
   return (
     <Link href={`/community/${community.id}`} className="cm-link reveal">
@@ -133,8 +142,10 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         }
         /* Görsel yoksa: panel zemin + sessiz rölyef. */
         .cm-cover-bos { background:var(--panel); }
+        /* Opaklık .16'dan .24'e: canlıda rölyefli kapaklar fotoğraflı
+           olanların yanında fazla sessiz kalıyordu, kart yarı boş duruyordu. */
         .cm-cover-bos svg {
-          width:58%; height:auto; color:var(--ink); opacity:.16;
+          width:64%; height:auto; color:var(--ink); opacity:.24;
         }
         /* TEK etiket dili: mono, büyük harf, 4px köşe, çerçevesiz. */
         .cm-etiketler {
