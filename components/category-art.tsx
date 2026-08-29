@@ -417,5 +417,9 @@ export function HeroObjects() {
  * Çağıran taraf sarmalayıcı <g> üzerinde fill="none" stroke="#fff" verir.
  */
 export function WireShape({ slug }: { slug: string }) {
-  return <>{SHAPES[slug] ?? null}</>
+  // Object.hasOwn: düz indeksleme Object.prototype'ı da okuyor. slug URL'den
+  // gelebiliyor (?kategori=), yani `__proto__` veya `constructor` verildiğinde
+  // SHAPES[slug] bir NESNE dönüyor, `??` onu yakalamıyor (null değil) ve
+  // React geçersiz çocukla çöküyor. checkin sayfasındaki hatanın aynısı.
+  return <>{Object.hasOwn(SHAPES, slug) ? SHAPES[slug] : null}</>
 }

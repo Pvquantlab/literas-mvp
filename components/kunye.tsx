@@ -1,4 +1,3 @@
-import { SHAPES } from '@/components/category-art'
 
 /**
  * Künye ızgarasının parçaları — week.wild.plus/athens-26 dilinden.
@@ -11,50 +10,6 @@ import { SHAPES } from '@/components/category-art'
  * Yani ölçüm metni ve CSS'i gördü, GÖRSELİ göremedi. Doğrusu:
  * dev logotype + büyük sessiz illüstrasyon + minik yazı.
  */
-
-/**
- * Hücreyi dolduran büyük, soluk, tek renk şekil — referanstaki beyaz
- * kabartmaların karşılığı. Yeni bir çizim seti üretmiyoruz: mevcut kategori
- * şekilleri zaten literas'ın görsel kimliği, burada sadece ÖLÇEĞİ ve
- * SESSİZLİĞİ değişiyor (minik ve parlak yerine dev ve soluk).
- */
-export function Kabartma({
-  slug,
-  opaklik = 0.09,
-  hizala = 'center',
-}: {
-  slug: string
-  opaklik?: number
-  hizala?: 'center' | 'bottom' | 'top'
-}) {
-  const sekil = SHAPES[slug]
-  if (!sekil) return null
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      aria-hidden="true"
-      style={{
-        position: 'absolute',
-        inset: 0,
-        width: '100%',
-        height: '100%',
-        objectFit: 'contain',
-        fill: 'var(--ink)',
-        opacity: opaklik,
-        pointerEvents: 'none',
-        // Referansta kabartmalar hücreye taşacak kadar büyük ve genelde
-        // alta/ortaya yaslı; kırpılmaları bilinçli.
-        objectPosition: hizala,
-        padding: '8%',
-      }}
-      preserveAspectRatio={
-        hizala === 'bottom' ? 'xMidYMax meet' : hizala === 'top' ? 'xMidYMin meet' : 'xMidYMid meet'
-      }
-    >
-      {sekil}
-    </svg>
-  )
-}
 
 /**
  * Dev logotype. Referansın "WILD WEEK"i SVG olduğu için ekranı kaplayabiliyor
