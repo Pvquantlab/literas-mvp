@@ -5,7 +5,6 @@ import Footer from '@/components/footer'
 import Header from '@/components/header'
 import { SITE_URL } from '@/lib/site'
 import RegisterSW from '@/components/register-sw'
-import { SisMotoru } from '@/components/sis'
 import { IconSprite } from '@/components/category-art'
 import type { Metadata, Viewport } from 'next'
 
@@ -132,9 +131,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {children}
 
         <Footer />
-        {/* Sis: katmanlar hedeflerine id ile tutunur (#sis-logotype,
-            #sis-hero). Ana sayfa dışındaki rotalarda hiçbir şey yapmaz. */}
-        <SisMotoru />
+        {/* SİS GEÇİCİ OLARAK KAPALI -- components/sis.tsx duruyor.
+            SisMotoru mount edildiğinde ana sayfa ve /kesfet "yükleniyor..."
+            durumunda kilitleniyor: React akışlı içeriği gizli kutudan canlı
+            ağaca hiç taşımıyor (iki <main>, kartlar görünmez). Hata
+            FIRLAMIYOR, o yüzden sessiz.
+            İzole edildi: layout'tan çıkarınca sayfa anında düzeliyor,
+            geri koyunca bozuluyor -- iki kez doğrulandı. Canvas'ı hiç
+            eklemeyecek hâle getirdiğimde bile bozuluyor, yani sebep DOM'a
+            dokunmak değil, bileşenin kendisi.
+            Çalışan ana sayfa sisten önemli; sebep bulunana kadar kapalı. */}
         <RegisterSW />
       </body>
     </html>

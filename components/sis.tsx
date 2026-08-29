@@ -137,13 +137,22 @@ export function SisKatmani({
     let temizle: (() => void) | null = null
     let bagliKutu: HTMLElement | null = null
 
-    // BOYUT KOŞULU YOK. Önce "gerçek boyutu olsun" diye şart koymuştum ve
-    // hiç bağlanmadı: bu ağaçta hedefler effect anında 0x0 ölçülüyor,
-    // gerçek boyuta ancak akış bittikten sonra kavuşuyorlar. Bağlanma
-    // elemanın VARLIĞINA bakıyor; doğru boyut, kare döngüsündeki yeniden
-    // ölçüm ve konteyneri izleyen ResizeObserver ile sonradan oturuyor.
-    const uygunHedef = (): HTMLElement | null =>
-      document.querySelector<HTMLElement>('#' + CSS.escape(hedefId))
+    // YALNIZCA CANLI AĞAÇTAKİ, YERLEŞMİŞ ELEMANA BAĞLAN.
+    //
+    // Bu koşul şart: React sayfayı AKIŞLA (streaming) gönderiyor ve içeriği
+    // önce gizli bir kutuda tutup sonra canlı ağaca taşıyor. Canvas'ı o
+    // taşınmadan önce oraya eklediğimde React'in takası bozuluyordu --
+    // hata FIRLAMIYOR, içerik sessizce hiç yerleşmiyor ve sayfa
+    // "yükleniyor..."da kalıyordu. Ana sayfa ve /kesfet kilitleniyordu.
+    // offsetParent + gerçek boyut, elemanın canlı ve yerleşmiş olduğunun
+    // yeterli göstergesi.
+    const uygunHedef = (): HTMLElement | null => {
+      for (const e of Array.from(document.querySelectorAll<HTMLElement>('#' + CSS.escape(hedefId)))) {
+        const r = e.getBoundingClientRect()
+        if (e.offsetParent !== null && r.width > 8 && r.height > 8) return e
+      }
+      return null
+    }
 
     const esitle = () => {
       const k = uygunHedef()
@@ -155,29 +164,35 @@ export function SisKatmani({
       bagliKutu = k
     }
 
-    // MutationObserver TEK BAŞINA YETMİYOR: hedef, son DOM mutasyonundan
-    // SONRA yerleşip ölçülebilir hâle gelebiliyor (akış biterken). O anda
-    // gözlemciyi tetikleyecek bir mutasyon kalmadığı için bağlanma hiç
-    // gerçekleşmiyordu. Kısa bir kare döngüsü bu boşluğu kapatıyor.
+    // AKIŞ BİTMEDEN BAŞLAMA. window load'a kadar React hâlâ içerik
+    // taşıyor olabilir; o sırada ağaca dokunmak takası bozuyor.
     let denemeId = 0
-    const sonKare = performance.now() + 5000
-    const dogrula = () => {
-      esitle()
-      if (!bagliKutu && performance.now() < sonKare) {
-        denemeId = requestAnimationFrame(dogrula)
-      } else {
-        denemeId = 0
-      }
-    }
-    dogrula()
+    let gozlemci: MutationObserver | null = null
+    let bitti = false
 
-    // Gözlemci açık kalıyor: hedef sonradan değişirse yeniden bağlanır.
-    const gozlemci = new MutationObserver(esitle)
-    gozlemci.observe(document.body, { childList: true, subtree: true })
+    const dogrula = () => {
+      if (bitti) return
+      esitle()
+      // Hedef henüz yerleşmemiş olabilir; oturana kadar denemeyi sürdür.
+      denemeId = bagliKutu ? 0 : requestAnimationFrame(dogrula)
+    }
+
+    const basla = () => {
+      if (bitti) return
+      dogrula()
+      // Gözlemci açık kalıyor: hedef sonradan değişirse yeniden bağlanır.
+      gozlemci = new MutationObserver(esitle)
+      gozlemci.observe(document.body, { childList: true, subtree: true })
+    }
+
+    if (document.readyState === 'complete') basla()
+    else window.addEventListener('load', basla, { once: true })
 
     return () => {
+      bitti = true
+      window.removeEventListener('load', basla)
       if (denemeId) cancelAnimationFrame(denemeId)
-      gozlemci.disconnect()
+      gozlemci?.disconnect()
       temizle?.()
     }
 
@@ -232,10 +247,22 @@ export function SisKatmani({
       maske = document.createElement('canvas')
       maske.width = cv!.width; maske.height = cv!.height
       mctx = maske.getContext('2d')
-      mctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
+      // getContext teoride null dönebilir; dönerse KURULUM BAŞARISIZ sayılır,
+      // yoksa aşağıdaki her satır null'a yazmaya çalışır.
+      if (!mctx) { maske = null; return false }
+      mctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       // Başlangıç: sis tam kapalı. Tavan zaten yoğunluğu sınırlıyor.
-      mctx!.fillStyle = 'rgba(0,0,0,1)'
-      mctx!.fillRect(0, 0, g, y)
+      mctx.fillStyle = 'rgba(0,0,0,1)'
+      mctx.fillRect(0, 0, g, y)
+      // Açılışta sis %60 seyreltilmiş başlasın ki içerik hiç görünmez
+      // kalmasın (dokümanın mobil kuralı; burada her cihazda).
+      // BURADA yapılıyor çünkü maske ancak burada var oluyor.
+      if (!azMotion) {
+        mctx.globalCompositeOperation = 'destination-out'
+        mctx.fillStyle = 'rgba(0,0,0,0.6)'
+        mctx.fillRect(0, 0, g, y)
+        mctx.globalCompositeOperation = 'source-over'
+      }
       return true
     }
 
@@ -257,7 +284,9 @@ export function SisKatmani({
     function kare() {
       if (!gorunurAlanda) { rafId = 0; return }
       // Yerleşim geç oturur: ölçü geçerli olana kadar her karede dene.
-      if (g < 8 || y < 8) {
+      // maske/mctx ancak boyutla() BAŞARILI olduğunda var oluyor; başarısız
+      // olduğu sürece hiçbir çizim yapılmıyor.
+      if (g < 8 || y < 8 || !mctx) {
         if (!boyutla()) { rafId = requestAnimationFrame(kare); return }
       }
       x = (x + 0.18) % g
@@ -317,13 +346,6 @@ export function SisKatmani({
         cv.remove()
       }
     }
-
-    // Açılışta sis %60 seyreltilmiş başlasın ki içerik hiç görünmez kalmasın
-    // (dokümanın kendi mobil kuralı; burada her cihazda uygulanıyor).
-    mctx!.globalCompositeOperation = 'destination-out'
-    mctx!.fillStyle = 'rgba(0,0,0,0.6)'
-    mctx!.fillRect(0, 0, g, y)
-    mctx!.globalCompositeOperation = 'source-over'
 
     const io = new IntersectionObserver((girisler) => {
       gorunurAlanda = girisler[0]?.isIntersecting ?? false
