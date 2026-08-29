@@ -95,7 +95,7 @@ export default function AciklamaStep() {
           alignItems: 'center',
           marginTop: '24px',
           paddingTop: '20px',
-          borderTop: '1px solid rgba(30, 58, 43, 0.1)',
+          borderTop: '1px solid var(--border)',
         }}>
           <Link
             href="/community/new/ad"
@@ -152,8 +152,8 @@ export default function AciklamaStep() {
           style={{
             padding: '20px',
             borderRadius: '14px',
-            background: 'var(--paper-soft, rgba(30, 58, 43, 0.04))',
-            border: '1.5px solid rgba(30, 58, 43, 0.1)',
+            background: 'var(--paper-soft, var(--panel))',
+            border: '1.5px solid var(--border)',
           }}
         >
           <div style={{
@@ -181,7 +181,7 @@ export default function AciklamaStep() {
                   height: '28px',
                   borderRadius: '999px',
                   background: 'transparent',
-                  border: '1.5px solid rgba(30, 58, 43, 0.2)',
+                  border: '1.5px solid var(--border)',
                   cursor: 'pointer',
                   fontSize: '12px',
                   color: 'var(--ink)',
@@ -198,7 +198,7 @@ export default function AciklamaStep() {
                   height: '28px',
                   borderRadius: '999px',
                   background: 'transparent',
-                  border: '1.5px solid rgba(30, 58, 43, 0.2)',
+                  border: '1.5px solid var(--border)',
                   cursor: 'pointer',
                   fontSize: '12px',
                   color: 'var(--ink)',

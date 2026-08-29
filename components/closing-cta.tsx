@@ -124,10 +124,9 @@ export default function ClosingCta() {
           font-size: var(--t-md);
           padding: 14px 24px;
           border-radius: var(--r-pill);
-          box-shadow: 0 14px 30px -14px rgba(22, 22, 15, .8);
           transition: transform .2s var(--ease), background .2s var(--ease);
         }
-        .cc-btn:hover { color: #fff; background: var(--ink-hover); transform: translateY(-2px); }
+        .cc-btn:hover { color: #fff; background: var(--ink-hover); transform: translateY(-1px); }
         .cc-dots { width: 22px; color: var(--grad-1); }
         .cc-dots svg { width: 100%; height: auto; display: block; }
 

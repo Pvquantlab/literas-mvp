@@ -56,12 +56,12 @@ export default function HowItWorks() {
 
       <style>{`
         .hw {
-          /* border kaldırıldı: referansta border taşıyan sıfır eleman var,
-             ayrım zemin farkıyla kuruluyor. */
+          /* Çerçeve bir tur önce kaldırılmıştı ama 7px'lik SERT MÜREKKEP
+             GÖLGESİ kalmıştı; ekranda en gürültülü öğelerden biriydi ve
+             ölçüm referansta gölge taşıyan sıfır eleman buluyor.
+             (Çift yazılmış background satırı da temizlendi.) */
           background: var(--paper-cream);
           border-radius: var(--r-md);
-          background: var(--paper-cream);
-          box-shadow: 7px 7px 0 var(--ink);
           padding: var(--s-7) var(--s-5);
         }
         .hw-row {
@@ -76,11 +76,12 @@ export default function HowItWorks() {
         .hw-icon { display: block; width: clamp(72px, 9vw, 104px); margin: 0 auto var(--s-4); }
         .hw-icon svg { width: 100%; height: auto; display: block; }
         .hw-step h3 {
+          font-family: var(--font-serif), Georgia, serif;
           font-size: var(--t-lg);
-          font-weight: 700;
+          font-weight: 400;         /* Marcellus'ta 700 yok: sahte kalın olurdu */
           color: var(--ink);
           margin: 0 0 var(--s-2);
-          letter-spacing: -.01em;
+          letter-spacing: .03em;
         }
         .hw-step p {
           font-size: var(--t-sm);
@@ -98,7 +99,7 @@ export default function HowItWorks() {
         .hw-arrow svg { width: 100%; height: auto; display: block; }
 
         @media (max-width: 760px) {
-          .hw { padding: var(--s-6) var(--s-4); box-shadow: 5px 5px 0 var(--ink); }
+          .hw { padding: var(--s-6) var(--s-4); }
           .hw-row { flex-direction: column; align-items: stretch; gap: var(--s-3); }
           .hw-cell { flex-direction: column; }
           .hw-arrow { margin: var(--s-2) 0 0; transform: rotate(90deg); }

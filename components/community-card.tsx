@@ -132,20 +132,20 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         .cm-pill {
           position:absolute; top:12px; left:12px; z-index:3;
           font-family:var(--font-mono), monospace; font-size:11px;
-          color:var(--ink, #1E3A2B); background:rgba(255,255,255,.93);
+          color:var(--ink, #0755BB); background:rgba(255,255,255,.93);
           padding:6px 12px; border-radius:var(--r-pill, 999px);
         }
         .cm-new {
           position:absolute; top:12px; right:12px; z-index:3;
           font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.06em;
-          color:var(--ink, #1E3A2B); background:var(--yellow-highlight, #FFD84D);
+          color:var(--ink, #0755BB); background:var(--panel, #E9E7E0);
           padding:5px 10px; border-radius:var(--r-pill, 999px);
         }
         .cm-body { padding:4px 4px 0; display:flex; flex-direction:column; flex:1; }
         .cm-title {
           font-weight:400; letter-spacing:.02em;
           font-size:21px; line-height:1.2; letter-spacing:-.005em;
-          color:var(--ink, #1E3A2B); margin:0;
+          color:var(--ink, #0755BB); margin:0;
         }
         .cm-meta {
           font-family:var(--font-mono), monospace; font-size:12px;
@@ -158,7 +158,7 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         .cm-count { font-family:var(--font-mono), monospace; font-size:12px; color:var(--muted, #5C5744); }
         .cm-count b {
           font-size:34px; font-weight:500; line-height:1; letter-spacing:-.03em;
-          color:var(--ink, #1E3A2B); margin-right:5px;
+          color:var(--ink, #0755BB); margin-right:5px;
         }
         .cm-founder { font-family:var(--font-mono), monospace; font-size:12px; color:var(--muted, #5C5744); }
         .cm-live {
@@ -170,7 +170,7 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         }
         .cm-live::before {
           content:""; width:6px; height:6px; border-radius:50%;
-          background:var(--lime, #C8EB4B); box-shadow:0 0 0 3px rgba(200,235,75,.35);
+          background:var(--lime, #C7D7F2); 
         }
         .cm-foot {
           display:flex; align-items:center; justify-content:space-between; gap:12px;
@@ -179,15 +179,16 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         }
         .cm-open { font-family:var(--font-mono), monospace; font-size:11px; color:var(--muted-light, #857F6B); }
         .cm-go {
+          font-family:var(--font-sans), system-ui, sans-serif;   /* dokunulan nesne */
           font-weight:600; font-size:13px; padding:9px 18px;
           border-radius:var(--r-pill, 999px);
-          background:var(--lime, #C8EB4B); color:var(--ink, #1E3A2B);
-          box-shadow:var(--shadow-press-sm, 3px 3px 0 #1E3A2B);
+          background:var(--lime, #C7D7F2); color:var(--ink, #0755BB);
+          box-shadow:none;
           transition:transform .3s ease; white-space:nowrap;
         }
         .cm-go.ghost {
-          background:transparent; color:var(--ink, #1E3A2B);
-          border:1px solid var(--ink, #1E3A2B); box-shadow:none;
+          background:transparent; color:var(--ink, #0755BB);
+          border:1px solid var(--ink, #0755BB); box-shadow:none;
         }
         .cm-link:hover .cm-go { transform:translateY(-2px); }
         @media (prefers-reduced-motion: reduce) {

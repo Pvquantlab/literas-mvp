@@ -76,7 +76,7 @@ export default function WizardShell({ children }: { children: ReactNode }) {
                 borderRadius: '999px',
                 background: isActive || isDone
                   ? 'var(--ink)'
-                  : 'rgba(30, 58, 43, 0.15)',
+                  : 'var(--border)',
                 transition: 'background 0.2s',
               }}
               aria-label={`${step.label} adımı ${isActive ? '(aktif)' : isDone ? '(tamamlandı)' : ''}`}

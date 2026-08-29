@@ -39,11 +39,11 @@ export default function InterestPicker({
     <>
       {/* Seçilenler */}
       <div style={{ marginBottom: 20 }}>
-        <label style={{ display: "block", fontSize: 14, fontWeight: 700, marginBottom: 10 }}>
+        <label style={{ display: "block", fontSize: 14, fontWeight: 500, marginBottom: 10 }}>
           İlgi alanlarınız
         </label>
         {selected.length === 0 ? (
-          <p style={{ fontSize: 13.5, color: "rgba(30,58,43,0.55)", fontStyle: "italic" }}>
+          <p style={{ fontSize: 13.5, color: "var(--muted)", fontStyle: "italic" }}>
             Aşağıdan seçerek başlayın.
           </p>
         ) : (
@@ -69,7 +69,7 @@ export default function InterestPicker({
                     style={{
                       background: "none", border: "none", cursor: "pointer",
                       color: color.ink, fontSize: 14, padding: 0, lineHeight: 1,
-                      fontWeight: 700,
+                      fontWeight: 500,
                     }}
                     aria-label={`${interest} kaldır`}
                   >
@@ -113,7 +113,7 @@ export default function InterestPicker({
       {/* Öneriler */}
       {availableSuggestions.length > 0 && (
         <div>
-          <div style={{ font: "500 11px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "rgba(30,58,43,0.55)", textTransform: "lowercase", marginBottom: 10 }}>
+          <div style={{ font: "500 11px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase", marginBottom: 10 }}>
             öneriler
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>

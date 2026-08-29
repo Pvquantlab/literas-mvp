@@ -149,5 +149,5 @@ function Mesaj({ baslik, alt }: { baslik: string; alt: string }) {
 }
 
 const sayfaStil = { maxWidth: 520, margin: '0 auto', padding: '48px 24px 80px' } as const
-const baslikStil = { fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 10px' } as const
+const baslikStil = { fontSize: 30, fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 10px' } as const
 const altStil = { fontSize: 15, lineHeight: 1.6, color: 'var(--muted)' } as const

@@ -29,7 +29,6 @@ export default function AyarlarDurum({
         border: '1.5px solid var(--ink)',
         borderRadius: 12,
         background: basarili ? 'var(--lime, #D7F06A)' : 'var(--paper-cream)',
-        boxShadow: '3px 4px 0 var(--ink)',
         fontSize: 14.5,
         color: 'var(--ink)',
       }}

@@ -46,8 +46,8 @@ export default function SettingsMenu() {
             borderRadius: 999,
             fontSize: 14.5,
             fontWeight: isCurrent ? 700 : 600,
-            color: item.active ? "var(--ink)" : "rgba(30,58,43,0.4)",
-            background: isCurrent ? "rgba(30,58,43,0.05)" : "transparent",
+            color: item.active ? "var(--ink)" : "var(--border)",
+            background: isCurrent ? "var(--panel)" : "transparent",
             cursor: item.active ? "pointer" : "not-allowed",
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -69,7 +69,7 @@ export default function SettingsMenu() {
                 fontSize: 10,
                 fontFamily: "'IBM Plex Mono', monospace",
                 padding: "2px 6px",
-                background: "rgba(30,58,43,0.06)",
+                background: "var(--panel)",
                 borderRadius: 4,
                 letterSpacing: 0.5,
               }}>yakında</span>

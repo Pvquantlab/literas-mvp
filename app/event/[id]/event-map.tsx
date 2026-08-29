@@ -136,9 +136,9 @@ export default function EventMap(props: { location: string; city?: string }) {
           background: rgba(255,255,255,.72) !important;
           font-family: 'IBM Plex Mono', monospace;
           font-size: 9.5px !important;
-          color: rgba(30,58,43,.5) !important;
+          color: var(--muted) !important;
         }
-        .leaflet-control-attribution a { color: rgba(30,58,43,.65) !important; }
+        .leaflet-control-attribution a { color: var(--muted) !important; }
       `}</style>
       <MapTitle />
       <div style={containerStyle}>
@@ -179,11 +179,12 @@ export default function EventMap(props: { location: string; city?: string }) {
 function MapTitle() {
   return (
     <h3 className="serif" style={{
-      fontWeight: 600,
+      fontFamily: 'var(--font-serif), Georgia, serif',
+      fontWeight: 400,
       fontSize: 'clamp(20px, 2.4vw, 26px)',
       color: 'var(--ink)',
       margin: '0 0 12px',
-      letterSpacing: '-0.01em',
+      letterSpacing: '.02em',
     }}>
       Buluşma <span className="highlight-yellow">yeri</span>
     </h3>
@@ -197,7 +198,7 @@ const containerStyle: React.CSSProperties = {
   overflow: 'hidden',
   border: '2px solid var(--ink)',
   background: 'var(--paper-cream)',
-  boxShadow: '4px 5px 0 rgba(30,58,43,.12)',
+  boxShadow: "none",
 }
 
 const loadingStyle: React.CSSProperties = {
@@ -228,7 +229,6 @@ const pillButtonStyle: React.CSSProperties = {
   fontSize: '14px',
   fontWeight: 600,
   textDecoration: 'none',
-  boxShadow: '3px 4px 0 var(--ink)',
   transition: 'transform 0.18s ease',
   display: 'inline-block',
 }

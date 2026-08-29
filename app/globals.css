@@ -451,7 +451,7 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
 }
 .mono {
   font-family: var(--font-mono), monospace;
-  letter-spacing: -0.01em;
+  letter-spacing: .02em;   /* DNA: harf aralığı POZİTİF */
 }
 
 /* Bölüm başlığı — sayfalar arası tek stil. */
@@ -1026,7 +1026,10 @@ p, .seats-label {
   background: var(--ink);
 }
 
+/* Şerit etiketi bir gezinme denetimi: sans. Marcellus'ta 500/600 yok,
+   serif miras alınca sahte kalın üretiliyordu. */
 .ct-lbl {
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-size: var(--t-sm);
   font-weight: 500;
   color: var(--muted);
@@ -1138,6 +1141,9 @@ p, .seats-label {
 /* .hx-inner::before (beyaz radyal isik) kaldirildi: izgara netlestikten
    sonra izgaranin uzerinde bulanik bir leke birakiyordu. */
 
+/* ÖLÜ: .hx-title, .hx-lede, .sticky-blue, .sticky-note artık hiçbir TSX
+   dosyasında kullanılmıyor - eski hero'dan kalma. Negatif harf aralıkları
+   bu yüzden ekrana hiç ulaşmıyor. Silmek ayrı bir temizlik turu. */
 .hx-lede {
   font-size: clamp(16px, 2.6vw, 24px);
   font-weight: 700;
@@ -1258,9 +1264,15 @@ p, .seats-label {
    düşüyor. Form denetimleri, düğmeler ve mono etiketler sans/mono kalır.
    Referans da bunu yapıyor: küçük caps etiketleri Albert Sans'ta. */
 input, textarea, select, button, .btn-primary, .btn-secondary, .btn-nav,
-.btn-google, label, .mono, .eyebrow {
+.btn-google, label, .mono, .eyebrow,
+header, footer, nav {
   font-family: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
 }
+
+/* SAHTE KALIN TUZAĞI: Marcellus tek ağırlık taşıyor (400). Bir öğe serif
+   miras alıp 500+ ağırlık isterse tarayıcı harfleri yapay olarak
+   şişiriyor ve yazıt karakteri bozuluyor. Sayfa kabuğu (başlık, altlık,
+   gezinme) bu yüzden sans'ta: oradaki ağırlık kademeleri işlevsel. */
 .mono, .eyebrow { font-family: var(--font-mono), monospace; }
 
 /* SAYILAR MONO. Marcellus bir yazıt karakteri: rakam 1'i büyük I'dan

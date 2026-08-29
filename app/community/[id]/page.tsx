@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
-import { byValue } from '@/lib/categories'
 import { GlossyIcon } from '@/components/category-art'
+import { RolyefMasa, RolyefKahve, RolyefKitap, RolyefSandalye, RolyefSehir, RolyefKap } from '@/components/rolyef'
 import MemberActions from './member-actions'
 import JoinButton from './join-button'
 import ReportButton from '@/components/report-button'
@@ -75,6 +75,14 @@ function istTime(date: Date): string {
   return new Intl.DateTimeFormat('tr-TR', {
     timeZone: TZ, hour: '2-digit', minute: '2-digit', hour12: false,
   }).format(date)
+}
+
+/** Kategori -> rölyef. Etkinlik detayındaki eşlemenin aynısı. */
+const ROLYEF: Record<string, (p: { className?: string; style?: React.CSSProperties }) => React.JSX.Element> = {
+  kitap: RolyefKitap, dil: RolyefKitap, sinema: RolyefKitap,
+  lezzet: RolyefKahve, sosyal: RolyefKahve, kariyer: RolyefKahve,
+  doga: RolyefSehir, fotograf: RolyefSehir, gonulluluk: RolyefSehir,
+  muzik: RolyefSandalye, sanat: RolyefSandalye, oyun: RolyefSandalye, spor: RolyefSandalye,
 }
 
 export default async function CommunityPage({ params }: { params: Promise<{ id: string }> }) {
@@ -215,24 +223,27 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   )
   const todayD = nowIst.d
 
-  const cat = byValue((community as any).category ?? null)
-  const c1 = cat?.colors[0] ?? '#5E93DA'
-  const c2 = cat?.colors[1] ?? '#0755BB'
   const hasCover = !!community.cover_image_url
 
   return (
     <main id="content" className="cp">
-      {/* ============ BANNER ============ */}
+      {/* ============ BANNER ============
+          RolyefKap genişliği YÜZDEYLE veriyor ve en/boy oranı 1:1. Banner
+          32:9 olduğu için ölçek 1.1'de rölyef kutunun üç katı boya çıkıp
+          korkunç kırpılıyordu. 0.42 genişliğin ~%33'ü demek, banner
+          yüksekliğinin altında kalıyor. */}
       <div className="cp-wrap">
         <div className="cp-banner">
           {hasCover ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={community.cover_image_url} alt="" className="cp-banner-img" />
           ) : (
-            <div className="cp-banner-art">
-              <span className="cp-banner-glow" style={{ background: c2 }} />
-              <span className="cp-banner-glow cp-banner-glow2" style={{ background: c1 }} />
-            </div>
+            <RolyefKap
+              cizim={ROLYEF[(community as any).category ?? ''] ?? RolyefMasa}
+              konum="sag-alt"
+              olcek={0.42}
+              opaklik={0.16}
+            />
           )}
         </div>
 
@@ -335,7 +346,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                           <b className="cp-ev-title">{ev.title}</b>
                           {ev.location && <i className="cp-ev-loc">{ev.location}</i>}
                         </span>
-                        <span className="cp-ev-thumb" style={{ background: hasCoverThumb(ev) ? undefined : `linear-gradient(135deg, ${c1}, ${c2})` }}>
+                        <span className="cp-ev-thumb" style={{ background: hasCoverThumb(ev) ? undefined : 'var(--panel)' }}>
                           {hasCoverThumb(ev) ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={ev.cover_image_url} alt="" />
@@ -366,7 +377,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                               <b className="cp-ev-title">{ev.title}</b>
                               {ev.location && <i className="cp-ev-loc">{ev.location}</i>}
                             </span>
-                            <span className="cp-ev-thumb" style={{ background: hasCoverThumb(ev) ? undefined : `linear-gradient(135deg, ${c1}, ${c2})` }}>
+                            <span className="cp-ev-thumb" style={{ background: hasCoverThumb(ev) ? undefined : 'var(--panel)' }}>
                               {hasCoverThumb(ev) ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={ev.cover_image_url} alt="" />
@@ -427,6 +438,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                 <div className="cp-cal-head">
                   <b>{MONTHS_TR[calM]} {calY}</b>
                 </div>
+                <div className="cp-cal-panel">
                 <div className="cp-cal-grid" role="grid" aria-label={`${MONTHS_TR[calM]} takvimi`}>
                   {['P', 'S', 'Ç', 'P', 'C', 'C', 'P'].map((d, i) => (
                     <span key={`h${i}`} className="cp-cal-dow">{d}</span>
@@ -449,6 +461,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                     )
                   })}
                 </div>
+                </div>
               </div>
 
               <div className="cp-stat">
@@ -464,29 +477,18 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         .cp-wrap { max-width: var(--w-page); margin: 0 auto; padding: var(--s-5) var(--s-5) var(--s-9); }
 
         /* ---------- Banner ---------- */
+        /* Eski hâli #14171F koyu zemin + #232733 çerçeve + ızgara deseni +
+           iki bulanık renkli parlamaydı. Etkinlik detayındaki bantla aynı
+           sorundu: ölçüm referansta ne koyu bant, ne gölge, ne çerçeve
+           buluyor. Kapak yoksa yerini sessiz bir rölyef alıyor. */
         .cp-banner {
           position: relative;
-          border-radius: var(--r-lg);
+          border-radius: var(--r-md);
           overflow: hidden;
           aspect-ratio: 32 / 9;
-          background: #14171F;
-          border: 1px solid #232733;
+          background: var(--paper-cream);
         }
         .cp-banner-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .cp-banner-art {
-          position: absolute; inset: 0;
-          background-image:
-            linear-gradient(rgba(7, 85, 187, .07) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(7, 85, 187, .07) 1px, transparent 1px);
-          background-size: 24px 24px;
-          overflow: hidden;
-        }
-        .cp-banner-glow {
-          position: absolute; right: -6%; top: -60%;
-          width: 46%; aspect-ratio: 1; border-radius: 50%;
-          filter: blur(58px); opacity: .4;
-        }
-        .cp-banner-glow2 { left: -8%; right: auto; top: auto; bottom: -70%; opacity: .3; }
 
         /* ---------- Amblem satırı ---------- */
         .cp-idrow {
@@ -498,21 +500,19 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         .cp-emblem {
           display: grid; place-items: center;
           width: 84px; height: 84px;
-          border-radius: 22px;
+          border-radius: var(--r-md);
           background: var(--paper-cream);
-          border: 1px solid var(--border);
-          box-shadow: var(--shadow-lift);
         }
         .cp-idrow-spacer { flex: 1; }
 
         /* ---------- Kimlik ---------- */
         .cp-head { padding: var(--s-4) var(--s-5) 0; }
         .cp-name {
-          font-family: var(--font-sans), 'Segoe UI', system-ui, sans-serif;
-          font-weight: 700;
-          font-size: clamp(28px, 4vw, 44px);
-          line-height: 1.08;
-          letter-spacing: -.03em;
+          font-family: var(--font-serif), Georgia, serif;
+          font-weight: 400;
+          font-size: clamp(26px, 3.2vw, 40px);
+          line-height: 1.16;
+          letter-spacing: .02em;
           color: var(--ink);
           text-wrap: balance;
         }
@@ -527,7 +527,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           margin-top: var(--s-4);
           font-size: 16px;
           line-height: 1.65;
-          color: var(--night);
+          color: var(--ink);
           max-width: 68ch;
         }
         .cp-pending {
@@ -535,11 +535,12 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           margin-top: var(--s-4);
           font-family: var(--font-mono), monospace;
           font-size: var(--t-xs);
-          color: var(--coral-deep);
-          border: 1px solid rgba(155, 47, 208, .3);
-          background: rgba(7, 85, 187, .12);
+          /* Çerçeve rgba(155,47,208,.3) idi: MOR. Temmuz paletinden kalma,
+             sitede başka hiçbir yerde yok. */
+          color: var(--ink);
+          background: var(--panel);
           padding: 7px 14px;
-          border-radius: var(--r-pill);
+          border-radius: var(--r-md);
         }
         .cp-pending span {
           width: 7px; height: 7px; border-radius: 50%;
@@ -561,22 +562,23 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
 
         .cp-block + .cp-block { margin-top: var(--s-7); }
         .cp-h2 {
-          font-family: var(--font-sans), system-ui, sans-serif;
-          font-size: var(--t-lg);
-          font-weight: 700;
-          letter-spacing: -.02em;
+          font-family: var(--font-serif), Georgia, serif;
+          font-size: var(--t-xl);
+          font-weight: 400;
+          letter-spacing: .04em;
+          line-height: 1.2;
           color: var(--ink);
           padding-bottom: var(--s-3);
-          border-bottom: 1px solid var(--border-mid);
           margin-bottom: var(--s-4);
         }
         .cp-h3 {
-          font-size: var(--t-sm);
-          font-weight: 600;
+          font-family: var(--font-mono), monospace;
+          font-size: 10px;
+          font-weight: 400;
           color: var(--muted);
           margin: var(--s-6) 0 var(--s-3);
           text-transform: uppercase;
-          letter-spacing: .06em;
+          letter-spacing: .16em;
         }
 
         /* ---------- Zaman çizelgesi ---------- */
@@ -598,35 +600,33 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           border: 2.5px solid var(--ink);
         }
         .cp-day-past .cp-day-dot { border-color: var(--border-mid); }
-        .cp-day-label { font-size: var(--t-sm); font-weight: 600; color: var(--ink); }
+        .cp-day-label { font-family: var(--font-mono), monospace; font-size: var(--t-xs); letter-spacing: .1em; text-transform: uppercase; font-weight: 400; color: var(--ink); }
         .cp-day-past .cp-day-label { color: var(--muted); }
 
         .cp-day-items { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-3); }
         .cp-ev {
           display: flex; align-items: center; gap: var(--s-4);
           background: var(--paper-cream);
-          border: 1px solid var(--border);
           border-radius: var(--r-md);
           padding: var(--s-3) var(--s-4);
           text-decoration: none;
-          transition: transform .15s var(--ease), box-shadow .15s var(--ease), border-color .15s var(--ease);
+          transition: transform .15s var(--ease), background .15s var(--ease);
         }
         .cp-ev:hover {
-          transform: translateY(-2px);
-          box-shadow: var(--shadow-lift);
-          border-color: var(--border-mid);
+          transform: translateY(-1px);
+          background: var(--panel);
         }
         .cp-ev-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
         .cp-ev-time { font-style: normal; font-family: var(--font-mono), monospace; font-size: var(--t-xs); color: var(--muted); }
         .cp-ev-title {
-          font-size: var(--t-md); font-weight: 600; color: var(--ink);
+          font-size: var(--t-md); font-weight: 400; letter-spacing: .02em; color: var(--ink);
           overflow: hidden; text-overflow: ellipsis;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
         }
         .cp-ev-loc { font-style: normal; font-size: var(--t-xs); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cp-ev-thumb {
           flex: none; width: 64px; height: 64px;
-          border-radius: 12px; overflow: hidden;
+          border-radius: var(--r-sm); overflow: hidden;
           display: grid; place-items: center;
         }
         .cp-ev-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -634,8 +634,8 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         .cp-day-past .cp-ev:hover { opacity: 1; }
 
         .cp-empty {
-          border: 1.5px dashed var(--border-mid);
-          border-radius: var(--r-lg);
+          border: 1px dashed var(--border-mid);
+          border-radius: var(--r-md);
           background: var(--paper-cream);
           padding: var(--s-6) var(--s-5);
           text-align: center;
@@ -650,11 +650,10 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           gap: var(--s-3); flex-wrap: wrap;
           padding: var(--s-3) var(--s-4);
           background: var(--paper-cream);
-          border: 1px solid var(--border);
           border-radius: var(--r-md);
         }
         .cp-member-id { display: flex; align-items: center; gap: var(--s-3); flex: 1; min-width: 0; }
-        .cp-member-name { font-weight: 600; color: var(--ink); }
+        .cp-member-name { font-weight: 400; letter-spacing: .02em; color: var(--ink); }
         .cp-member-acts { display: flex; gap: var(--s-2); }
         .cp-ava {
           width: 36px; height: 36px; border-radius: 50%;
@@ -663,14 +662,15 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         .cp-ava-ph {
           display: grid; place-items: center;
           background: var(--paper-soft); color: var(--ink);
-          font-size: 14px; font-weight: 700;
+          font-size: 14px; font-weight: 400;
         }
         .cp-role {
-          background: var(--yellow-highlight);
-          border: 1px solid var(--ink);
+          background: var(--panel);
           color: var(--ink);
-          font-size: var(--t-2xs); font-weight: 600;
-          padding: 2px 9px; border-radius: var(--r-pill);
+          font-family: var(--font-mono), monospace;
+          font-size: var(--t-2xs); font-weight: 400; letter-spacing: .1em;
+          text-transform: uppercase;
+          padding: 3px 9px; border-radius: var(--r-sm);
         }
         .cp-report { margin-top: var(--s-7); text-align: center; padding-top: var(--s-5); border-top: 1px dashed var(--border); }
 
@@ -678,12 +678,18 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         .cp-sticky { position: sticky; top: var(--s-5); display: flex; flex-direction: column; gap: var(--s-4); }
         .cp-cal {
           background: var(--paper-cream);
-          border: 1px solid var(--border);
-          border-radius: var(--r-lg);
+          border-radius: var(--r-md);
           padding: var(--s-4);
         }
+        /* İÇ PANEL — ay ızgarası kartın içinde ikinci yüzeye oturuyor,
+           referansın "The Facts" kutusuyla aynı rol. */
+        .cp-cal-panel {
+          background: var(--panel);
+          border-radius: var(--r-md);
+          padding: 10px;
+        }
         .cp-cal-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--s-3); }
-        .cp-cal-head b { font-size: var(--t-sm); font-weight: 700; color: var(--ink); }
+        .cp-cal-head b { font-family: var(--font-mono), monospace; font-size: 10px; font-weight: 400; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
         .cp-cal-grid {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
@@ -697,15 +703,16 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         }
         .cp-cal-day {
           position: relative;
+          font-family: var(--font-mono), monospace;   /* rakam: Marcellus'un 1'i I'ya benziyor */
+          font-variant-numeric: tabular-nums;
           font-size: var(--t-xs);
-          color: var(--night);
+          color: var(--ink);
           padding: 6px 0 9px;
-          border-radius: 8px;
+          border-radius: var(--r-sm);
         }
         .cp-cal-day.today {
           background: var(--ink);
           color: #fff;
-          font-weight: 700;
         }
         .cp-cal-day.has i {
           position: absolute; left: 50%; bottom: 3px;
@@ -717,14 +724,14 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
 
         .cp-stat {
           background: var(--paper-cream);
-          border: 1px solid var(--border);
-          border-radius: var(--r-lg);
+          border-radius: var(--r-md);
           padding: var(--s-4) var(--s-5);
           display: flex; align-items: baseline; gap: var(--s-2);
         }
         .cp-stat b {
-          font-family: var(--font-sans), system-ui, sans-serif;
-          font-size: var(--t-2xl); font-weight: 700; color: var(--ink);
+          font-family: var(--font-mono), monospace;   /* sayı */
+          font-variant-numeric: tabular-nums;
+          font-size: var(--t-2xl); font-weight: 400; color: var(--ink);
         }
         .cp-stat span { font-size: var(--t-sm); color: var(--muted); }
 
@@ -733,7 +740,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           .cp-wrap { padding: var(--s-4) var(--s-4) var(--s-8); }
           .cp-banner { aspect-ratio: 21 / 9; }
           .cp-idrow { padding: 0 var(--s-3); margin-top: -28px; }
-          .cp-emblem { width: 68px; height: 68px; border-radius: 18px; }
+          .cp-emblem { width: 68px; height: 68px; }
           .cp-head { padding: var(--s-3) var(--s-3) 0; }
           .cp-grid { padding: 0 var(--s-3); }
           .cp-ev-thumb { width: 52px; height: 52px; }

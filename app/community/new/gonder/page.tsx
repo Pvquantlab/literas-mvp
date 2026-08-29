@@ -60,7 +60,7 @@ export default function GonderStep() {
       {/* Özet tablosu */}
       <div style={{
         borderRadius: '14px',
-        border: '1.5px solid rgba(30, 58, 43, 0.1)',
+        border: '1.5px solid var(--border)',
         overflow: 'hidden',
         marginBottom: '24px',
       }}>
@@ -144,7 +144,7 @@ export default function GonderStep() {
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingTop: '20px',
-        borderTop: '1px solid rgba(30, 58, 43, 0.1)',
+        borderTop: '1px solid var(--border)',
       }}>
         <Link
           href="/community/new/aciklama"
@@ -187,7 +187,7 @@ function SummaryRow({
         gridTemplateColumns: '110px 1fr auto',
         gap: '16px',
         padding: '14px 18px',
-        borderBottom: '1px solid rgba(30, 58, 43, 0.08)',
+        borderBottom: '1px solid var(--border)',
         alignItems: multiline ? 'start' : 'center',
       }}
     >

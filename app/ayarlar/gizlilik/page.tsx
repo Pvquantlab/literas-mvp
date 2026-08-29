@@ -21,13 +21,13 @@ export default async function GizlilikPage({
 
   return (
     <>
-      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "rgba(30,58,43,0.55)", textTransform: "lowercase" }}>
+      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase" }}>
         hesap ayarları
       </div>
-      <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: "6px 0 10px" }}>
+      <h1 style={{ fontFamily: "var(--font-serif), Georgia, serif", fontSize: 32, fontWeight: 400, letterSpacing: ".02em", margin: "6px 0 10px" }}>
         Gizlilik
       </h1>
-      <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 28px", maxWidth: "56ch" }}>
+      <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 28px", maxWidth: "56ch" }}>
         Sizinle kimlerin iletişim kurabileceğini ve profilinizde nelerin görüneceğini kontrol edin.
       </p>
 
@@ -49,7 +49,7 @@ export default async function GizlilikPage({
             <option value="public">Herkese açık</option>
             <option value="private">Gizli</option>
           </select>
-          <p style={{ fontSize: 13, color: "rgba(30,58,43,0.6)", marginTop: 8 }}>
+          <p style={{ fontSize: 13, color: "var(--muted)", marginTop: 8 }}>
             Gizli profiller arama sonuçlarında ve üye listelerinde görünmez.
           </p>
         </div>
@@ -75,7 +75,7 @@ const inputStyle = {
   fontFamily: "inherit",
   cursor: "pointer",
 };
-const labelStyle = { display: "block", fontSize: 14, fontWeight: 700, marginBottom: 8 };
+const labelStyle = { display: "block", fontSize: 14, fontWeight: 500, marginBottom: 8 };
 const saveButtonStyle = {
   marginTop: 8,
   padding: "13px 26px",
@@ -83,8 +83,7 @@ const saveButtonStyle = {
   border: "2px solid var(--ink)",
   borderRadius: 999,
   fontSize: 14.5,
-  fontWeight: 700,
+  fontWeight: 500,
   color: "var(--ink)",
   cursor: "pointer",
-  boxShadow: "4px 5px 0 var(--ink)",
 };

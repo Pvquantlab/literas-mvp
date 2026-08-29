@@ -71,7 +71,7 @@ export default async function ProfilePage({
         background: 'var(--paper-cream)',
         border: '1px solid var(--border)',
         borderRadius: '20px',
-        boxShadow: '0 8px 28px rgba(30,58,43,0.08)',
+        boxShadow: "none",
         padding: '28px 24px 22px',
       }}>
         {/* Avatar — referanstaki gibi kartın yıldızı */}
@@ -96,7 +96,7 @@ export default async function ProfilePage({
               display: 'grid',
               placeItems: 'center',
               fontSize: '72px',
-              fontWeight: 800,
+              fontWeight: 400,
               color: 'var(--ink)',
             }}>
               {profile.name?.[0]?.toUpperCase() ?? '?'}
@@ -107,10 +107,10 @@ export default async function ProfilePage({
         {/* İsim + düzenle */}
         <h1 style={{
           fontSize: '23px',
-          fontWeight: 800,
+          fontWeight: 400,
           color: 'var(--ink)',
           margin: '0 0 4px',
-          letterSpacing: '-0.3px',
+          letterSpacing: '0.3px',
           lineHeight: 1.25,
         }}>
           {profile.name}
@@ -159,7 +159,7 @@ export default async function ProfilePage({
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             {stats.map((s) => (
               <div key={s.label} style={{ textAlign: 'center', flex: 1 }}>
-                <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>{s.value}</div>
+                <div style={{ fontSize: '18px', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.2 }}>{s.value}</div>
                 <div style={{ fontSize: '11.5px', color: 'var(--muted)', marginTop: '2px' }}>{s.label}</div>
               </div>
             ))}
@@ -338,7 +338,7 @@ export default async function ProfilePage({
         .member-card:hover {
           border-color: var(--ink) !important;
           transform: translateY(-2px);
-          box-shadow: 0 6px 18px rgba(30,58,43,.10);
+          box-shadow: none,58,43,.10);
         }
         @media (max-width: 860px) {
           .profile-aside { position: static !important; flex: 1 1 100% !important; }

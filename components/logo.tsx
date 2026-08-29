@@ -31,8 +31,12 @@ export default function Logo({
       <LogoMark size={size} tone={tone} />
       <span style={{
         fontSize: `${fontSize}px`,
-        fontWeight: 600,
-        letterSpacing: '-0.045em',
+        // Marcellus TEK ağırlık taşıyor (400). 600 istenirse tarayıcı sahte
+        // kalın üretiyor ve yazıt karakterini bozuyor. Marka ağırlıkla değil
+        // harf aralığıyla duruyor.
+        fontFamily: 'var(--font-serif), Georgia, serif',
+        fontWeight: 400,
+        letterSpacing: '0.045em',
         color,
         lineHeight: 1,
       }}>

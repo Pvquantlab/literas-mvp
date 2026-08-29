@@ -23,7 +23,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#B8541A',
-  reviewed: '#1E3A2B',
+  reviewed: 'var(--ink-deep)',
   dismissed: '#666',
   actioned: '#B84330',
 }

@@ -31,13 +31,13 @@ export default async function EpostaPage({
 
   return (
     <>
-      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "rgba(30,58,43,0.55)", textTransform: "lowercase" }}>
+      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase" }}>
         hesap ayarları
       </div>
-      <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: "6px 0 10px" }}>
+      <h1 style={{ fontFamily: "var(--font-serif), Georgia, serif", fontSize: 32, fontWeight: 400, letterSpacing: ".02em", margin: "6px 0 10px" }}>
         E-posta Güncellemeleri
       </h1>
-      <p style={{ fontSize: 15, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 28px", maxWidth: "56ch" }}>
+      <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 28px", maxWidth: "56ch" }}>
         Aktiviteniz, etkinlikleriniz ve topluluklarınız hakkında hangi e-postaları alacağınızı seçin.
       </p>
 
@@ -56,8 +56,8 @@ export default async function EpostaPage({
       <hr style={{ border: "none", borderTop: "1px dashed var(--border)", margin: "40px 0 24px" }} />
 
       <section>
-        <h2 style={{ fontSize: 18, fontWeight: 800, margin: "0 0 8px", letterSpacing: "-0.01em" }}>Tüm e-postaları kapat</h2>
-        <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "rgba(30,58,43,0.7)", margin: "0 0 16px" }}>
+        <h2 style={{ fontSize: 18, fontWeight: 400, margin: "0 0 8px", letterSpacing: ".02em" }}>Tüm e-postaları kapat</h2>
+        <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 16px" }}>
           Bu sayfadaki tercihlerin yanı sıra etkinlik hatırlatmaları, katılım
           istekleri ve topluluk duyurularını da kapatırız.
           Yalnızca sizi doğrudan ilgilendiren iletiler gelmeye devam eder:
@@ -71,7 +71,7 @@ export default async function EpostaPage({
             border: "1.5px solid var(--ink)",
             borderRadius: 999,
             background: "var(--paper)",
-            fontSize: 14, fontWeight: 700,
+            fontSize: 14, fontWeight: 500,
             color: "var(--ink)",
             cursor: "pointer",
             fontFamily: "inherit",
@@ -93,14 +93,14 @@ function Toggle({ name, label, desc, defaultChecked }: {
       padding: "18px 0", borderBottom: "1px solid var(--border)", cursor: "pointer",
     }}>
       <div style={{ flex: 1, paddingRight: 20 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>{label}</div>
-        <div style={{ fontSize: 13.5, color: "rgba(30,58,43,0.65)" }}>{desc}</div>
+        <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: 13.5, color: "var(--muted)" }}>{desc}</div>
       </div>
       <input type="checkbox" name={name} defaultChecked={defaultChecked} style={{
         appearance: "none",
         width: 44, height: 24,
         borderRadius: 999,
-        background: "rgba(30,58,43,0.15)",
+        background: "var(--paper-soft)",
         position: "relative",
         cursor: "pointer",
         transition: "background 0.2s",
@@ -117,8 +117,7 @@ const saveButtonStyle = {
   border: "2px solid var(--ink)",
   borderRadius: 999,
   fontSize: 14.5,
-  fontWeight: 700,
+  fontWeight: 500,
   color: "var(--ink)",
   cursor: "pointer",
-  boxShadow: "4px 5px 0 var(--ink)",
 };

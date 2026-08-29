@@ -79,7 +79,7 @@ export default async function YeniDuyuru({
 }
 
 const sayfaStil = { maxWidth: 640, margin: '0 auto', padding: '48px 24px 80px' } as const
-const baslikStil = { fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', margin: '6px 0 10px' } as const
+const baslikStil = { fontSize: 30, fontWeight: 400, letterSpacing: '0.02em', margin: '6px 0 10px' } as const
 const altStil = { fontSize: 15, lineHeight: 1.6, color: 'var(--muted)', margin: 0 } as const
 const ustBilgiStil = {
   font: "500 12px 'IBM Plex Mono', monospace",

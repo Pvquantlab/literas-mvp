@@ -284,7 +284,7 @@ export default function KonularStep() {
                       borderRadius: '999px',
                       background: isSelected ? 'var(--ink)' : 'transparent',
                       color: isSelected ? 'var(--paper-cream, #FFFDF6)' : 'var(--ink)',
-                      border: isSelected ? '1.5px solid var(--ink)' : '1.5px solid rgba(30, 58, 43, 0.2)',
+                      border: isSelected ? '1.5px solid var(--ink)' : '1.5px solid var(--border)',
                       fontSize: '13.5px',
                       fontWeight: isSelected ? 600 : 500,
                       cursor: atMax ? 'not-allowed' : 'pointer',
@@ -333,8 +333,8 @@ export default function KonularStep() {
             marginTop: '20px',
             padding: '16px',
             borderRadius: '12px',
-            background: 'var(--paper-soft, rgba(30, 58, 43, 0.04))',
-            border: '1.5px solid rgba(30, 58, 43, 0.1)',
+            background: 'var(--paper-soft, var(--panel))',
+            border: '1.5px solid var(--border)',
           }}
         >
           <div style={{
@@ -400,7 +400,7 @@ export default function KonularStep() {
         alignItems: 'center',
         marginTop: '32px',
         paddingTop: '20px',
-        borderTop: '1px solid rgba(30, 58, 43, 0.1)',
+        borderTop: '1px solid var(--border)',
       }}>
         <Link
           href="/community/new/konum"
