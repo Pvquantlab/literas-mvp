@@ -3,23 +3,6 @@ import Image from 'next/image'
 import { byValue } from '@/lib/categories'
 import { RolyefMasa, RolyefKahve, RolyefKitap, RolyefSandalye, RolyefSehir } from '@/components/rolyef'
 
-/**
- * Kategori -> rölyef. ANAHTAR: kanonik ASCII slug.
- *
- * DİKKAT: ham `category` değerini indeksleme. Veritabanı TÜRKÇE AKSANLI
- * değer tutuyor ('fotoğraf', 'yürüyüş'), bu tablonun anahtarları ise ASCII.
- * Ham değerle indeksleyince neredeyse her kategori masaya düşüyordu --
- * canlıda "Fotoğraf" ve "Doğa" kartları aynı rölyefi gösteriyordu.
- * byValue() eşlemeyi zaten doğru yapıyor (değer, slug, Türkçe küçültme ve
- * takma ad sırasıyla); slug'ı ondan al.
- */
-const ROLYEF: Record<string, (p: { className?: string; style?: React.CSSProperties }) => React.JSX.Element> = {
-  kitap: RolyefKitap, dil: RolyefKitap, sinema: RolyefKitap,
-  lezzet: RolyefKahve, sosyal: RolyefKahve, kariyer: RolyefKahve,
-  doga: RolyefSehir, fotograf: RolyefSehir, gonulluluk: RolyefSehir,
-  muzik: RolyefSandalye, sanat: RolyefSandalye, oyun: RolyefSandalye, spor: RolyefSandalye,
-}
-
 export type CommunitySummary = {
   id: string
   name: string
@@ -34,25 +17,33 @@ export type CommunitySummary = {
 }
 
 /**
- * Bu bileşen page.tsx'te iki kez birebir kopyalanmıştı (giriş yapmış /
- * yapmamış dalları). Artık tek yerde — bir düzeltme her ikisini de kapsar.
+ * Kategori -> rölyef.
  *
- * KAHRAMAN ÖĞE: etkinlik kartında büyük serif tarih rakamı nerede duruyorsa,
- * burada üye sayısı orada duruyor. Kullanıcı bir bakışta "grup mu, an mı"
- * ayırt etsin diye.
+ * DİKKAT 1: ham `category` değerini kullanma. Veritabanı TÜRKÇE AKSANLI
+ * değer tutuyor ('fotoğraf', 'yürüyüş'); kanonik ASCII slug'ı byValue()
+ * veriyor. Ham değerle eşleştirdiğimde canlıda "Fotoğraf" ve "Doğa"
+ * kartları aynı rölyefi gösteriyordu.
  *
- * YENİ TOPLULUK EŞİĞİ: 5 üyenin altındaki topluluklarda büyük rakam
- * gösterilmiyor. Punto 40'la yazılmış bir "1" topluluğu canlı değil, terk
- * edilmiş gösterir. Onun yerine "yeni açıldı" + kurucu + "İlk sen katıl".
- * Site büyüdükçe kartlar kendiliğinden ikinci hâle geçer.
- *
- * GÖSTERİLMEYENLER — veritabanında karşılıkları yok, uydurulmuyor:
- *   · kapasite ("6/8 koltuk dolu") — topluluklarda kapasite kolonu yok,
- *     masa herkese açık
- *   · mesaj sayısı — mesajlaşma sistemi yok
- *   · üye yüzleri (facepile) — community_members'a anon erişimi kapalı,
- *     bu bir gizlilik kararı. Karar verilince buraya eklenir.
+ * DİKKAT 2: burası bir Record<string, Bileşen> DEĞİL, eleman döndüren bir
+ * bileşen. Haritadan bileşen alıp `const R = MAP[x]` deyip `<R />` yazmak
+ * her render'da yeni bileşen kimliği üretir (React ağacı gereksiz yere
+ * yeniden kurar) ve lint bunu hata sayıyor: "Cannot create components
+ * during render".
  */
+function RolyefIcin({ slug }: { slug?: string | null }) {
+  switch (slug) {
+    case 'kitap': case 'dil': case 'sinema':
+      return <RolyefKitap />
+    case 'lezzet': case 'sosyal': case 'kariyer':
+      return <RolyefKahve />
+    case 'doga': case 'fotograf': case 'gonulluluk':
+      return <RolyefSehir />
+    case 'muzik': case 'sanat': case 'oyun': case 'spor':
+      return <RolyefSandalye />
+    default:
+      return <RolyefMasa />
+  }
+}
 
 const FRESH_BELOW = 5
 
@@ -61,8 +52,6 @@ export default function CommunityCard({ community }: { community: CommunitySumma
   const members = community.member_count ?? 0
   const fresh = members < FRESH_BELOW
   const upcoming = community.upcoming_count ?? 0
-
-  const Rolyef = (cat && ROLYEF[cat.slug]) ?? RolyefMasa
 
   return (
     <Link href={`/community/${community.id}`} className="cm-link reveal">
@@ -82,7 +71,7 @@ export default function CommunityCard({ community }: { community: CommunitySumma
               style={{ objectFit: 'cover' }}
             />
           ) : (
-            <Rolyef />
+            <RolyefIcin slug={cat?.slug} />
           )}
 
           {/* TEK ETİKET DİLİ. Eskiden iki ayrı görünüm vardı: kapak varsa
