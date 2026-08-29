@@ -21,13 +21,28 @@
  * 5. Başarısız her istekte caches.match('/') dönüyordu: bir görsel isteğine
  *    HTML yanıtı veriliyordu.
  *
- * ŞİMDİKİ KURAL: sadece /_next/static/* önbelleğe alınır. Bu dosyaların
- * adları içerik hash'i taşır, yani aynı URL her zaman aynı içeriktir —
- * bayatlama kavram olarak mümkün değil. Doküman (HTML), API ve diğer her şey
- * doğrudan ağdan geçer, hiç dokunulmaz.
+ * ŞİMDİKİ KURAL: sadece /_next/static/* önbelleğe alınır. ÜRETİMDE bu
+ * dosyaların adları içerik hash'i taşır, yani aynı URL her zaman aynı
+ * içeriktir. Doküman (HTML), API ve diğer her şey doğrudan ağdan geçer.
+ *
+ * 6. AMA "hash'li, bayatlayamaz" varsayımı YEREL GELİŞTİRMEDE YANLIŞ.
+ *    Dev derlemesinde parça adları içerik hash'i TAŞIMAZ (_1085m2i._.js
+ *    gibi sabit adlar) ve her düzenlemede içerikleri değişir. Aynı origin'de
+ *    (localhost:3000) önce dev sonra üretim sunucusu çalıştırıldığında
+ *    service worker, üretim HTML'ine BAYAT DEV JS'i servis etti; sayfa
+ *    "yükleniyor..."da takılı kaldı. Bir oturum boyunca "tarayıcı önbelleği"
+ *    sanılan şeyin gerçek sebebi buydu -- 127.0.0.1 ile çalışmasının sebebi
+ *    de farklı origin, dolayısıyla farklı service worker olmasıydı.
+ *    Çözüm: localhost'ta hiç önbelleğe alma. Üretimde (gerçek alan adı)
+ *    davranış aynen korunuyor.
  */
 
-const CACHE = 'literas-static-v2'
+// v3: v2 altında zehirlenmiş (dev JS içeren) girdileri temizlemek için
+// yükseltildi. activate, CACHE dışındaki tüm önbellekleri siliyor.
+const CACHE = 'literas-static-v3'
+
+/** Yerelde dev ve üretim aynı origin'i paylaşabilir; orada önbellek YOK. */
+const YEREL = ['localhost', '127.0.0.1', '::1', '[::1]'].includes(self.location.hostname)
 
 self.addEventListener('install', () => {
   // Ön yükleme yok: neyin gerekeceğini isteğe göre öğreniyoruz.
@@ -63,6 +78,9 @@ self.addEventListener('fetch', (event) => {
 
   // Yalnızca içerik-hash'li statik dosyalar.
   if (!url.pathname.startsWith('/_next/static/')) return
+
+  // Yerelde parça adları hash taşımıyor: önbelleğe alma, ağdan geç.
+  if (YEREL) return
 
   event.respondWith(
     caches.match(request).then((hit) => {
