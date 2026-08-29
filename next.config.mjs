@@ -1,3 +1,5 @@
+import { withSentryConfig } from '@sentry/nextjs'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   allowedDevOrigins: ['192.168.1.104'],
@@ -41,4 +43,28 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+/**
+ * Sentry sarmalayıcısı.
+ *
+ * Kaynak haritası yüklemesi SENTRY_AUTH_TOKEN varsa yapılır. Token yoksa
+ * derleme yine geçer, yalnızca canlıdaki yığın izleri küçültülmüş hâlde
+ * okunur. Yani token opsiyonel; DSN olmadan da her şey sessizce kapalı.
+ *
+ * Kaynak haritaları istemciye SERVİS EDİLMİYOR (hideSourceMaps): Sentry'ye
+ * yüklenip tarayıcıdan gizleniyorlar, aksi halde kodun tamamı okunabilir
+ * hâle gelirdi.
+ */
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  silent: !process.env.CI,
+  hideSourceMaps: true,
+  // disableLogger KALDIRILDI: kullanımdan kalkmış ve SDK'nın kendi uyarısına
+  // göre Turbopack'te zaten etkisiz. Uyarı üreten ölü ayar tutmuyoruz.
+
+  // Reklam engelleyiciler /monitoring gibi yolları kesebiliyor; Sentry
+  // isteklerini kendi alan adımız üzerinden geçiriyoruz.
+  tunnelRoute: '/monitoring',
+})

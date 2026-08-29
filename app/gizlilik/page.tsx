@@ -37,7 +37,7 @@ export default function GizlilikPage() {
         fontSize: '13px',
         marginBottom: '40px',
       }}>
-        son güncelleme · 7 temmuz 2026
+        son güncelleme · 30 ağustos 2026
       </p>
 
       <Section title="Kısaca">
@@ -119,6 +119,7 @@ export default function GizlilikPage() {
           <li><strong>Vercel</strong>: site barındırma</li>
           <li><strong>Resend</strong>: e-posta gönderimi</li>
           <li><strong>Google</strong>: yalnızca Google ile giriş yaparsan kimlik doğrulama için</li>
+          <li><strong>Sentry</strong>: sitede bir hata oluştuğunda teknik hata kaydı (hatanın türü, oluştuğu sayfa ve kod satırı). Kimlik bilgin, e-postan ve IP adresin bu kayıtlara <strong>dâhil edilmez</strong>.</li>
         </ul>
         <p>{`Bu servis sağlayıcıların sunucuları yurt dışında bulunduğundan, verilerin KVKK'nın 9. maddesi kapsamında yurt dışına aktarılmaktadır. Bu aktarım, ilgili sağlayıcılarla imzalanan ve Kişisel Verileri Koruma Kurumu'na bildirilen standart sözleşmeler ile Kanun'da öngörülen uygun güvenceler çerçevesinde gerçekleştirilir.`}</p>
         <p>Yasal zorunluluk halinde yetkili kamu kurum ve kuruluşlarıyla veri paylaşılabilir.</p>

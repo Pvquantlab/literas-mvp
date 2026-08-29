@@ -27,9 +27,10 @@ WhatsApp-first paylaşım ve Türkçe-öncelikli UX ile farklılaşma; tüm kate
 | Doğrulama | zod v4, `lib/validations.ts` (şemalar rotalara bağlı) |
 | Rate limit | Upstash Redis, `lib/rate-limit.ts` (`checkRateLimit`) |
 | Deploy | Vercel |
+| Hata izleme | Sentry (`@sentry/nextjs`) · `sentry.server.config.ts`, `sentry.edge.config.ts`, `instrumentation.ts`, `instrumentation-client.ts` · DSN yoksa TAMAMEN SESSİZ |
 | Stil | Global CSS + inline style; tek kaynak `app/globals.css`. Ölçülmüş tasarım DNA'sı: `docs/tasarim/wild-week-dna.json` |
 
-Ortam değişkenleri (`.env.example`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `RESEND_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `CRON_SECRET`. `service_role` anahtarı **hiçbir yerde kullanılmaz** — yetki her zaman RLS ile çözülür.
+Ortam değişkenleri (`.env.example`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `RESEND_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `CRON_SECRET`, `NEXT_PUBLIC_SENTRY_DSN` (+ kaynak haritası için opsiyonel `SENTRY_ORG`/`SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN`). `service_role` anahtarı **hiçbir yerde kullanılmaz** — yetki her zaman RLS ile çözülür.
 
 `CRON_SECRET` üç yerde aynı olmalı: `.env.local`, Vercel env, Supabase `app_secrets` (key=`cron_secret`). Örnek dosyaya gerçek değer yazılmaz.
 
@@ -123,7 +124,10 @@ Ayrıntılar `literas-yol-haritasi.md` dosyasında. Özet durum:
       eventEditSchema eklendi (commit ef9a0f9)
 - [x] **1.4** Upstash rate limit — 4 uca limit; Vercel env + redeploy; anon 401 doğrulandı
       (commit 6579976)
-- [ ] **1.5** Sentry — ERTELENDİ (kullanıcı kararı, sonra eklenecek)
+- [x] **1.5** Sentry — `@sentry/nextjs` elle kuruldu (sihirbaz değil): sunucu/edge/istemci
+      yapılandırması, `onRequestError` kancası, tracesSampleRate 0.1, `sendDefaultPii: false`,
+      Session Replay YOK. Gizlilik politikasına beşinci işleyici olarak eklendi.
+      DSN env'e konmadan sistem tamamen sessiz.
 - [ ] **2.1** OG görselleri ✓ · **2.2** cron hatırlatma ✓ · **2.3** PWA ✓ ·
       **2.4** Realtime katılımcı listesi ✓ · **2.5** Türkçe FTS ✓ · **2.6** QR check-in ✓
 - [ ] **Aşama 3** tekrarlayan etkinlik serileri, topluluk duyuruları ✓, katılım karnesi, kişisel keşif
@@ -137,7 +141,7 @@ Bir görevi bitirince bu listede `[x]` işaretle ve tek satır not düş.
 - [x] Anonim kullanıcı hiçbir tabloya yazamıyor (401 testiyle doğrulandı)
 - [x] Geçersiz veri 400 alıyor (zod safeParse)
 - [x] Spam 429 alıyor (rate limit + Upstash env canlıda aktif)
-- [ ] Sentry'de hatalar görünüyor (Sentry ertelendi)
+- [x] Sentry kuruldu (DSN env'e konunca hatalar panele düşer)
 
 ## Kullanıcıya soru sormadan önce
 

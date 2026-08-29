@@ -12,7 +12,7 @@ platform: UX kalitesi + adil fiyat + Türkçe yerellik + şehir bazlı yoğunla�
 
 ---
 
-## AŞAMA 1 — Sağlamlaştırma ✅ TAMAMLANDI (1.5 hariç)
+## AŞAMA 1 — Sağlamlaştırma ✅ TAMAMLANDI
 
 Amaç: Güvenlik açıklarını kapatmak, projeyi kırılmaz hale getirmek. Yeni özellik yok.
 
@@ -41,12 +41,18 @@ Amaç: Güvenlik açıklarını kapatmak, projeyi kırılmaz hale getirmek. Yeni
       join (normal, dk'da 10). Env değerleri Vercel'e eklendi (Sensitive) + redeploy.
       Anonim istek 401 alıyor (doğrulandı). Env yoksa limit sessizce kapanır.
 
-- [ ] **1.5 Sentry** — ERTELENDİ (kullanıcı kararı)
-      Yapılacak: `npx @sentry/wizard@latest -i nextjs`, client+server+edge config,
-      tracesSampleRate 0.1, DSN env'e, kasıtlı test hatasıyla doğrula.
+- [x] **1.5 Sentry** — ELLE kuruldu (sihirbaz değil: sihirbaz Sentry hesabına
+      tarayıcıdan giriş istiyor ve dosyaları öngörülemez biçimde değiştiriyor).
+      sunucu + edge + istemci yapılandırması, `instrumentation.ts` içinde
+      `onRequestError` kancası (bu olmadan Next 15+ sunucu hatalarının çoğu
+      Sentry'ye HİÇ ulaşmıyor), tracesSampleRate 0.1.
+      `sendDefaultPii: false` ve Session Replay YOK — gizlilik kararı.
+      Gizlilik politikasına beşinci veri işleyici olarak eklendi (tarih güncellendi).
+      Doğrulama ucu: `/api/sentry-test` (üretimde 404).
+      DSN env'e konmadan sistem tamamen sessiz.
 
 **Aşama 1 bitiş kriterleri:** Build geçiyor ✅ · anon yazamıyor ✅ · geçersiz veri 400 ✅
-· spam 429 ✅ · Sentry ⏸️ (ertelendi)
+· spam 429 ✅ · Sentry ✅
 
 ---
 
