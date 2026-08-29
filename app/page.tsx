@@ -337,6 +337,7 @@ export default async function HomePage({
       {/* Satır 1: dev logotype, tam genişlik. Arkasında soluk bir şekil —
           referansta "WILD WEEK"in arkasındaki vazonun karşılığı. */}
       <section
+        id="sis-logotype"
         aria-label="literaslab"
         style={{
           ...kunyeHucre,
@@ -354,8 +355,10 @@ export default async function HomePage({
       </section>
 
       <section
+        id="sis-hero"
         aria-label="Giriş"
         style={{
+          position: 'relative',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: 8,
