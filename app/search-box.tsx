@@ -43,10 +43,14 @@ export default function SearchBox({ initialQuery }: { initialQuery: string }) {
       alignItems: 'center',
       gap: '10px',
       background: 'var(--paper-cream)',
-      border: '1.5px solid var(--border-mid)',
-      borderRadius: '999px',
-      padding: '0 20px',
-      height: '50px',
+      // Hap köşe (999px) kaldırıldı: sitenin baskın köşesi 4px ve bu iki
+      // denetim ızgaranın hemen üstünde duruyor; yan yana durdukları
+      // kartlarla aynı dili konuşmaları gerekiyor.
+      borderRadius: 'var(--r-md)',
+      padding: '0 16px',
+      height: '46px',
+      flex: '1 1 260px',
+      minWidth: 0,
       transition: 'all 0.18s ease',
     }}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">

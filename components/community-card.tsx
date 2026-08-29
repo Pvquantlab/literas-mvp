@@ -1,6 +1,15 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { byValue } from '@/lib/categories'
+import { RolyefMasa, RolyefKahve, RolyefKitap, RolyefSandalye, RolyefSehir } from '@/components/rolyef'
+
+/** Kategori -> rölyef. Etkinlik ve topluluk sayfalarındaki eşlemenin aynısı. */
+const ROLYEF: Record<string, (p: { className?: string; style?: React.CSSProperties }) => React.JSX.Element> = {
+  kitap: RolyefKitap, dil: RolyefKitap, sinema: RolyefKitap,
+  lezzet: RolyefKahve, sosyal: RolyefKahve, kariyer: RolyefKahve,
+  doga: RolyefSehir, fotograf: RolyefSehir, gonulluluk: RolyefSehir,
+  muzik: RolyefSandalye, sanat: RolyefSandalye, oyun: RolyefSandalye, spor: RolyefSandalye,
+}
 
 export type CommunitySummary = {
   id: string
@@ -44,11 +53,18 @@ export default function CommunityCard({ community }: { community: CommunitySumma
   const fresh = members < FRESH_BELOW
   const upcoming = community.upcoming_count ?? 0
 
+  const Rolyef = ROLYEF[community.category ?? ''] ?? RolyefMasa
+
   return (
     <Link href={`/community/${community.id}`} className="cm-link reveal">
       <article className="cm-card">
-        {community.cover_image_url && (
-          <div className="cm-cover">
+        {/* KAPAK HER KARTTA VAR. Eskiden yalnızca görseli olan kartlarda
+            vardı; görselsizler ızgarada aynı yüksekliğe gerilip altlarında
+            kocaman bir boşluk bırakıyordu. Görsel yoksa kategori rölyefi
+            geçiyor: hem boşluk doluyor hem bütün kartlar aynı yapıya
+            kavuşuyor. */}
+        <div className={community.cover_image_url ? 'cm-cover' : 'cm-cover cm-cover-bos'}>
+          {community.cover_image_url ? (
             <Image
               src={community.cover_image_url}
               alt=""
@@ -56,45 +72,43 @@ export default function CommunityCard({ community }: { community: CommunitySumma
               sizes="(max-width: 620px) 100vw, (max-width: 1000px) 50vw, 33vw"
               style={{ objectFit: 'cover' }}
             />
-            {cat && <span className="cm-pill">{cat.label}</span>}
-            {fresh && <span className="cm-new">yeni açıldı</span>}
+          ) : (
+            <Rolyef />
+          )}
+
+          {/* TEK ETİKET DİLİ. Eskiden iki ayrı görünüm vardı: kapak varsa
+              .cm-pill + .cm-new, yoksa .cm-tag + .cm-tag.on. Yan yana iki
+              farklı hap gibi duruyordu. */}
+          <div className="cm-etiketler">
+            {cat && <span className="cm-etiket">{cat.label}</span>}
+            {fresh && <span className="cm-etiket">yeni açıldı</span>}
           </div>
-        )}
+        </div>
 
         <div className="cm-body">
-          {/* Kapak yoksa etiketler gövdeye taşınır — kapağın içindeydiler,
-              orada kaybolurlardı. */}
-          {!community.cover_image_url && (cat || fresh) && (
-            <div className="cm-tags">
-              {cat && <span className="cm-tag">{cat.label}</span>}
-              {fresh && <span className="cm-tag on">yeni açıldı</span>}
+          <h3 className="cm-title">{community.name}</h3>
+          <p className="cm-meta">{community.city}</p>
+
+          {/* SABİT METİNLER KALDIRILDI:
+              · "yeni bir masa" -- founder_name gelmediğinde basılan dolgu
+                metniydi; beş kartta beş kez aynı şey yazıyordu.
+              · "herkese açık" -- communities tablosunda gizlilik alanı YOK,
+                yani hiç değişemeyecek bir sabitti.
+              Geriye yalnızca gerçekten değişen bilgi kaldı. */}
+          {(!fresh || community.founder_name || upcoming > 0) && (
+            <div className="cm-hero">
+              {fresh
+                ? community.founder_name && (
+                    <span className="cm-founder">{community.founder_name} kurdu</span>
+                  )
+                : (
+                  <span className="cm-count"><b>{members}</b> üye</span>
+                )}
+              {upcoming > 0 && <span className="cm-live">bu hafta {upcoming} buluşma</span>}
             </div>
           )}
-          <h3 className="cm-title">{community.name}</h3>
-          {/* Kategori üstteki etikette zaten var — burada tekrar etmiyor.
-              Kapak varsa etiket kapağın içinde, o zaman kategori burada kalır. */}
-          <p className="cm-meta">
-            {community.cover_image_url
-              ? [cat?.label, community.city].filter(Boolean).join(' · ')
-              : community.city}
-          </p>
-
-          <div className="cm-hero">
-            {fresh ? (
-              <span className="cm-founder">
-                {community.founder_name ? `${community.founder_name} kurdu` : 'yeni bir masa'}
-              </span>
-            ) : (
-              <span className="cm-count">
-                <b>{members}</b> üye
-              </span>
-            )}
-
-            {upcoming > 0 && <span className="cm-live">bu hafta {upcoming} buluşma</span>}
-          </div>
 
           <div className="cm-foot">
-            <span className="cm-open">herkese açık</span>
             <span className={fresh ? 'cm-go ghost' : 'cm-go'} aria-hidden="true">
               {fresh ? 'İlk sen katıl' : 'Katıl'}
             </span>
@@ -114,37 +128,32 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         }
         .cm-link:hover .cm-card { transform:translateY(-2px); }
         .cm-cover {
-          position:relative; height:172px; border-radius:3px; overflow:hidden;
+          position:relative; height:172px; border-radius:var(--r-sm); overflow:hidden;
           display:grid; place-items:center;
-          
         }
-        .cm-tags { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:12px; }
-        .cm-tag {
-          font-family:var(--font-mono), monospace; font-size:11px;
-          color:var(--muted); background:var(--paper-soft);
-          border:1px solid var(--border);
-          padding:5px 11px; border-radius:var(--r-pill);
+        /* Görsel yoksa: panel zemin + sessiz rölyef. */
+        .cm-cover-bos { background:var(--panel); }
+        .cm-cover-bos svg {
+          width:58%; height:auto; color:var(--ink); opacity:.16;
         }
-        .cm-tag.on {
-          color:var(--ink); background:var(--lime-soft);
-          border-color:transparent; font-weight:600;
+        /* TEK etiket dili: mono, büyük harf, 4px köşe, çerçevesiz. */
+        .cm-etiketler {
+          position:absolute; top:10px; left:10px; right:10px; z-index:3;
+          display:flex; gap:6px; flex-wrap:wrap;
         }
-        .cm-pill {
-          position:absolute; top:12px; left:12px; z-index:3;
-          font-family:var(--font-mono), monospace; font-size:11px;
-          color:var(--ink, #0755BB); background:rgba(255,255,255,.93);
-          padding:6px 12px; border-radius:var(--r-pill, 999px);
+        .cm-etiket {
+          font-family:var(--font-mono), monospace;
+          font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+          color:var(--ink); background:rgba(255,255,255,.92);
+          padding:5px 9px; border-radius:var(--r-sm);
         }
-        .cm-new {
-          position:absolute; top:12px; right:12px; z-index:3;
-          font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.06em;
-          color:var(--ink, #0755BB); background:var(--panel, #E9E7E0);
-          padding:5px 10px; border-radius:var(--r-pill, 999px);
-        }
-        .cm-body { padding:4px 4px 0; display:flex; flex-direction:column; flex:1; }
+        .cm-body { padding:14px 2px 0; display:flex; flex-direction:column; flex:1; }
+        /* ÇİFT letter-spacing hatası: önce .02em yazıp bir satır altında
+           -.005em ile ezmişim, yani ekranda NEGATİF aralık çıkıyordu.
+           DNA pozitif aralık istiyor. */
         .cm-title {
           font-weight:400; letter-spacing:.02em;
-          font-size:21px; line-height:1.2; letter-spacing:-.005em;
+          font-size:21px; line-height:1.2;
           color:var(--ink, #0755BB); margin:0;
         }
         .cm-meta {
@@ -157,27 +166,21 @@ export default function CommunityCard({ community }: { community: CommunitySumma
         }
         .cm-count { font-family:var(--font-mono), monospace; font-size:12px; color:var(--muted, #5C5744); }
         .cm-count b {
-          font-size:34px; font-weight:500; line-height:1; letter-spacing:-.03em;
+          font-family:var(--font-mono), monospace; font-variant-numeric:tabular-nums;
+          font-size:32px; font-weight:400; line-height:1; letter-spacing:.01em;
           color:var(--ink, #0755BB); margin-right:5px;
         }
         .cm-founder { font-family:var(--font-mono), monospace; font-size:12px; color:var(--muted, #5C5744); }
         .cm-live {
           display:inline-flex; align-items:center; gap:7px;
           font-family:var(--font-mono), monospace; font-size:11px;
-          color:var(--muted, #5C5744); background:var(--paper-soft, #F4F2EC);
-          border:1px solid var(--border, #E8E5DD);
-          padding:5px 11px; border-radius:var(--r-pill, 999px); white-space:nowrap;
-        }
-        .cm-live::before {
-          content:""; width:6px; height:6px; border-radius:50%;
-          background:var(--lime, #C7D7F2); 
+          color:var(--ink); background:var(--panel);
+          padding:5px 10px; border-radius:var(--r-sm); white-space:nowrap;
         }
         .cm-foot {
-          display:flex; align-items:center; justify-content:space-between; gap:12px;
+          display:flex; align-items:center; justify-content:flex-end;
           margin-top:auto; padding-top:14px;
-          border-top:1px solid var(--border, #E8E5DD);
         }
-        .cm-open { font-family:var(--font-mono), monospace; font-size:11px; color:var(--muted-light, #857F6B); }
         .cm-go {
           font-family:var(--font-sans), system-ui, sans-serif;   /* dokunulan nesne */
           font-weight:600; font-size:13px; padding:9px 18px;
