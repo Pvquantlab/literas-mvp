@@ -459,12 +459,24 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
    ÖLÇÜLDÜ (week.wild.plus): en büyük metin 24px, ağırlık 300, harf aralığı
    POZİTİF (~0.04em), satır 1.2. Eskiden 27px serif, 600 ağırlık, NEGATİF
    aralıktı — üç boyutta da referansın tersi. */
+/* Bölüm başlığı. ÖLÇÜLDÜ (week.wild.plus "The Facts" / "FAQs" /
+   "What you should bring"): 18px, ağırlık 300, harf aralığı 0.72px (=.04em),
+   BÜYÜK HARF, serif, mürekkep.
+   Doküman "0.9rem ve 0.15em ve ortalanmış" diyordu; üçü de yanlış çıktı.
+   Bizde eksik olan tek şey büyük harfti.
+
+   TÜRKÇE TUZAĞI: text-transform:uppercase "i" harfini varsayılan olarak
+   "I" yapar. <html lang="tr"> ayarlı olduğu için tarayıcı Türkçe kasa
+   eşlemesini uyguluyor ve doğru "İ" üretiyor. Tarayıcıda doğrulandı:
+   lang="tr" ile YAKLAŞAN ETKİNLİKLER, lang'siz YAKLAŞAN ETKINLIKLER.
+   lang özniteliği kaldırılırsa bu başlıklar bozulur. */
 .h-section {
   font-family: var(--font-serif), Georgia, serif;
   font-weight: 400;
-  font-size: var(--t-xl);
+  font-size: 18px;
   letter-spacing: .04em;
   line-height: 1.2;
+  text-transform: uppercase;
   color: var(--ink);
 }
 
@@ -507,9 +519,8 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
 .empty-state {
   text-align: center;
   padding: var(--s-7) var(--s-5);
-  border: 1.5px dashed var(--border-mid);
-  border-radius: var(--r-lg);
-  background: var(--paper-cream);
+  border-radius: var(--r-md);
+  background: var(--panel);   /* kesikli çerçeve kalktı: DNA'da çerçeve yok */
 }
 .empty-state p { color: var(--muted); margin-bottom: var(--s-4); }
 
@@ -851,7 +862,12 @@ p, .seats-label {
 
 /* --- Kaydırmayla beliriş --------------------------------------------------
    JS yok, kütüphane yok. Desteklenmeyen tarayıcıda içerik zaten görünür
-   durumda kalır — @supports bunu garanti eder. */
+   durumda kalır; @supports bunu garanti eder.
+
+   Yapım talimatı §4 burada GSAP ScrollTrigger öneriyor. Gerekmedi: CSS'in
+   kendi scroll-driven animasyonu aynı işi kütüphanesiz yapıyor ve her öğe
+   kendi konumuna göre ilerlediği için kademelenme (stagger) bedavaya
+   geliyor. Dokümanın değerleri: opaklık 0->1, y 24->0, ~0.6s, abartma yok. */
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
@@ -861,7 +877,7 @@ p, .seats-label {
       animation-range: entry 10% cover 26%;
     }
     @keyframes reveal-in {
-      from { opacity: 0; transform: translateY(14px); }
+      from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: none; }
     }
   }

@@ -364,6 +364,7 @@ export default async function HomePage({
       >
         {/* Hücre 1: içerik ALTA yaslı, üstü bilerek boş */}
         <div
+          className="reveal"
           style={{
             ...kunyeHucre,
             minHeight: 380,
@@ -408,7 +409,7 @@ export default async function HomePage({
 
         {/* Hücre 2: GERÇEKLER — referansın "THE FACTS" bloğu, tek harfli
             alan etiketleriyle. */}
-        <div style={{ ...kunyeHucre, minHeight: 380, position: 'relative', overflow: 'hidden' }}>
+        <div className="reveal" style={{ ...kunyeHucre, minHeight: 380, position: 'relative', overflow: 'hidden' }}>
           <RolyefKap cizim={RolyefSehir} konum="sag-alt" olcek={1.0} opaklik={0.12} />
           {/* İÇ PANEL. Referansın "The Facts" kutusu kartın İÇİNDE ikinci bir
               yüzey: #E8E8E8, 4px köşe, 24px dolgu (394x394 ölçüldü). Çift
@@ -450,6 +451,7 @@ export default async function HomePage({
         {/* Referansta karşılama paragrafı MAVİ SÜTUN üstünde beyaz metin —
             ekranda tek dolu mavi alan o. Aynı rol burada. */}
         <div
+          className="reveal"
           style={{
             ...kunyeHucre,
             minHeight: 380,

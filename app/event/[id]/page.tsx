@@ -568,10 +568,11 @@ export default async function EventPage({
            Önceki hâli 700 / -.02em idi, yani DNA'nın tam tersi. */
         .ed-h2 {
           font-family: var(--font-serif), Georgia, serif;
-          font-size: var(--t-xl);
+          font-size: 18px;
           font-weight: 400;
           letter-spacing: .04em;
           line-height: 1.2;
+          text-transform: uppercase;   /* ölçüldü: referansta bölüm başlıkları büyük harf */
           color: var(--ink);
           padding-bottom: var(--s-3);
           margin-bottom: var(--s-4);

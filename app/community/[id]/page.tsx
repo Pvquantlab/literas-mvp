@@ -563,10 +563,11 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         .cp-block + .cp-block { margin-top: var(--s-7); }
         .cp-h2 {
           font-family: var(--font-serif), Georgia, serif;
-          font-size: var(--t-xl);
+          font-size: 18px;
           font-weight: 400;
           letter-spacing: .04em;
           line-height: 1.2;
+          text-transform: uppercase;   /* ölçüldü: referansta bölüm başlıkları büyük harf */
           color: var(--ink);
           padding-bottom: var(--s-3);
           margin-bottom: var(--s-4);
