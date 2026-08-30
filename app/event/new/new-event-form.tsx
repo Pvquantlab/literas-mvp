@@ -20,6 +20,14 @@ export default function NewEventForm({
   const [maxAttendees, setMaxAttendees] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [tekrarli, setTekrarli] = useState(false)
+  const [frekans, setFrekans] = useState('haftalik')
+  const [tekrarSayisi, setTekrarSayisi] = useState('8')
+  // İstek kimliği form ilk kurulduğunda ÜRETİLİR ve sabit kalır: iki kez
+  // basılan "Oluştur" düğmesi aynı kimliği gönderir, DB ikinciyi yok sayar.
+  // useState'in lazy initializer'ı ŞART — her render'da yeni uuid üretilseydi
+  // koruma hiç çalışmazdı.
+  const [istekId] = useState(() => crypto.randomUUID())
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -38,6 +46,9 @@ export default function NewEventForm({
         location,
         event_date: localInputToISO(eventDate),
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
+        ...(tekrarli
+          ? { tekrar: { frekans, sayi: parseInt(tekrarSayisi), istek_id: istekId } }
+          : {}),
       }),
     })
 
@@ -125,6 +136,51 @@ export default function NewEventForm({
           required
         />
       </div>
+
+      <div style={groupStyle}>
+        <label
+          style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+        >
+          <input
+            type="checkbox"
+            checked={tekrarli}
+            onChange={(e) => setTekrarli(e.target.checked)}
+            /* globals.css:256 'input' seçicisi checkbox'ı da vuruyor:
+               width:100% ve padding:11px 16px geliyor. Elle eziliyor. */
+            style={{ width: '16px', height: '16px', padding: 0, margin: 0, flex: '0 0 auto' }}
+          />
+          Tekrarlanan buluşma
+        </label>
+      </div>
+
+      {tekrarli && (
+        <>
+          <div style={groupStyle}>
+            <label htmlFor="frekans" style={labelStyle}>Ne sıklıkla?</label>
+            <select id="frekans" value={frekans} onChange={(e) => setFrekans(e.target.value)}>
+              <option value="haftalik">Her hafta</option>
+              <option value="iki_haftalik">İki haftada bir</option>
+              <option value="aylik">Her ay</option>
+            </select>
+          </div>
+
+          <div style={groupStyle}>
+            <label htmlFor="tekrarSayisi" style={labelStyle}>Kaç buluşma?</label>
+            <input
+              id="tekrarSayisi"
+              type="number"
+              min={2}
+              max={26}
+              value={tekrarSayisi}
+              onChange={(e) => setTekrarSayisi(e.target.value)}
+            />
+            <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
+              En az 2, en fazla 26 buluşma. Hepsi tek seferde oluşur; sonra
+              tek tek ya da toplu düzenleyebilirsin.
+            </span>
+          </div>
+        </>
+      )}
 
       <div style={groupStyle}>
         <label htmlFor="maxAttendees" style={labelStyle}>
