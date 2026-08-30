@@ -101,8 +101,8 @@ export default async function KesfetPage({
 
     if (!activeCategory || (communityIds && communityIds.length > 0)) {
       let query = supabase
-        .from('events')
-        .select('id, title, event_date, location, cover_image_url, community:communities!inner(id, name, category, city, status)')
+        .from('etkinlik_vitrin')
+        .select('id, title, event_date, location, cover_image_url, series_id, community:communities!inner(id, name, category, city, status)')
         .gte('event_date', new Date().toISOString())
         .eq('community.status', 'approved')
         .order('event_date', { ascending: true })

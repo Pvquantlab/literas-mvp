@@ -180,13 +180,24 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   /* --- Etkinlikler: yaklaşanlar + son geçmişler (zaman çizelgesi ve takvim) --- */
 
   const nowIso = new Date().toISOString()
-  const [upcomingRes, pastRes] = await Promise.all([
+
+  // Takvim bu ayı (İstanbul) çiziyor; ay sınırlarını sorgudan önce hesapla.
+  const nowIst = istParts(new Date())
+  const calY = nowIst.y
+  const calM = nowIst.m
+  // Türkiye 2016'dan beri yaz saati uygulamıyor, ofset sabit +03:00 — bu yüzden
+  // İstanbul ayı başlangıcı/bitişi UTC'ye 3 saat geri kaydırılarak bulunuyor.
+  const ayBasiIso = new Date(Date.UTC(calY, calM, 1) - 3 * 60 * 60 * 1000).toISOString()
+  const aySonuIso = new Date(Date.UTC(calY, calM + 1, 1) - 3 * 60 * 60 * 1000).toISOString()
+
+  const [upcomingRes, pastRes, takvimRes] = await Promise.all([
     supabase
-      .from('events')
-      .select('id, title, location, event_date, cover_image_url')
+      .from('etkinlik_vitrin')
+      .select('id, title, location, event_date, cover_image_url, series_id')
       .eq('community_id', id)
       .gte('event_date', nowIso)
-      .order('event_date', { ascending: true }),
+      .order('event_date', { ascending: true })
+      .limit(20),
     supabase
       .from('events')
       .select('id, title, location, event_date, cover_image_url')
@@ -194,6 +205,14 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
       .lt('event_date', nowIso)
       .order('event_date', { ascending: false })
       .limit(6),
+    // Takvim, seriyi katlamış "yaklaşan" listesinden değil doğrudan events'ten
+    // besleniyor — aksi halde serinin yalnızca ilk günü işaretlenirdi.
+    supabase
+      .from('events')
+      .select('event_date')
+      .eq('community_id', id)
+      .gte('event_date', ayBasiIso)
+      .lt('event_date', aySonuIso),
   ])
   const upcoming = upcomingRes.data ?? []
   const past = pastRes.data ?? []
@@ -218,15 +237,13 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   const pastGroups = groupByDay(past)
 
   /* --- Takvim: bu ay (İstanbul), etkinlik olan günlerde nokta --- */
+  /* nowIst/calY/calM yukarıda, sorgulardan önce hesaplandı. */
 
-  const nowIst = istParts(new Date())
-  const calY = nowIst.y
-  const calM = nowIst.m
   const daysInMonth = new Date(Date.UTC(calY, calM + 1, 0)).getUTCDate()
   // Pazartesi başlangıçlı ofset
   const firstDow = (new Date(Date.UTC(calY, calM, 1)).getUTCDay() + 6) % 7
   const eventDays = new Set(
-    [...upcoming, ...past]
+    (takvimRes.data ?? [])
       .map((ev: any) => istParts(new Date(ev.event_date)))
       .filter((p) => p.y === calY && p.m === calM)
       .map((p) => p.d)

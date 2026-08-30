@@ -115,7 +115,7 @@ export default async function HomePage({
    * sütunda hata döndürür, sessizce boş liste değil.
    */
   let eventQuery = supabase
-    .from('events')
+    .from('etkinlik_vitrin')
     .select(
       'id, title, event_date, location, cover_image_url, community:communities!inner(name, category, city)'
     )

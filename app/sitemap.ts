@@ -33,9 +33,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }))
 
-  // Gelecekteki etkinlikler
+  // Gelecekteki etkinlikler — vitrin serideki ~12 neredeyse özdeş URL'i tek satıra katlar
   const { data: events } = await supabase
-    .from('events')
+    .from('etkinlik_vitrin')
     .select('id, event_date, created_at')
     .gte('event_date', new Date().toISOString())
 

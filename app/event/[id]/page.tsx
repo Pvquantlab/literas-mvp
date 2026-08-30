@@ -186,16 +186,22 @@ export default async function EventPage({
 
   // Topluluğun diğer yaklaşan etkinlikleri — kenar kolonundaki liste için
   // (Luma'daki "Upcoming Events" karşılığı). Bu etkinlik hariç, en yakın 4.
-  const { data: otherEvents } = event.community_id
+  // Vitrin seri başına tek satır verdiği için bulunduğumuz serinin temsilcisi
+  // de en fazla bir satır olarak gelebilir; onu aşağıda ayrıca eleriz.
+  const { data: otherEventsData } = event.community_id
     ? await supabase
-        .from('events')
-        .select('id, title, event_date')
+        .from('etkinlik_vitrin')
+        .select('id, title, event_date, series_id')
         .eq('community_id', event.community_id)
         .neq('id', id)
         .gte('event_date', new Date().toISOString())
         .order('event_date', { ascending: true })
         .limit(4)
     : { data: [] as any[] }
+
+  const otherEvents = (otherEventsData ?? []).filter(
+    (e) => !event.series_id || e.series_id !== event.series_id
+  )
 
   // Sunucu UTC'de calisiyor. getDate/getHours sunucunun yerel saatini
   // kullaniyor ve canlida 3 saat kayma uretiyordu: WhatsApp metninde
