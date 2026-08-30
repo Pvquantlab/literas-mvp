@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail } from '@/lib/email'
 import { SITE_URL } from '@/lib/site'
+import * as Sentry from '@sentry/nextjs'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -125,6 +126,58 @@ function buildMail(template: string, payload: any): { subject: string; html: str
     }
   }
 
+  // Seri toplu düzenleme — kişi başına TEK mail (tekrar başına değil).
+  // payload.tur ayrımı bilinçli: 'event_change' adını ileride tekil etkinlik
+  // de kuyruğa yazarsa gövdeler çakışmasın.
+  if (template === 'event_change' && payload.tur === 'seri') {
+    const safeTitle = escapeHtml(payload.title ?? '')
+    const safeCommunity = escapeHtml(payload.community_name ?? '')
+    const safeLocation = escapeHtml(payload.location ?? '')
+    const adet = Number(payload.adet ?? 0)
+    const communityUrl = `${SITE}/community/${payload.community_id}`
+
+    return {
+      subject: `${payload.title ?? 'Seri'} — ${adet} buluşma güncellendi`,
+      html: mailShell(`
+        <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+          seride değişiklik var
+        </h1>
+        <p style="color: #1F2A24;">
+          Katıldığın <em>${safeTitle}</em> serisinde <strong>${adet}</strong>
+          buluşma güncellendi.
+        </p>
+        <p style="color: #1F2A24;">Güncel yer: ${safeLocation}</p>
+        <p style="color: #1F2A24;">
+          <a href="${communityUrl}" style="color: #B8541A;">${safeCommunity} sayfasında hepsini gör</a>
+        </p>
+      `),
+    }
+  }
+
+  // Seri toplu iptal — kişi başına TEK mail.
+  if (template === 'event_cancel' && payload.tur === 'seri') {
+    const safeTitle = escapeHtml(payload.title ?? '')
+    const safeCommunity = escapeHtml(payload.community_name ?? '')
+    const adet = Number(payload.adet ?? 0)
+    const communityUrl = `${SITE}/community/${payload.community_id}`
+
+    return {
+      subject: `${payload.title ?? 'Seri'} — kalan buluşmalar iptal edildi`,
+      html: mailShell(`
+        <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+          seri iptal edildi
+        </h1>
+        <p style="color: #1F2A24;">
+          Katıldığın <em>${safeTitle}</em> serisinde kalan
+          <strong>${adet}</strong> buluşma iptal edildi.
+        </p>
+        <p style="color: #1F2A24;">
+          <a href="${communityUrl}" style="color: #B8541A;">${safeCommunity} sayfasına dön</a>
+        </p>
+      `),
+    }
+  }
+
   return null
 }
 
@@ -242,6 +295,22 @@ export async function GET(req: Request) {
   }
 
   const kuyruk = outbox ?? []
+
+  // KUYRUK TAVANI. claim_email_outbox LIMIT 200 döndürüyor, yani kuyruk.length
+  // en fazla 200 olabilir ve gerçek birikimi GÖSTERMEZ — 200 görmek "tavana
+  // dayandı" demektir, "tam 200 mail var" değil.
+  //
+  // Neden önemli: koşu başına mail tavanı ~83 (SURE_BUTCESI_MS 50.000 /
+  // MAIL_ARASI_MS 600) ve cron GÜNDE BİR koşuyor. Tavana dayanan bir kuyrukta
+  // taşan hatırlatmalar ertesi güne, yani ETKİNLİK GEÇTİKTEN SONRAYA kalır.
+  // Seri özelliği günlük tepeyi çarptığı için bu alarm onunla birlikte geliyor.
+  const kuyrukTavani = kuyruk.length >= 200
+  if (kuyrukTavani) {
+    console.warn(`[cron/reminders] kuyruk tavanda: ${kuyruk.length} satır alındı`)
+    // sendDefaultPii: false kuralı gereği mesaja e-posta/kullanıcı kimliği konmaz.
+    Sentry.captureMessage('email_outbox kuyrugu tavanda (>=200)', 'warning')
+  }
+
   let sent = 0
   let basarisiz = 0
   let sureDoldu = false
@@ -302,5 +371,6 @@ export async function GET(req: Request) {
     basarisiz,
     kuyrukta: kuyruk.length,
     sureDoldu,
+    kuyrukTavani,
   })
 }
