@@ -34,6 +34,7 @@ DECLARE
   v_bildirilen int := 0;
   v_idler uuid[];
   v_istek_devral uuid;
+  v_kaynak_bosalacak boolean;
 BEGIN
   -- TEK SAVUNMA KATMANI. SECURITY DEFINER events politikalarını atlıyor;
   -- p_series_id istemciden geliyor ve series_id anon'a bile okunabilir.
@@ -81,15 +82,26 @@ BEGIN
       UPDATE events SET seri_disina_alindi_at = now() WHERE id = ANY(v_idler);
       GET DIAGNOSTICS v_ayrildi = ROW_COUNT;
     ELSE
-      -- istek_id'yi yeni seriye DEVRETMEDEN once kaynaktan sok: kaynak satir
-      -- (bu bolmede bosalmasa bile) HALEN ayni deger ile satirda duruyor,
-      -- event_series_istek_benzersiz KISMI ama DEFERRABLE degil — ayni
-      -- (organizer_id, istek_id) ile ikinci satiri INSERT etmek, kaynak
-      -- henuz silinmemisken aninda 23505 verir. Once kaynaktan sokup NULL
-      -- birakiyoruz, sonra yeni satira tasiyoruz.
-      SELECT s.istek_id INTO v_istek_devral FROM event_series s WHERE s.id = p_series_id;
-      IF v_istek_devral IS NOT NULL THEN
-        UPDATE event_series SET istek_id = NULL WHERE id = p_series_id;
+      -- istek_id yalnizca kaynak seri BU BOLMEYLE BOSALACAKSA devrediliyor.
+      -- Kaynak hayatta kalirsa erken tekrarlar onda; ikizlenme anahtari da
+      -- onda kalmali — aksi halde yeni yari (mesela seri_sil ile) silindiginde
+      -- anahtar tamamen kaybolur ve bayat bir sekmeden gelen retry, hayatta
+      -- kalan kaynagin yanina ikinci bir tam seri kurar.
+      SELECT NOT EXISTS (
+        SELECT 1 FROM events e
+         WHERE e.series_id = p_series_id AND e.id <> ALL(v_idler)
+      ) INTO v_kaynak_bosalacak;
+
+      -- NULL'lama adimi kaynak bosalacak dalda bile gerekli: kismi benzersiz
+      -- indeks (event_series_istek_benzersiz) DEFERRABLE degil, INSERT aninda
+      -- kontrol edilir ve kaynak satir o an hala (silinmeden once) duruyor.
+      IF v_kaynak_bosalacak THEN
+        SELECT s.istek_id INTO v_istek_devral FROM event_series s WHERE s.id = p_series_id;
+        IF v_istek_devral IS NOT NULL THEN
+          UPDATE event_series SET istek_id = NULL WHERE id = p_series_id;
+        END IF;
+      ELSE
+        v_istek_devral := NULL;
       END IF;
 
       INSERT INTO event_series (community_id, organizer_id, frekans, baslangic,
