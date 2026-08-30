@@ -292,8 +292,11 @@ toplu seçildiğinde gövdedeki `event_date` yok sayılır**, düzenleme formund
 tarih alanı kilitlenir ve arayüz sebebini söyler. Seri çapında tarih kaydırma
 bu turun **kapsamı dışında**.
 
-`seri_guncelle` imzasında **NULL parametre "bu kolona dokunma" demektir**;
-gönderilmeyen alan `COALESCE` ile korunur.
+`seri_guncelle` **beş alanın hepsini yazar.** Düzenleme formu zaten hepsini
+gönderiyor (`eventEditSchema` hepsini zorunlu tutuyor), ve "NULL = dokunma"
+kuralı `description`'ı gerçekten temizlemeyi imkânsız kılardı. Üç durumlu tek
+alan `cover_image_url`; o da ayrı bir `p_kapak_degissin` bayrağıyla çözülüyor —
+tekil yoldaki (`etkinlik_guncelle`) davranışın aynısı.
 
 **`sonrakiler` seriyi BÖLER.** Pivot ve sonrasındaki tekrarlar **yeni bir
 `event_series` satırına** taşınır (aynı topluluk/organizatör, `baslangic` =
@@ -482,7 +485,8 @@ gerçekten kullanıldığı görülecek.
 
 ### Topluluk sayfası: iki sorgu, bir takvim
 
-`app/community/[id]/page.tsx` tek sorgu değil, üç ayrı ihtiyaç var:
+`app/community/[id]/page.tsx` bugün **iki** `.from('events')` sorgusu içeriyor
+(yaklaşan ve geçmiş); üçüncü ihtiyaç bu turda **yeni yazılıyor**:
 
 1. **Yaklaşan** (`.gte('event_date', nowIso)`) → view'a geçer. Bu sorguda
    **hiç LIMIT yok** (doğrulandı); katlamadan bağımsız olarak limit bu turda
@@ -519,8 +523,9 @@ GERÇEKLER bloğuna "Seri" satırı ve serinin sonraki 3 buluşmasına bağlant�
 `.neq('id', id)` dışında eleme yok, liste aynı serinin 4 tekrarıyla dolar.
 
 **Düzenle/Sil**: kapsam seçici; toplu kapsamda tarih alanı kilitli ve sebebi
-yazılı. Silme UI'ı **iki ayrı yerde** kodlanmış (`edit-event-form.tsx` ve
-`event-actions.tsx`); ikisi de güncellenmeli.
+yazılı. Silme UI'ı **iki ayrı yerde** kodlanmış — `app/event/[id]/edit/
+edit-event-form.tsx` (`confirm()` dialogu) ve `app/event/[id]/event-actions.tsx`
+(satır içi iki aşamalı onay); ikisi de güncellenmeli.
 
 ---
 
@@ -534,7 +539,7 @@ yazılı. Silme UI'ı **iki ayrı yerde** kodlanmış (`edit-event-form.tsx` ve
 | `app/api/event/route.ts` | seri dalı (`seri_olustur` RPC) |
 | `app/api/event/[id]/route.ts` | `etkinlik_guncelle` RPC'ye geçiş; `kapsam` dalları |
 | `app/event/new/new-event-form.tsx` | tekrar alanları + `istek_id` |
-| `app/event/[id]/edit-event-form.tsx`, `components/event-actions.tsx` | kapsam seçici |
+| `app/event/[id]/edit/edit-event-form.tsx`, `app/event/[id]/event-actions.tsx` | kapsam seçici |
 | `components/event-card.tsx` | seri rozeti |
 | `app/event/[id]/page.tsx` | künye "Seri" satırı, aynı seriyi eleme |
 | `app/page.tsx`, `app/kesfet/page.tsx`, `app/community/[id]/page.tsx`, `app/sitemap.ts` | `etkinlik_vitrin` |
@@ -557,6 +562,12 @@ yazılı. Silme UI'ı **iki ayrı yerde** kodlanmış (`edit-event-form.tsx` ve
   (view sayesinde), ama seri için kendi sayfası yok. SEO açısından doğru çözüm
   seri sayfası + canonical; bu tur yalnızca sitemap'e view uyguluyor.
 - **Seriyi uzatma.** 26 tavanına gelen seri için "12 hafta daha ekle".
+- **Profil sayfası katlanmıyor.** `app/profile/[id]/page.tsx` hem düzenlenen
+  hem katılınan etkinlikleri **geçmişiyle birlikte** listeliyor; view yalnızca
+  geleceği içerdiği için oraya geçemez. Seri kurulunca bu sayfa 12 tekrarı da
+  ayrı ayrı gösterir — bilinçli, çünkü profil bir **geçmiş kaydı**, keşif
+  yüzeyi değil. `series_id` yine de select listelerine ekleniyor ki kartlarda
+  seri rozeti çıksın.
 - **Cron'u saatliğe çıkarmak.** Kuyruk alarmı tetiklenince değerlendirilecek.
 
 ## Kapsam dışı ama BU İŞLE ORTAYA ÇIKAN mevcut hatalar
