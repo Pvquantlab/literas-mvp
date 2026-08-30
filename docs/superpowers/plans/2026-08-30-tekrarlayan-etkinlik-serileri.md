@@ -778,8 +778,8 @@ git commit -m "seri: seri_olustur ve etkinlik_guncelle fonksiyonlari"
 **Arayüzler:**
 - Tüketir: Görev 1 ve 2
 - Üretir:
-  - `public.seri_guncelle(p_series_id uuid, p_kapsam text, p_from timestamptz, p_title text, p_description text, p_location text, p_max_attendees int, p_cover_image_url text, p_kapak_degissin boolean) RETURNS TABLE (guncellenen int, atlanan int, yeni_series_id uuid, bildirilen int)`
-  - `public.seri_sil(p_series_id uuid, p_kapsam text, p_from timestamptz) RETURNS TABLE (silinen int, bildirilen int)`
+  - `public.seri_guncelle(p_series_id uuid, p_kapsam text, p_from timestamptz, p_title text, p_description text, p_location text, p_max_attendees int, p_cover_image_url text, p_kapak_degissin boolean) RETURNS TABLE (guncellenen int, atlanan int, yeni_series_id uuid, ayrildi int, bildirilen int)`
+  - `public.seri_sil(p_series_id uuid, p_kapsam text, p_from timestamptz) RETURNS TABLE (silinen int, atlanan int, bildirilen int)`
 
 **Spec'ten bilinçli sapma — "NULL = dokunma" kuralı kullanılmıyor.** Spec
 `seri_guncelle` için "NULL parametre bu kolona dokunma demektir" diyordu. Bu
@@ -1782,6 +1782,10 @@ Karar 4'ün ilan ettiği ön koşul sağlanmaz.
       guncellenen: seri?.guncellenen ?? 0,
       atlanan: seri?.atlanan ?? 0,
       yeni_series_id: seri?.yeni_series_id ?? null,
+      // Son tekrarda 'sonrakiler' seçilirse bölme yerine o satır seriden
+      // ÇIKARILIR (tekrar_sayisi CHECK'i 2'nin altına inemez). yeni_series_id
+      // NULL kaldığı için arayüz ikisini ayırt edemezdi.
+      ayrildi: seri?.ayrildi ?? 0,
     })
   }
 
@@ -1856,7 +1860,14 @@ query string'den alınır — deponun tek emsali `app/api/rsvp/route.ts:106-115`
     // İptal bildirimi ve kuyruk temizliği seri_sil içinde, silmeden ÖNCE
     // yapıldı — sonra rsvps CASCADE ile gittiği için kime haber verileceği
     // bilgisi kalmıyor.
-    return NextResponse.json({ ok: true, kapsam, silinen: silRows?.[0]?.silinen ?? 0 })
+    return NextResponse.json({
+      ok: true,
+      kapsam,
+      silinen: silRows?.[0]?.silinen ?? 0,
+      // Elle düzenlenmiş tekrarlar silinmez (seri_guncelle ile simetrik);
+      // kullanıcı kaçının atlandığını bilmeli.
+      atlanan: silRows?.[0]?.atlanan ?? 0,
+    })
   }
 ```
 
@@ -2082,7 +2093,8 @@ dalı okunuyor, satır 37-45):
       setSonuc(
         `${data.guncellenen ?? 0} buluşma güncellendi` +
           (atlanan > 0 ? `, ${atlanan}'i elle düzenlendiği için atlandı` : '') +
-          (data.yeni_series_id ? '. Bu buluşma ve sonrakiler ayrı bir seri oldu.' : '')
+          (data.yeni_series_id ? '. Bu buluşma ve sonrakiler ayrı bir seri oldu.' : '') +
+          (data.ayrildi > 0 ? '. Bu buluşma seriden ayrıldı.' : '')
       )
       setLoading(false)
       router.refresh()
