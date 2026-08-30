@@ -2161,7 +2161,10 @@ dalı okunuyor, satır 37-45):
         `${data.guncellenen ?? 0} buluşma güncellendi` +
           (atlanan > 0 ? `, ${atlanan}'i elle düzenlendiği için atlandı` : '') +
           (data.yeni_series_id ? '. Bu buluşma ve sonrakiler ayrı bir seri oldu.' : '') +
-          (data.ayrildi > 0 ? '. Bu buluşma seriden ayrıldı.' : '')
+          (data.ayrildi > 0 ? '. Bu buluşma seriden ayrıldı.' : '') +
+          // Kullanicinin o an baktigi bulusma elle duzenlenmisse toplu
+          // guncelleme TAM DA ONU atliyor; sayfa degismemis gorunur.
+          (data.bu_atlandi ? '. Baktığın buluşma elle düzenlendiği için atlandı — onu tek tek güncelleyebilirsin.' : '')
       )
       setLoading(false)
       router.refresh()
