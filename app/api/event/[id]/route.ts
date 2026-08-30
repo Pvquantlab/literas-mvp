@@ -106,31 +106,76 @@ export async function PATCH(
     return NextResponse.json({ error: 'Yetkin yok' }, { status: 403 })
   }
 
-  const { title, description, location, event_date, max_attendees, cover_image_url } =
+  const { title, description, location, event_date, max_attendees, cover_image_url, kapsam } =
     parsed.data
 
-  const patch: Record<string, unknown> = {
-    title,
-    description: description || null,
-    location,
-    event_date,
-    max_attendees: max_attendees ?? null,
-  }
-  // Kapak yalnızca gövdede AÇIKÇA gönderildiyse değişir. Düzenleme formu bu
-  // alanı göndermiyor; koşulsuz yazsaydık her düzenleme kapağı silerdi.
-  if (cover_image_url !== undefined) {
-    patch.cover_image_url = cover_image_url || null
+  // TOPLU KAPSAM. event_date BİLİNÇLİ olarak taşınmıyor: eventEditSchema onu
+  // zorunlu tutuyor ve form koşulsuz gönderiyor, ama UNIQUE(series_id,
+  // event_date) yüzünden toplu yazım her seride ikinci satırda 23505 alır ve
+  // işlem tamamen geri döner. Gövdedeki event_date bu dalda YOK SAYILIR.
+  if (kapsam !== 'tek' && oldEvent.series_id) {
+    const { data: seriRows, error: seriError } = await supabase.rpc('seri_guncelle', {
+      p_series_id: oldEvent.series_id,
+      p_kapsam: kapsam,
+      p_from: kapsam === 'sonrakiler' ? oldEvent.event_date : null,
+      p_title: title,
+      p_description: description || null,
+      p_location: location,
+      p_max_attendees: max_attendees ?? null,
+      p_cover_image_url: cover_image_url === undefined ? null : (cover_image_url || null),
+      p_kapak_degissin: cover_image_url !== undefined,
+    })
+
+    if (seriError?.message?.includes('yetkisiz')) {
+      return NextResponse.json({ error: 'Yetkin yok' }, { status: 403 })
+    }
+    if (seriError) {
+      console.error('[event PATCH] seri güncellenemedi:', seriError)
+      return NextResponse.json({ error: 'Güncellenemedi' }, { status: 500 })
+    }
+
+    const seri = seriRows?.[0]
+    // Bildirim seri_guncelle içinde email_outbox'a yazıldı; burada mail
+    // gönderilmiyor (kişi başına tek mail, cron gönderiyor).
+    return NextResponse.json({
+      ok: true,
+      kapsam,
+      guncellenen: seri?.guncellenen ?? 0,
+      atlanan: seri?.atlanan ?? 0,
+      yeni_series_id: seri?.yeni_series_id ?? null,
+      // Son tekrarda 'sonrakiler' seçilirse bölme yerine o satır seriden
+      // ÇIKARILIR (tekrar_sayisi CHECK'i 2'nin altına inemez). yeni_series_id
+      // NULL kaldığı için arayüz ikisini ayırt edemezdi.
+      ayrildi: seri?.ayrildi ?? 0,
+    })
   }
 
-  const { data: updatedEvent, error: updateError } = await supabase
-    .from('events')
-    .update(patch)
-    .eq('id', id)
-    .select()
-    .single()
+  // TEKİL YOL. Düz .update() yerine RPC: seri_disina_alindi_at, updated_at ve
+  // reminder_sent_at kolonları istemciye kapalı (Görev 1), yalnızca
+  // SECURITY DEFINER fonksiyon yazabilir.
+  const { error: rpcError } = await supabase.rpc('etkinlik_guncelle', {
+    p_event_id: id,
+    p_title: title,
+    p_description: description || null,
+    p_location: location,
+    p_event_date: event_date.toISOString(),
+    p_max_attendees: max_attendees ?? null,
+    p_cover_image_url: cover_image_url === undefined ? null : (cover_image_url || null),
+    p_kapak_degissin: cover_image_url !== undefined,
+  })
 
-  if (updateError || !updatedEvent) {
-    console.error('[event PATCH] update hatası:', updateError)
+  if (rpcError?.message?.includes('yetkisiz')) {
+    return NextResponse.json({ error: 'Yetkin yok' }, { status: 403 })
+  }
+  if (rpcError) {
+    console.error('[event PATCH] update hatası:', rpcError)
+    return NextResponse.json({ error: 'Güncellenemedi' }, { status: 500 })
+  }
+
+  const { data: updatedEvent } = await supabase
+    .from('events').select('*').eq('id', id).single()
+
+  if (!updatedEvent) {
     return NextResponse.json({ error: 'Güncellenemedi' }, { status: 500 })
   }
 
@@ -218,6 +263,40 @@ export async function DELETE(
   const { ok, event } = await checkCanManage(supabase, user.id, id)
   if (!ok || !event) {
     return NextResponse.json({ error: 'Yetkin yok' }, { status: 403 })
+  }
+
+  // kapsam query string'den: DELETE gövdesi okunmuyor ve mevcut istemciler
+  // gövdesiz istek atıyor (geriye uyumluluk).
+  const kapsamHam = new URL(_req.url).searchParams.get('kapsam')
+  const kapsam =
+    kapsamHam === 'sonrakiler' || kapsamHam === 'tumu' ? kapsamHam : 'tek'
+
+  if (kapsam !== 'tek' && event.series_id) {
+    const { data: silRows, error: silError } = await supabase.rpc('seri_sil', {
+      p_series_id: event.series_id,
+      p_kapsam: kapsam,
+      p_from: kapsam === 'sonrakiler' ? event.event_date : null,
+    })
+
+    if (silError?.message?.includes('yetkisiz')) {
+      return NextResponse.json({ error: 'Yetkin yok' }, { status: 403 })
+    }
+    if (silError) {
+      console.error('[event DELETE] seri silinemedi:', silError)
+      return NextResponse.json({ error: 'İptal edilemedi' }, { status: 500 })
+    }
+
+    // İptal bildirimi ve kuyruk temizliği seri_sil içinde, silmeden ÖNCE
+    // yapıldı — sonra rsvps CASCADE ile gittiği için kime haber verileceği
+    // bilgisi kalmıyor.
+    return NextResponse.json({
+      ok: true,
+      kapsam,
+      silinen: silRows?.[0]?.silinen ?? 0,
+      // Elle düzenlenmiş tekrarlar silinmez (seri_guncelle ile simetrik);
+      // kullanıcı kaçının atlandığını bilmeli.
+      atlanan: silRows?.[0]?.atlanan ?? 0,
+    })
   }
 
   // Katılımcı listesi (silmeden önce al)
