@@ -15,11 +15,13 @@ export default function EventActions({
   const [confirming, setConfirming] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [uyari, setUyari] = useState<string | null>(null)
   const [kapsam, setKapsam] = useState<'tek' | 'sonrakiler' | 'tumu'>('tek')
 
   async function handleCancel() {
     setLoading(true)
     setError(null)
+    setUyari(null)
 
     // API rotası üzerinden sil: yetki kontrolü, rate limit ve
     // katılımcılara iptal e-postası burada çalışır.
@@ -33,6 +35,21 @@ export default function EventActions({
       const data = await res.json().catch(() => ({}))
       setError(data.error ?? 'İptal edilemedi. Lütfen tekrar dene.')
       setLoading(false)
+      return
+    }
+
+    // Toplu kapsamda o an baktığımız buluşma elle düzenlenmişse rota onu
+    // atlar — yönlendirmeden önce bunu söylemek zorundayız, yoksa kullanıcı
+    // az önce baktığı buluşmanın hâlâ yayında olduğunu bilmeden ayrılır.
+    const data = await res.json().catch(() => ({}))
+    if (data.bu_atlandi) {
+      setUyari(
+        `${data.silinen ?? 0} buluşma iptal edildi. Baktığın buluşma elle ` +
+        `düzenlendiği için atlandı — onu tek tek iptal edebilirsin.`
+      )
+      setLoading(false)
+      setConfirming(false)
+      router.refresh()
       return
     }
 
@@ -126,7 +143,10 @@ export default function EventActions({
             {loading ? 'siliniyor...' : 'evet, iptal et'}
           </button>
           <button
-            onClick={() => setConfirming(false)}
+            onClick={() => {
+              setConfirming(false)
+              setKapsam('tek')
+            }}
             disabled={loading}
             style={{
               background: 'none',
@@ -147,6 +167,9 @@ export default function EventActions({
 
       {error && (
         <p style={{ color: 'var(--coral-deep)', fontSize: '13px', width: '100%', marginTop: '8px' }}>{error}</p>
+      )}
+      {uyari && (
+        <p style={{ color: 'var(--ink)', fontSize: '13px', width: '100%', marginTop: '8px' }}>{uyari}</p>
       )}
     </div>
   )

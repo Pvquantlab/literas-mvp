@@ -51,7 +51,7 @@ export default function EditEventForm({ event }: { event: any }) {
       const atlanan = data.atlanan ?? 0
       setSonuc(
         `${data.guncellenen ?? 0} buluşma güncellendi` +
-          (atlanan > 0 ? `, ${atlanan}'i elle düzenlendiği için atlandı` : '') +
+          (atlanan > 0 ? `, elle düzenlendiği için ${atlanan} buluşma atlandı` : '') +
           (data.yeni_series_id ? '. Bu buluşma ve sonrakiler ayrı bir seri oldu.' : '') +
           (data.ayrildi > 0 ? '. Bu buluşma seriden ayrıldı.' : '') +
           // Kullanicinin o an baktigi bulusma elle duzenlenmisse toplu
@@ -68,17 +68,25 @@ export default function EditEventForm({ event }: { event: any }) {
   }
 
   async function handleDelete() {
+    // Kaydet için secilen kapsam burada da gecerli: kullanici "tumu"
+    // secip iptale basarsa serinin tamami silinecegini gormeli — aksi
+    // halde kaydetmek icin secip unuttugu kapsamla ters yonde surpriz olur.
+    const kapsamMetni =
+      kapsam === 'tumu' ? '\n\nSerinin TÜM gelecek buluşmaları iptal edilecek.'
+      : kapsam === 'sonrakiler' ? '\n\nBu buluşma ve sonraki buluşmalar iptal edilecek.'
+      : ''
     const confirmed = confirm(
-      `"${event.title}" etkinliğini iptal etmek istediğine emin misin?\n\nKatılımcılara iptal maili gidecek. Bu işlem geri alınamaz.`
+      `"${event.title}" etkinliğini iptal etmek istediğine emin misin?${kapsamMetni}\n\nKatılımcılara iptal maili gidecek. Bu işlem geri alınamaz.`
     )
     if (!confirmed) return
 
     setDeleting(true)
     setError('')
 
-    const res = await fetch(`/api/event/${event.id}`, {
-      method: 'DELETE',
-    })
+    const res = await fetch(
+      `/api/event/${event.id}${kapsam !== 'tek' ? `?kapsam=${kapsam}` : ''}`,
+      { method: 'DELETE' }
+    )
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
