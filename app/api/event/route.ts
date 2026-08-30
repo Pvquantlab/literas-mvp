@@ -93,13 +93,19 @@ export async function POST(req: Request) {
     }
 
     // Üyelere TEK duyuru maili: seriyi tarif eder, tekrar başına mail atılmaz.
-    const { data: seriEmailRows } = await supabase.rpc('get_member_emails', {
+    const { data: seriEmailRows, error: seriEmailError } = await supabase.rpc('get_member_emails', {
       p_community_id: community_id,
       p_exclude: user.id,
     })
+    if (seriEmailError) {
+      console.error('[event] seri uye mailleri alinamadi:', seriEmailError)
+    }
     const seriEmails = (seriEmailRows ?? []) as string[]
 
-    if (seriEmails.length > 0) {
+    // Duyuru maili YALNIZCA seri gercekten yeni kurulduysa. Ayni istek_id ile
+    // gelen tekrar cagri (cift tiklama, ag yeniden denemesi) veritabaninda
+    // hicbir sey uretmiyor; posta kutusunda da uretmemeli.
+    if (seri.yeni_mi && seriEmails.length > 0) {
       const sikligi = tekrar.frekans === 'haftalik' ? 'haftalık'
         : tekrar.frekans === 'iki_haftalik' ? 'iki haftada bir' : 'aylık'
       const safeTitle = escapeHtml(title)
@@ -133,6 +139,11 @@ export async function POST(req: Request) {
     // Sözleşme: yanıt şekli tekil dalla AYNI kalmalı — form data.event.id okuyor.
     const { data: ilkEvent } = await supabase
       .from('events').select('*').eq('id', seri.ilk_event_id).single()
+
+    if (!ilkEvent) {
+      console.error('[event] seri kuruldu ama ilk tekrar okunamadi:', seri.ilk_event_id)
+      return NextResponse.json({ error: 'Seri oluşturulamadı' }, { status: 500 })
+    }
 
     return NextResponse.json({
       ok: true,

@@ -12,6 +12,10 @@
 -- Neden tek RPC: POST /api/event "strict" rate limitte (dakikada 3, lib/rate-
 -- limit.ts). Seri N ayrı POST ile kurulamaz — 4. tekrarda 429 alır, yarım kalır
 -- ve geri alma yoktur.
+--
+-- Donus tipi degisti: CREATE OR REPLACE tek basina yetmez.
+DROP FUNCTION IF EXISTS public.seri_olustur(uuid, text, text, text, timestamptz,
+  text, int, int, text, uuid);
 CREATE OR REPLACE FUNCTION public.seri_olustur(
   p_community_id uuid,
   p_title text,
@@ -24,7 +28,7 @@ CREATE OR REPLACE FUNCTION public.seri_olustur(
   p_cover_image_url text,
   p_istek_id uuid
 )
-RETURNS TABLE (series_id uuid, ilk_event_id uuid, uretilen int)
+RETURNS TABLE (series_id uuid, ilk_event_id uuid, uretilen int, yeni_mi boolean)
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp
 AS $function$
 DECLARE
@@ -57,7 +61,7 @@ BEGIN
       SELECT e.id INTO v_ilk FROM events e
        WHERE e.series_id = v_series ORDER BY e.event_date LIMIT 1;
       SELECT count(*)::int INTO v_sayac FROM events e WHERE e.series_id = v_series;
-      RETURN QUERY SELECT v_series, v_ilk, v_sayac;
+      RETURN QUERY SELECT v_series, v_ilk, v_sayac, false;
       RETURN;
     END IF;
   END IF;
@@ -76,7 +80,7 @@ BEGIN
     SELECT e.id INTO v_ilk FROM events e
      WHERE e.series_id = v_series ORDER BY e.event_date LIMIT 1;
     SELECT count(*)::int INTO v_sayac FROM events e WHERE e.series_id = v_series;
-    RETURN QUERY SELECT v_series, v_ilk, v_sayac;
+    RETURN QUERY SELECT v_series, v_ilk, v_sayac, false;
     RETURN;
   END;
 
@@ -106,7 +110,7 @@ BEGIN
     IF v_i = 0 THEN v_ilk := v_bu; END IF;
   END LOOP;
 
-  RETURN QUERY SELECT v_series, v_ilk, p_tekrar_sayisi;
+  RETURN QUERY SELECT v_series, v_ilk, p_tekrar_sayisi, true;
 END;
 $function$;
 
