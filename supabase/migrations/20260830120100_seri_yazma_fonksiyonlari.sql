@@ -62,11 +62,23 @@ BEGIN
     END IF;
   END IF;
 
-  INSERT INTO event_series (community_id, organizer_id, frekans, baslangic,
-                            tekrar_sayisi, istek_id)
-  VALUES (p_community_id, auth.uid(), p_frekans, p_baslangic,
-          p_tekrar_sayisi, p_istek_id)
-  RETURNING id INTO v_series;
+  BEGIN
+    INSERT INTO event_series (community_id, organizer_id, frekans, baslangic,
+                              tekrar_sayisi, istek_id)
+    VALUES (p_community_id, auth.uid(), p_frekans, p_baslangic,
+            p_tekrar_sayisi, p_istek_id)
+    RETURNING id INTO v_series;
+  EXCEPTION WHEN unique_violation THEN
+    -- Eszamanli ikinci istek: ilk istek commit etmis. Yeni seri uretmiyoruz,
+    -- onun kurdugu seriyi donduruyoruz.
+    SELECT s.id INTO v_series FROM event_series s
+     WHERE s.organizer_id = auth.uid() AND s.istek_id = p_istek_id;
+    SELECT e.id INTO v_ilk FROM events e
+     WHERE e.series_id = v_series ORDER BY e.event_date LIMIT 1;
+    SELECT count(*)::int INTO v_sayac FROM events e WHERE e.series_id = v_series;
+    RETURN QUERY SELECT v_series, v_ilk, v_sayac;
+    RETURN;
+  END;
 
   v_adim := CASE p_frekans
               WHEN 'haftalik'     THEN interval '7 days'
@@ -158,6 +170,17 @@ BEGIN
   IF NOT v_fark THEN
     RETURN QUERY SELECT false, false;
     RETURN;
+  END IF;
+
+  -- UNIQUE (series_id, event_date) capsaminda kaliyoruz: seri_disina_alindi_at
+  -- damgasi series_id'yi TEMIZLEMIYOR. Ham 23505 yerine Turkce mesaj.
+  IF v_tarih_degisti AND e.series_id IS NOT NULL AND EXISTS (
+    SELECT 1 FROM events x
+     WHERE x.series_id = e.series_id
+       AND x.event_date = p_event_date
+       AND x.id <> p_event_id
+  ) THEN
+    RAISE EXCEPTION 'o tarihte seride baska bulusma var';
   END IF;
 
   UPDATE events SET

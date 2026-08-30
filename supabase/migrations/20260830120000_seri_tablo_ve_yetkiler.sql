@@ -26,11 +26,6 @@ CREATE TABLE IF NOT EXISTS public.event_series (
 CREATE UNIQUE INDEX IF NOT EXISTS event_series_istek_benzersiz
   ON public.event_series (organizer_id, istek_id) WHERE istek_id IS NOT NULL;
 
--- "sonrakiler" kapsamı seriyi bölerken yeni satır istek_id'siz doğar;
--- bu yüzden index KISMİ.
-CREATE INDEX IF NOT EXISTS idx_event_series_community
-  ON public.event_series (community_id);
-
 -- -----------------------------------------------------------------------------
 -- 2. event_series RLS — okuma açık, yazma TAMAMEN kapalı
 -- -----------------------------------------------------------------------------
