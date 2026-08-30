@@ -2371,19 +2371,12 @@ Küme yine `Set<number>` (ayın günü) — çizim kodu (satır 459-472) **deği
 Yan fayda: `past` yalnızca `.limit(6)` getirdiği için ay başındaki 7. ve
 sonraki geçmiş etkinlikler bugün de işaretlenmiyordu; bu sorgu onu da kapatıyor.
 
-**(d) Sayaç.** Satır 477-480'deki `{upcoming.length}` katlanmış listeyi
-sayıyor, yani "3 yaklaşan buluşma" derken 12 buluşma var. Görev 11'de eklenen
-`seri_kalanlar` sonucuyla düzelt:
-
-```tsx
-              <div className="cp-stat">
-                <b>{yaklasanToplam}</b>
-                <span>yaklaşan buluşma</span>
-              </div>
-```
-
-`yaklasanToplam` = katlanmış listedeki tekil etkinlik sayısı + her serinin
-`kalan` değeri toplamı.
+**(d) Sayaç — BU GÖREVDE DEĞİL.** Satır 477-480'deki `{upcoming.length}`
+katlanmış listeyi sayacağı için "3 yaklaşan buluşma" derken 12 buluşma olacak.
+Düzeltmesi `seri_kalanlar` sonucunu gerektiriyor ve o **Görev 11**'de geliyor;
+burada `yaklasanToplam` diye bir değişken **yok**, yazılırsa typecheck kırılır.
+Sayaca bu görevde **dokunma** — Görev 11 Adım 4 hallediyor. Aradaki tek commit
+boyunca sayaç düşük gösterir; bilinçli ve geçici.
 
 - [ ] **Adım 7: Detay sayfasında aynı seriyi ele**
 
@@ -2542,9 +2535,26 @@ Kart çizimini güncelle (ana sayfa satır 286, keşfet satır 258):
 />
 ```
 
-Topluluk sayfasındaki `yaklasanToplam` (Görev 10 Adım 6d) de bu `kalanMap`'ten
-hesaplanır: katlanmış listedeki `series_id`'siz satır sayısı + her serinin
-`kalan` toplamı.
+**Topluluk sayfasının sayacı burada düzeliyor** (Görev 10 bilinçli olarak
+dokunmadı). `app/community/[id]/page.tsx`'te aynı `kalanMap` kurulur ve satır
+477-480:
+
+```tsx
+              <div className="cp-stat">
+                <b>{yaklasanToplam}</b>
+                <span>yaklaşan buluşma</span>
+              </div>
+```
+
+```ts
+  const yaklasanToplam = upcoming.reduce(
+    (t: number, e: any) => t + (e.series_id ? (kalanMap.get(e.series_id)?.kalan ?? 1) : 1),
+    0
+  )
+```
+
+Katlanmış listedeki her tekil satır 1 sayılır, her seri temsilcisi ise o
+serinin kalan buluşma sayısı kadar.
 
 - [ ] **Adım 5: Detay sayfasına "Seri" satırı ekle**
 
@@ -2654,9 +2664,11 @@ Herhangi biri `EVET` çıkarsa baseline'daki sıra yanlıştır (panel
 `supabase_admin` olarak koştuğu için varsayılan `arwdDxtm` veriyor ve
 `REVOKE` olmadan kolon listeleri anlamsızlaşıyor).
 
-- [ ] **Adım 4: Spec'teki üç hatayı düzelt**
+- [ ] **Adım 4: Spec düzeltmelerini DOĞRULA (büyük olasılıkla zaten yapılmış)**
 
-Uygulama sırasında ortaya çıkan sapmalar spec'e işlenir:
+Aşağıdaki üç düzeltme plan yazılırken **commit 8069b74'te uygulandı.** Önce
+doğrula (`git log --oneline -- docs/superpowers/specs/`), hepsi yerindeyse bu
+adımı atla. Eksik olan varsa tamamla:
 
 1. **Yanlış dosya yolları.** Spec `app/event/[id]/edit-event-form.tsx` ve
    `components/event-actions.tsx` yazıyor; doğrusu
