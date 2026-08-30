@@ -2159,7 +2159,7 @@ dalı okunuyor, satır 37-45):
       const atlanan = data.atlanan ?? 0
       setSonuc(
         `${data.guncellenen ?? 0} buluşma güncellendi` +
-          (atlanan > 0 ? `, ${atlanan}'i elle düzenlendiği için atlandı` : '') +
+          (atlanan > 0 ? `, elle düzenlendiği için ${atlanan} buluşma atlandı` : '') +
           (data.yeni_series_id ? '. Bu buluşma ve sonrakiler ayrı bir seri oldu.' : '') +
           (data.ayrildi > 0 ? '. Bu buluşma seriden ayrıldı.' : '') +
           // Kullanicinin o an baktigi bulusma elle duzenlenmisse toplu
