@@ -4,11 +4,18 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-export default function EventActions({ eventId }: { eventId: string }) {
+export default function EventActions({
+  eventId,
+  seriesId,
+}: {
+  eventId: string
+  seriesId?: string | null
+}) {
   const router = useRouter()
   const [confirming, setConfirming] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [kapsam, setKapsam] = useState<'tek' | 'sonrakiler' | 'tumu'>('tek')
 
   async function handleCancel() {
     setLoading(true)
@@ -16,7 +23,11 @@ export default function EventActions({ eventId }: { eventId: string }) {
 
     // API rotası üzerinden sil: yetki kontrolü, rate limit ve
     // katılımcılara iptal e-postası burada çalışır.
-    const res = await fetch(`/api/event/${eventId}`, { method: 'DELETE' })
+    // DELETE govdeyi okumuyor — kapsam query string'den gider.
+    const res = await fetch(
+      `/api/event/${eventId}${kapsam !== 'tek' ? `?kapsam=${kapsam}` : ''}`,
+      { method: 'DELETE' }
+    )
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
@@ -70,8 +81,33 @@ export default function EventActions({ eventId }: { eventId: string }) {
           etkinliği iptal et
         </button>
       ) : (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <span style={{ color: 'var(--muted)' }}>emin misin? katılımcılara iptal maili gider</span>
+          {seriesId && (
+            <span style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <span style={{ fontWeight: 600, color: 'var(--ink)' }}>Bu iptal neyi kapsasın?</span>
+              {([
+                ['tek', 'Yalnızca bu buluşma'],
+                ['sonrakiler', 'Bu buluşma ve sonrakiler'],
+                ['tumu', 'Serinin tüm gelecek buluşmaları'],
+              ] as const).map(([deger, etiket]) => (
+                <label
+                  key={deger}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '13px' }}
+                >
+                  <input
+                    type="radio"
+                    name="kapsam"
+                    value={deger}
+                    checked={kapsam === deger}
+                    onChange={() => setKapsam(deger)}
+                    style={{ width: '16px', height: '16px', padding: 0, margin: 0, flex: '0 0 auto' }}
+                  />
+                  {etiket}
+                </label>
+              ))}
+            </span>
+          )}
           <button
             onClick={handleCancel}
             disabled={loading}

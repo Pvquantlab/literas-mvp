@@ -16,11 +16,14 @@ export default function EditEventForm({ event }: { event: any }) {
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
+  const [kapsam, setKapsam] = useState<'tek' | 'sonrakiler' | 'tumu'>('tek')
+  const [sonuc, setSonuc] = useState('')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSonuc('')
 
     const res = await fetch(`/api/event/${event.id}`, {
       method: 'PATCH',
@@ -31,6 +34,7 @@ export default function EditEventForm({ event }: { event: any }) {
         location,
         event_date: localInputToISO(eventDate),
         max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
+        kapsam,
       }),
     })
 
@@ -38,6 +42,24 @@ export default function EditEventForm({ event }: { event: any }) {
       const data = await res.json().catch(() => ({}))
       setError(data.error ?? 'Kaydedilemedi. Lütfen tekrar dene.')
       setLoading(false)
+      return
+    }
+
+    // Toplu kapsamda kaç satır güncellendi, kaçı atlandı — kullanıcı bilmeli.
+    if (kapsam !== 'tek') {
+      const data = await res.json().catch(() => ({}))
+      const atlanan = data.atlanan ?? 0
+      setSonuc(
+        `${data.guncellenen ?? 0} buluşma güncellendi` +
+          (atlanan > 0 ? `, ${atlanan}'i elle düzenlendiği için atlandı` : '') +
+          (data.yeni_series_id ? '. Bu buluşma ve sonrakiler ayrı bir seri oldu.' : '') +
+          (data.ayrildi > 0 ? '. Bu buluşma seriden ayrıldı.' : '') +
+          // Kullanicinin o an baktigi bulusma elle duzenlenmisse toplu
+          // guncelleme TAM DA ONU atliyor; sayfa degismemis gorunur.
+          (data.bu_atlandi ? '. Baktığın buluşma elle düzenlendiği için atlandı — onu tek tek güncelleyebilirsin.' : '')
+      )
+      setLoading(false)
+      router.refresh()
       return
     }
 
@@ -125,9 +147,41 @@ export default function EditEventForm({ event }: { event: any }) {
           value={eventDate}
           onChange={(e) => setEventDate(e.target.value)}
           required
-          disabled={busy}
+          disabled={busy || kapsam !== 'tek'}
         />
       </div>
+
+      {event.series_id && (
+        <div style={groupStyle}>
+          <span style={labelStyle}>Bu değişiklik neyi kapsasın?</span>
+          {([
+            ['tek', 'Yalnızca bu buluşma'],
+            ['sonrakiler', 'Bu buluşma ve sonrakiler'],
+            ['tumu', 'Serinin tüm gelecek buluşmaları'],
+          ] as const).map(([deger, etiket]) => (
+            <label
+              key={deger}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px' }}
+            >
+              <input
+                type="radio"
+                name="kapsam"
+                value={deger}
+                checked={kapsam === deger}
+                onChange={() => setKapsam(deger)}
+                style={{ width: '16px', height: '16px', padding: 0, margin: 0, flex: '0 0 auto' }}
+              />
+              {etiket}
+            </label>
+          ))}
+          {kapsam !== 'tek' && (
+            <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
+              Toplu düzenlemede tarih değiştirilemez — serinin ritmini
+              değiştirmek ayrı bir işlem. Elle düzenlenmiş buluşmalar atlanır.
+            </span>
+          )}
+        </div>
+      )}
 
       <div>
         <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
@@ -145,6 +199,9 @@ export default function EditEventForm({ event }: { event: any }) {
 
       {error && (
         <p style={{ color: 'var(--seal)', fontSize: '0.9rem' }}>{error}</p>
+      )}
+      {sonuc && (
+        <p style={{ color: 'var(--ink)', fontSize: '0.9rem' }}>{sonuc}</p>
       )}
 
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
@@ -209,4 +266,17 @@ export default function EditEventForm({ event }: { event: any }) {
       </div>
     </form>
   )
+}
+
+const groupStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+}
+
+const labelStyle: React.CSSProperties = {
+  fontFamily: "'IBM Plex Mono', monospace",
+  fontSize: '13px',
+  fontWeight: 600,
+  color: 'var(--ink)',
 }

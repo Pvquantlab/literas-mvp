@@ -384,7 +384,7 @@ export default async function EventPage({
             {canManage && (
               <section className="ed-block">
                 <h2 className="ed-h2">Yönetim</h2>
-                <EventActions eventId={event.id} />
+                <EventActions eventId={event.id} seriesId={event.series_id} />
                 <Link href={`/event/${event.id}/checkin`} style={{ color: 'var(--ink)', fontWeight: 700 }}>
                   Girişleri yönet
                 </Link>
