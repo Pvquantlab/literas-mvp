@@ -64,6 +64,29 @@ export const eventSchema = z.object({
   cover_image_url: optionalUrl,
 })
 
+// Seri oluşturma: eventSchema'nın üstüne tekrar bilgisi.
+// DİKKAT: bu alanlar eventSchema'ya EKLENMEZ — eventEditSchema eventSchema'nın
+// üstüne kurulu (aşağıda), yani oraya eklenen her alan düzenleme şemasına da
+// sızar ve düzenleme formu göndermediği için her PATCH 400 dönerdi.
+export const seriOlusturSchema = eventSchema.extend({
+  tekrar: z.object({
+    frekans: z.enum(['haftalik', 'iki_haftalik', 'aylik'], {
+      error: 'Geçersiz tekrar sıklığı',
+    }),
+    // DB'deki CHECK (tekrar_sayisi BETWEEN 2 AND 26) ile aynı sınır —
+    // savunma iki katmanda.
+    sayi: z.coerce
+      .number()
+      .int('Tekrar sayısı tam sayı olmalı')
+      .min(2, 'En az 2 buluşma olmalı')
+      .max(26, 'En fazla 26 buluşma olabilir'),
+    // İstemci üretimli istek kimliği: iki kez basılan "Oluştur" düğmesine
+    // karşı. UNIQUE(series_id, event_date) bunu ENGELLEMEZ (ikinci çağrı
+    // yeni series_id üretir, çatışmaz).
+    istek_id: uuid,
+  }),
+})
+
 // PATCH (tam güncelleme): community_id hariç tüm alanlar zorunlu.
 // Düzenleme formu bütün alanları gönderdiği için tam doğrulama uygulanır.
 //
@@ -78,6 +101,9 @@ export const eventEditSchema = eventSchema.omit({ community_id: true }).extend({
   cover_image_url: z
     .union([z.string().trim().url('Geçersiz bağlantı'), z.literal(''), z.null()])
     .optional(),
+  // Seri kapsamı. Parametresiz eski davranış korunur.
+  kapsam: z.enum(['tek', 'sonrakiler', 'tumu'], { error: 'Geçersiz kapsam' })
+    .default('tek'),
 })
 
 // ---- RSVP / Bekleme listesi ----------------------------------------------
