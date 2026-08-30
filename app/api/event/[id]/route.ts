@@ -147,6 +147,10 @@ export async function PATCH(
       // ÇIKARILIR (tekrar_sayisi CHECK'i 2'nin altına inemez). yeni_series_id
       // NULL kaldığı için arayüz ikisini ayırt edemezdi.
       ayrildi: seri?.ayrildi ?? 0,
+      // Kullanicinin o an baktigi bulusma elle duzenlenmis olabilir; o zaman
+      // toplu guncelleme TAM DA ONU atliyor ve kullanici degismemis kendi
+      // sayfasina bakiyor. Arayuz bunu soyleyebilsin.
+      bu_atlandi: oldEvent.seri_disina_alindi_at != null,
     })
   }
 
@@ -167,16 +171,28 @@ export async function PATCH(
   if (rpcError?.message?.includes('yetkisiz')) {
     return NextResponse.json({ error: 'Yetkin yok' }, { status: 403 })
   }
+  // Migration bu mesaji ham 23505 yerine BILEREK Turkce firlatiyor; genel
+  // 500'e cevirirsek kullanicinin ogrenmesinin baska yolu yok.
+  if (rpcError?.message?.includes('o tarihte seride baska bulusma var')) {
+    return NextResponse.json(
+      { error: 'O tarihte seride başka bir buluşma var' },
+      { status: 409 }
+    )
+  }
   if (rpcError) {
     console.error('[event PATCH] update hatası:', rpcError)
     return NextResponse.json({ error: 'Güncellenemedi' }, { status: 500 })
   }
 
-  const { data: updatedEvent } = await supabase
+  const { data: updatedEvent, error: okumaError } = await supabase
     .from('events').select('*').eq('id', id).single()
 
-  if (!updatedEvent) {
-    return NextResponse.json({ error: 'Güncellenemedi' }, { status: 500 })
+  if (okumaError || !updatedEvent) {
+    // Yazma BASARILI oldu; burada 500 donersek kullanici tekrar kaydeder,
+    // RPC ikinci cagrida no-op olur ve degisiklik maili KALICI olarak kaybolur.
+    // Basarili donuyoruz ve izi loga birakiyoruz.
+    console.error('[event PATCH] guncellendi ama yeniden okunamadi:', id, okumaError)
+    return NextResponse.json({ ok: true, event: null })
   }
 
   // Değişiklikleri karşılaştır
@@ -296,6 +312,9 @@ export async function DELETE(
       // Elle düzenlenmiş tekrarlar silinmez (seri_guncelle ile simetrik);
       // kullanıcı kaçının atlandığını bilmeli.
       atlanan: silRows?.[0]?.atlanan ?? 0,
+      // bkz. PATCH toplu dalı: kullanıcının baktığı buluşma elle düzenlenmişse
+      // silme de onu atlıyor, arayüz bunu söyleyebilsin.
+      bu_atlandi: event.seri_disina_alindi_at != null,
     })
   }
 
