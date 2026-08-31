@@ -38,14 +38,29 @@ export default function EventActions({
       return
     }
 
-    // Toplu kapsamda o an baktığımız buluşma elle düzenlenmişse rota onu
-    // atlar — yönlendirmeden önce bunu söylemek zorundayız, yoksa kullanıcı
-    // az önce baktığı buluşmanın hâlâ yayında olduğunu bilmeden ayrılır.
+    // Toplu kapsamda kaç buluşma elle düzenlendiği için atlandı — kullanıcı
+    // bilmeli (PATCH yolunda zaten söyleniyor, DELETE'te alan ölüydü).
+    // bu_atlandi ayrıca o an baktığı buluşmanın kendisinin atlanıp
+    // atlanmadığını söylüyor; yönlendirmeden önce bunu söylemek zorundayız,
+    // yoksa kullanıcı az önce baktığı buluşmanın hâlâ yayında olduğunu
+    // bilmeden ayrılır.
     const data = await res.json().catch(() => ({}))
+    const atlanan = data.atlanan ?? 0
     if (data.bu_atlandi) {
       setUyari(
-        `${data.silinen ?? 0} buluşma iptal edildi. Baktığın buluşma elle ` +
-        `düzenlendiği için atlandı — onu tek tek iptal edebilirsin.`
+        `${data.silinen ?? 0} buluşma iptal edildi` +
+        (atlanan > 0 ? `, elle düzenlendiği için ${atlanan} buluşma atlandı` : '') +
+        `. Baktığın buluşma elle düzenlendiği için atlandı — onu tek tek iptal edebilirsin.`
+      )
+      setLoading(false)
+      setConfirming(false)
+      router.refresh()
+      return
+    }
+
+    if (atlanan > 0) {
+      setUyari(
+        `${data.silinen ?? 0} buluşma iptal edildi, elle düzenlendiği için ${atlanan} buluşma atlandı.`
       )
       setLoading(false)
       setConfirming(false)

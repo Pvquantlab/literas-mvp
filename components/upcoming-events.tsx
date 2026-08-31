@@ -10,6 +10,11 @@ export type EventSummary = {
   cover_image_url: string | null
   price?: number | null
   community?: { name: string; category: string | null } | null
+  /** Serinin kalan gelecek buluşma sayısı. Sayfa hesaplayıp geçirir — bu
+   *  bileşen veri çekmez. Yoksa (veya seriden kopmuşsa) rozet gizlenir. */
+  seriKalan?: number | null
+  /** 'haftalik' | 'iki_haftalik' | 'aylik' */
+  frekans?: string | null
 }
 
 /**
@@ -118,6 +123,17 @@ export default function UpcomingEvents({ events }: { events: EventSummary[] }) {
                       <p style={{ fontSize: 'var(--t-sm)', color: 'var(--muted)' }}>
                         {[ev.community?.name, ev.location].filter(Boolean).join(' · ')}
                       </p>
+                      {/* Seri ibaresi: EventCard'ın .ec-seri rozetiyle aynı
+                          frekans eşlemesi, bu satırın kendi mono stiline
+                          uyarlanmış. Katlanmış sayaç "24" derken liste 2
+                          satır çizip kendi kendini yalanlamasın diye var. */}
+                      {ev.seriKalan != null && ev.seriKalan > 0 && (
+                        <span className="mono" style={{ fontSize: 'var(--t-xs)', color: 'var(--ink)' }}>
+                          {ev.frekans === 'haftalik' ? 'haftalık'
+                            : ev.frekans === 'iki_haftalik' ? 'iki haftada bir'
+                            : 'aylık'} · {ev.seriKalan} buluşma
+                        </span>
+                      )}
                     </div>
 
                     <div className="ue-thumb">

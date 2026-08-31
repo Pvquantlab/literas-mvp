@@ -168,6 +168,27 @@ export default async function HomePage({
     (kalanRows ?? []).map((r) => [r.series_id, { kalan: r.kalan, frekans: r.frekans }])
   )
 
+  // Katlanmış listedeki her tekil satır 1 sayılır, her seri temsilcisi ise
+  // o serinin kalan buluşma sayısı kadar — community/[id]/page.tsx:241-247
+  // ile birebir aynı desen. Vitrin seri başına tek satır döndürdüğü için
+  // events.length tek başına "12 haftalık seri" yerine "1" sayıyordu.
+  const yaklasanToplam = events.reduce(
+    (t: number, e) =>
+      t + (e.series_id && !e.seri_disina_alindi_at
+        ? (kalanMap.get(e.series_id)?.kalan ?? 1)
+        : 1),
+    0
+  )
+
+  // UpcomingEvents veri çekmiyor — seri rozeti için gereken kalan/frekans
+  // bilgisini burada, kalanMap'ten, prop olarak hazırlayıp geçiriyoruz.
+  // EventCard'daki seriKalan/frekans hesabıyla birebir aynı desen.
+  const eventsWithSeri: EventSummary[] = events.map((ev) => ({
+    ...ev,
+    seriKalan: ev.seri_disina_alindi_at ? null : kalanMap.get(ev.series_id ?? '')?.kalan ?? null,
+    frekans: ev.seri_disina_alindi_at ? null : kalanMap.get(ev.series_id ?? '')?.frekans ?? null,
+  }))
+
   /* =================================================================
      GİRİŞ YAPMIŞ KULLANICI
      ================================================================= */
@@ -425,8 +446,8 @@ export default async function HomePage({
               }}
             >
               {cityLocative ? `${cityLocative} ` : ''}
-              {events.length > 0
-                ? `yaklaşan ${events.length} buluşma var`
+              {yaklasanToplam > 0
+                ? `yaklaşan ${yaklasanToplam} buluşma var`
                 : 'buluşmalar başlıyor'}
               . Katıl ya da kendi masanı kur.
             </span>
@@ -451,7 +472,7 @@ export default async function HomePage({
           <dl style={{ margin: 0, display: 'grid', gap: 10 }}>
             {[
               ['T', 'Topluluk', String(communities.length)],
-              ['E', 'Etkinlik', String(events.length)],
+              ['E', 'Etkinlik', String(yaklasanToplam)],
               ['Ş', 'Şehir', String(cities.length)],
               ['K', 'Kategori', String(CATEGORIES.length)],
             ].map(([harf, ad, deger]) => (
@@ -530,7 +551,7 @@ export default async function HomePage({
           href="/kesfet"
           linkLabel="Tüm etkinlikler"
         />
-        <UpcomingEvents events={events} />
+        <UpcomingEvents events={eventsWithSeri} />
       </section>
 
       {/* ---- Topluluklar ---- */}

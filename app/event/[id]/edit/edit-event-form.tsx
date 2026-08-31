@@ -95,6 +95,16 @@ export default function EditEventForm({ event }: { event: any }) {
       return
     }
 
+    // Toplu kapsamda kaç buluşma elle düzenlendiği için atlandı — kullanıcı
+    // bilmeli (PATCH yolunda zaten söyleniyor, bu yüzey hiç okumuyordu).
+    // Sayfadan hemen ayrılıyoruz, o yüzden uyarı burada — router.push
+    // sonrası setSonuc görünmez.
+    const data = await res.json().catch(() => ({}))
+    const atlanan = data.atlanan ?? 0
+    if (atlanan > 0) {
+      alert(`Elle düzenlendiği için ${atlanan} buluşma atlandı.`)
+    }
+
     // Etkinlik silindi, topluluğa geri dön (varsa) yoksa ana sayfa
     if (event.community_id) {
       router.push(`/community/${event.community_id}`)

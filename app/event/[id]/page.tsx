@@ -227,12 +227,23 @@ export default async function EventPage({
   // Serinin bu etkinlikten SONRAKİ üç buluşması. Bilinçli olarak vitrin
   // kullanmıyoruz — orada seri tek satıra katlanıyor, burada serinin tek
   // tek tekrarlarını göstermek istiyoruz.
+  //
+  // İki ek filtre gerekli — üstteki seriInfo (seri_kalanlar) ikisini de
+  // uyguluyor, burası uygulamıyordu:
+  //   · gte(now) — event.event_date'ten sonra ama BUGÜNDEN önce olan
+  //     hafta/aylar da ">" testini geçiyordu; sürmekte olan bir seride
+  //     geçmişe düşmüş etkinlikler "sonraki buluşmalar" diye görünüyordu.
+  //   · seri_disina_alindi_at IS NULL — elle düzenlenmiş (koptu) tekrarlar
+  //     seri_kalanlar'ın kalan'ına dahil değil, burada da dahil olmamalı.
+  // Desen otherEventsData'da (26 satır yukarıda) zaten var.
   const { data: seriSonrakiler } = seriAktif
     ? await supabase
         .from('events')
         .select('id, title, event_date')
         .eq('series_id', event.series_id)
         .gt('event_date', event.event_date)
+        .gte('event_date', new Date().toISOString())
+        .is('seri_disina_alindi_at', null)
         .order('event_date', { ascending: true })
         .limit(3)
     : { data: [] }
@@ -339,7 +350,7 @@ export default async function EventPage({
               </div>
             )}
           </dl>
-          {seriAktif && (seriSonrakiler ?? []).length > 0 && (
+          {seriAktif && seriInfo && (seriSonrakiler ?? []).length > 0 && (
             <div style={{ marginTop: 14 }}>
               <h2 className="ed-up-h">serinin sonraki buluşmaları</h2>
               <ul className="ed-up-list">
