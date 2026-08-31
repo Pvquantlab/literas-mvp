@@ -206,9 +206,13 @@ export default async function EventPage({
 
   // Seri rozeti: frekans + kalan buluşma sayısı. Ayrı bir sayım yazmak
   // yerine aynı seri_kalanlar RPC'si tek elemanlı diziyle çağrılıyor.
-  const { data: seriKalanRows } = event.series_id
+  // seri_disina_alindi_at doluysa bu etkinlik artık serinin temsilcisi
+  // değil, kendi kartı var — Seri bloğu hiç sorgulanmıyor.
+  const seriAktif = Boolean(event.series_id) && !event.seri_disina_alindi_at
+  const { data: seriKalanRows, error: seriKalanError } = seriAktif
     ? await supabase.rpc('seri_kalanlar', { p_series_ids: [event.series_id] })
-    : { data: [] }
+    : { data: [], error: null }
+  if (seriKalanError) console.error('[etkinlik] seri kalanlar alinamadi:', seriKalanError)
   const seriInfo = (seriKalanRows ?? [])[0] as
     | { series_id: string; kalan: number; frekans: string }
     | undefined
@@ -216,7 +220,7 @@ export default async function EventPage({
   // Serinin bu etkinlikten SONRAKİ üç buluşması. Bilinçli olarak vitrin
   // kullanmıyoruz — orada seri tek satıra katlanıyor, burada serinin tek
   // tek tekrarlarını göstermek istiyoruz.
-  const { data: seriSonrakiler } = event.series_id
+  const { data: seriSonrakiler } = seriAktif
     ? await supabase
         .from('events')
         .select('id, title, event_date')
@@ -317,9 +321,9 @@ export default async function EventPage({
                 {isFull ? ' · doldu' : ''}
               </dd>
             </div>
-            {event.series_id && seriInfo && (
+            {seriAktif && seriInfo && (
               <div>
-                <dt>Sr.</dt><dd>Seri</dd>
+                <dt>R.</dt><dd>Seri</dd>
                 <dd>
                   {seriInfo.frekans === 'haftalik' ? 'haftalık'
                     : seriInfo.frekans === 'iki_haftalik' ? 'iki haftada bir'
@@ -328,8 +332,10 @@ export default async function EventPage({
               </div>
             )}
           </dl>
-          {event.series_id && (seriSonrakiler ?? []).length > 0 && (
-            <ul className="ed-up-list" style={{ marginTop: 14 }}>
+          {seriAktif && (seriSonrakiler ?? []).length > 0 && (
+            <div style={{ marginTop: 14 }}>
+              <h2 className="ed-up-h">serinin sonraki buluşmaları</h2>
+              <ul className="ed-up-list">
               {(seriSonrakiler ?? []).map((s) => (
                 <li key={s.id}>
                   <Link href={`/event/${s.id}`} className="ed-up-row">
@@ -341,7 +347,8 @@ export default async function EventPage({
                   </Link>
                 </li>
               ))}
-            </ul>
+              </ul>
+            </div>
           )}
           </div>
           <RolyefKap cizim={RolyefSehir} konum="sag-alt" olcek={0.95} opaklik={0.09} />

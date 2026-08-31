@@ -236,6 +236,7 @@ export default function EventCard({ event, showCommunityName = true, seriKalan, 
           display:flex; align-items:center; gap:12px;
           background:var(--card-panel); border-radius:15px; padding:10px 12px;
           margin-top:16px;
+          flex-wrap:wrap; row-gap:8px;
         }
         .ec-cal {
           flex:none; display:grid; place-items:center;
@@ -244,7 +245,9 @@ export default function EventCard({ event, showCommunityName = true, seriKalan, 
         }
         .ec-cal b { font-family:var(--font-mono), monospace; font-size:9px; letter-spacing:.08em; color:var(--card-fg-muted); }
         .ec-cal i { font-style:normal; font-size:18px; font-weight:700; color:var(--card-fg-strong); }
-        .ec-when { display:flex; flex-direction:column; min-width:0; flex:1; }
+        /* flex:1 1 0% idi: taban 0 oldugu icin rozet eklendiginde tum
+           negatif boslugu bu emiyor ve tarih satiri sifira iniyordu. */
+        .ec-when { display:flex; flex-direction:column; min-width:0; flex:1 1 auto; }
         .ec-when b { font-size:13.5px; font-weight:600; color:var(--card-fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .ec-when i { font-style:normal; font-size:12px; color:var(--card-fg-muted); }
 

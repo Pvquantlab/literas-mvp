@@ -117,7 +117,7 @@ export default async function HomePage({
   let eventQuery = supabase
     .from('etkinlik_vitrin')
     .select(
-      'id, title, event_date, location, cover_image_url, series_id, community:communities!inner(name, category, city)'
+      'id, title, event_date, location, cover_image_url, series_id, seri_disina_alindi_at, community:communities!inner(name, category, city)'
     )
     .gte('event_date', new Date().toISOString())
     .order('event_date', { ascending: true })
@@ -141,7 +141,10 @@ export default async function HomePage({
   if (cityRes.error) console.error('[anasayfa] sehir sorgusu:', cityRes.error.message)
 
   const communities = (communityRes.data ?? []) as CommunitySummary[]
-  const events = (eventRes.data ?? []) as unknown as (EventSummary & { series_id?: string | null })[]
+  const events = (eventRes.data ?? []) as unknown as (EventSummary & {
+    series_id?: string | null
+    seri_disina_alindi_at?: string | null
+  })[]
   const cities = Array.from(new Set((cityRes.data ?? []).map((r) => r.city as string))).sort(
     (a, b) => a.localeCompare(b, 'tr')
   )
@@ -154,9 +157,13 @@ export default async function HomePage({
   // Seri rozeti: görüntülenen etkinliklerin ait olduğu serilerin kalan
   // buluşma sayısı, tek round-trip'te. Dizi boşsa RPC hiç çağrılmaz.
   const seriIdler = [...new Set(events.map((e) => e.series_id).filter(Boolean))]
-  const { data: kalanRows } = (seriIdler.length
+  const { data: kalanRows, error: kalanError } = (seriIdler.length
     ? await supabase.rpc('seri_kalanlar', { p_series_ids: seriIdler })
-    : { data: [] }) as { data: { series_id: string; kalan: number; frekans: string }[] | null }
+    : { data: [], error: null }) as {
+      data: { series_id: string; kalan: number; frekans: string }[] | null
+      error: { message: string } | null
+    }
+  if (kalanError) console.error('[anasayfa] seri kalanlar alinamadi:', kalanError)
   const kalanMap = new Map<string, { kalan: number; frekans: string }>(
     (kalanRows ?? []).map((r) => [r.series_id, { kalan: r.kalan, frekans: r.frekans }])
   )
@@ -297,8 +304,8 @@ export default async function HomePage({
                       key={ev.id}
                       event={{ ...ev, location: ev.location || "" }}
                       showCommunityName
-                      seriKalan={kalanMap.get(ev.series_id ?? '')?.kalan}
-                      frekans={kalanMap.get(ev.series_id ?? '')?.frekans}
+                      seriKalan={ev.seri_disina_alindi_at ? null : kalanMap.get(ev.series_id ?? '')?.kalan}
+                      frekans={ev.seri_disina_alindi_at ? null : kalanMap.get(ev.series_id ?? '')?.frekans}
                     />
                   ))}
                 </div>

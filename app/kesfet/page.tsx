@@ -102,7 +102,7 @@ export default async function KesfetPage({
     if (!activeCategory || (communityIds && communityIds.length > 0)) {
       let query = supabase
         .from('etkinlik_vitrin')
-        .select('id, title, event_date, location, cover_image_url, series_id, community:communities!inner(id, name, category, city, status)')
+        .select('id, title, event_date, location, cover_image_url, series_id, seri_disina_alindi_at, community:communities!inner(id, name, category, city, status)')
         .gte('event_date', new Date().toISOString())
         .eq('community.status', 'approved')
         .order('event_date', { ascending: true })
@@ -158,9 +158,13 @@ export default async function KesfetPage({
   // Seri rozeti: görüntülenen etkinliklerin ait olduğu serilerin kalan
   // buluşma sayısı, tek round-trip'te. Dizi boşsa RPC hiç çağrılmaz.
   const seriIdler = [...new Set(events.map((e) => e.series_id).filter(Boolean))]
-  const { data: kalanRows } = (seriIdler.length
+  const { data: kalanRows, error: kalanError } = (seriIdler.length
     ? await supabase.rpc('seri_kalanlar', { p_series_ids: seriIdler })
-    : { data: [] }) as { data: { series_id: string; kalan: number; frekans: string }[] | null }
+    : { data: [], error: null }) as {
+      data: { series_id: string; kalan: number; frekans: string }[] | null
+      error: { message: string } | null
+    }
+  if (kalanError) console.error('[kesfet] seri kalanlar alinamadi:', kalanError)
   const kalanMap = new Map<string, { kalan: number; frekans: string }>(
     (kalanRows ?? []).map((r) => [r.series_id, { kalan: r.kalan, frekans: r.frekans }])
   )
@@ -269,8 +273,8 @@ export default async function KesfetPage({
                     key={ev.id}
                     event={ev}
                     showCommunityName={true}
-                    seriKalan={kalanMap.get(ev.series_id)?.kalan}
-                    frekans={kalanMap.get(ev.series_id)?.frekans}
+                    seriKalan={ev.seri_disina_alindi_at ? null : kalanMap.get(ev.series_id)?.kalan}
+                    frekans={ev.seri_disina_alindi_at ? null : kalanMap.get(ev.series_id)?.frekans}
                   />
                 ))}
               </div>

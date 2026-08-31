@@ -196,7 +196,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   const [upcomingRes, pastRes, takvimRes] = await Promise.all([
     supabase
       .from('etkinlik_vitrin')
-      .select('id, title, location, event_date, cover_image_url, series_id')
+      .select('id, title, location, event_date, cover_image_url, series_id, seri_disina_alindi_at')
       .eq('community_id', id)
       .gte('event_date', nowIso)
       .order('event_date', { ascending: true })
@@ -224,16 +224,25 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   // seri başına tek satır — sayaç bu yüzden serinin kalan buluşma sayısını
   // tek round-trip'te üstüne ekliyor. Dizi boşsa RPC hiç çağrılmaz.
   const seriIdler = [...new Set(upcoming.map((e) => e.series_id).filter(Boolean))]
-  const { data: kalanRows } = (seriIdler.length
+  const { data: kalanRows, error: kalanError } = (seriIdler.length
     ? await supabase.rpc('seri_kalanlar', { p_series_ids: seriIdler })
-    : { data: [] }) as { data: { series_id: string; kalan: number; frekans: string }[] | null }
+    : { data: [], error: null }) as {
+      data: { series_id: string; kalan: number; frekans: string }[] | null
+      error: { message: string } | null
+    }
+  if (kalanError) console.error('[topluluk] seri kalanlar alinamadi:', kalanError)
   const kalanMap = new Map<string, { kalan: number; frekans: string }>(
     (kalanRows ?? []).map((r) => [r.series_id, { kalan: r.kalan, frekans: r.frekans }])
   )
   // Katlanmış listedeki her tekil satır 1 sayılır, her seri temsilcisi ise
-  // o serinin kalan buluşma sayısı kadar.
+  // o serinin kalan buluşma sayısı kadar. Seriden KOPMUŞ tekrar (elle
+  // düzenlenmiş, artık kendi kartı) seri_kalanlar'ın kalan'ına dahil değil —
+  // o zaten 1 sayılmalı, serinin kalanı kadar değil.
   const yaklasanToplam = upcoming.reduce(
-    (t, e) => t + (e.series_id ? (kalanMap.get(e.series_id)?.kalan ?? 1) : 1),
+    (t, e) =>
+      t + (e.series_id && !e.seri_disina_alindi_at
+        ? (kalanMap.get(e.series_id)?.kalan ?? 1)
+        : 1),
     0
   )
 
