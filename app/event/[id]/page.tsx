@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { byValue } from '@/lib/categories'
+import { formatMonthShort, dayOfMonth } from '@/lib/date'
 import { GlossyIcon } from '@/components/category-art'
 import { RolyefMasa, RolyefKahve, RolyefKitap, RolyefSandalye, RolyefSehir, RolyefKap } from '@/components/rolyef'
 import RsvpForm from './rsvp-form'
@@ -203,6 +204,28 @@ export default async function EventPage({
     (e) => !event.series_id || e.series_id !== event.series_id
   )
 
+  // Seri rozeti: frekans + kalan buluşma sayısı. Ayrı bir sayım yazmak
+  // yerine aynı seri_kalanlar RPC'si tek elemanlı diziyle çağrılıyor.
+  const { data: seriKalanRows } = event.series_id
+    ? await supabase.rpc('seri_kalanlar', { p_series_ids: [event.series_id] })
+    : { data: [] }
+  const seriInfo = (seriKalanRows ?? [])[0] as
+    | { series_id: string; kalan: number; frekans: string }
+    | undefined
+
+  // Serinin bu etkinlikten SONRAKİ üç buluşması. Bilinçli olarak vitrin
+  // kullanmıyoruz — orada seri tek satıra katlanıyor, burada serinin tek
+  // tek tekrarlarını göstermek istiyoruz.
+  const { data: seriSonrakiler } = event.series_id
+    ? await supabase
+        .from('events')
+        .select('id, title, event_date')
+        .eq('series_id', event.series_id)
+        .gt('event_date', event.event_date)
+        .order('event_date', { ascending: true })
+        .limit(3)
+    : { data: [] }
+
   // Sunucu UTC'de calisiyor. getDate/getHours sunucunun yerel saatini
   // kullaniyor ve canlida 3 saat kayma uretiyordu: WhatsApp metninde
   // 11:17, gorselde 14:17. Parcalari Istanbul saatinden aliyoruz.
@@ -294,7 +317,32 @@ export default async function EventPage({
                 {isFull ? ' · doldu' : ''}
               </dd>
             </div>
+            {event.series_id && seriInfo && (
+              <div>
+                <dt>Sr.</dt><dd>Seri</dd>
+                <dd>
+                  {seriInfo.frekans === 'haftalik' ? 'haftalık'
+                    : seriInfo.frekans === 'iki_haftalik' ? 'iki haftada bir'
+                    : 'aylık'} · {seriInfo.kalan} buluşma
+                </dd>
+              </div>
+            )}
           </dl>
+          {event.series_id && (seriSonrakiler ?? []).length > 0 && (
+            <ul className="ed-up-list" style={{ marginTop: 14 }}>
+              {(seriSonrakiler ?? []).map((s) => (
+                <li key={s.id}>
+                  <Link href={`/event/${s.id}`} className="ed-up-row">
+                    <span className="ed-up-cal" aria-hidden="true">
+                      <b>{formatMonthShort(s.event_date)}</b>
+                      <i>{dayOfMonth(s.event_date)}</i>
+                    </span>
+                    <span className="ed-up-title">{s.title}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
           </div>
           <RolyefKap cizim={RolyefSehir} konum="sag-alt" olcek={0.95} opaklik={0.09} />
         </div>

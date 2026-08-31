@@ -155,6 +155,16 @@ export default async function KesfetPage({
     communities = rows.slice(0, PAGE_SIZE)
   }
 
+  // Seri rozeti: görüntülenen etkinliklerin ait olduğu serilerin kalan
+  // buluşma sayısı, tek round-trip'te. Dizi boşsa RPC hiç çağrılmaz.
+  const seriIdler = [...new Set(events.map((e) => e.series_id).filter(Boolean))]
+  const { data: kalanRows } = (seriIdler.length
+    ? await supabase.rpc('seri_kalanlar', { p_series_ids: seriIdler })
+    : { data: [] }) as { data: { series_id: string; kalan: number; frekans: string }[] | null }
+  const kalanMap = new Map<string, { kalan: number; frekans: string }>(
+    (kalanRows ?? []).map((r) => [r.series_id, { kalan: r.kalan, frekans: r.frekans }])
+  )
+
   // "Daha fazla göster" için sonraki sayfanın URL'i (mevcut parametreleri koru)
   const buildNextPageHref = () => {
     const p = new URLSearchParams()
@@ -255,7 +265,13 @@ export default async function KesfetPage({
             <>
               <div className="kesfet-grid" style={{ display: 'grid', gap: '24px' }}>
                 {events.map((ev: any) => (
-                  <EventCard key={ev.id} event={ev} showCommunityName={true} />
+                  <EventCard
+                    key={ev.id}
+                    event={ev}
+                    showCommunityName={true}
+                    seriKalan={kalanMap.get(ev.series_id)?.kalan}
+                    frekans={kalanMap.get(ev.series_id)?.frekans}
+                  />
                 ))}
               </div>
               {hasMore && (

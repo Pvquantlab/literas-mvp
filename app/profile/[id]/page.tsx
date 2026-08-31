@@ -33,13 +33,13 @@ export default async function ProfilePage({
 
   const { data: organizedEvents } = await supabase
     .from('events')
-    .select('id, title, event_date, location, cover_image_url, community:communities(name, category)')
+    .select('id, title, event_date, location, cover_image_url, series_id, community:communities(name, category)')
     .eq('organizer_id', id)
     .order('event_date', { ascending: false })
 
   const { data: rsvps } = await supabase
     .from('rsvps')
-    .select('event:events(id, title, event_date, location, cover_image_url, community:communities(name, category))')
+    .select('event:events(id, title, event_date, location, cover_image_url, series_id, community:communities(name, category))')
     .eq('user_id', id)
     .order('created_at', { ascending: false })
 

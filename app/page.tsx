@@ -141,7 +141,7 @@ export default async function HomePage({
   if (cityRes.error) console.error('[anasayfa] sehir sorgusu:', cityRes.error.message)
 
   const communities = (communityRes.data ?? []) as CommunitySummary[]
-  const events = (eventRes.data ?? []) as unknown as EventSummary[]
+  const events = (eventRes.data ?? []) as unknown as (EventSummary & { series_id?: string | null })[]
   const cities = Array.from(new Set((cityRes.data ?? []).map((r) => r.city as string))).sort(
     (a, b) => a.localeCompare(b, 'tr')
   )
@@ -150,6 +150,16 @@ export default async function HomePage({
   // de "İstanbul" yazıyordu — kullanıcıya yanlış bilgi veriyordu.
   const cityLocative = bulunmaHali(activeCity)
   const hasFilter = Boolean(activeSlug || activeCity || activeQuery)
+
+  // Seri rozeti: görüntülenen etkinliklerin ait olduğu serilerin kalan
+  // buluşma sayısı, tek round-trip'te. Dizi boşsa RPC hiç çağrılmaz.
+  const seriIdler = [...new Set(events.map((e) => e.series_id).filter(Boolean))]
+  const { data: kalanRows } = (seriIdler.length
+    ? await supabase.rpc('seri_kalanlar', { p_series_ids: seriIdler })
+    : { data: [] }) as { data: { series_id: string; kalan: number; frekans: string }[] | null }
+  const kalanMap = new Map<string, { kalan: number; frekans: string }>(
+    (kalanRows ?? []).map((r) => [r.series_id, { kalan: r.kalan, frekans: r.frekans }])
+  )
 
   /* =================================================================
      GİRİŞ YAPMIŞ KULLANICI
@@ -283,7 +293,13 @@ export default async function HomePage({
                 <SectionHead title="Senin için" href="/kesfet" linkLabel="Tümünü gör" />
                <div className="grid-communities grid-narrow">
                   {events.slice(0, 4).map((ev) => (
-                    <EventCard key={ev.id} event={{ ...ev, location: ev.location || "" }} showCommunityName />
+                    <EventCard
+                      key={ev.id}
+                      event={{ ...ev, location: ev.location || "" }}
+                      showCommunityName
+                      seriKalan={kalanMap.get(ev.series_id ?? '')?.kalan}
+                      frekans={kalanMap.get(ev.series_id ?? '')?.frekans}
+                    />
                   ))}
                 </div>
               </section>

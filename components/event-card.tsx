@@ -10,12 +10,18 @@ type Event = {
   cover_image_url: string | null
   /** Sorguda çekilmemiş olabilir — o zaman sayaç gizlenir. */
   attendee_count?: number | null
+  /** Seri üyesiyse dolu. Çekilmemişse rozet gizlenir. */
+  series_id?: string | null
   community?: { name: string; category?: string | null } | null
 }
 
 type Props = {
   event: Event
   showCommunityName?: boolean
+  /** Serinin kalan gelecek buluşma sayısı. Yoksa rozet çizilmez. */
+  seriKalan?: number | null
+  /** 'haftalik' | 'iki_haftalik' | 'aylik' */
+  frekans?: string | null
 }
 
 const TZ = 'Europe/Istanbul'
@@ -66,7 +72,7 @@ function statusOf(iso: string): Status {
  *   · Ücret alanı yok; alt satırda konum var.
  *   · attendee_count sorgularda çekilmiyor — gelmezse sayaç gizleniyor.
  */
-export default function EventCard({ event, showCommunityName = true }: Props) {
+export default function EventCard({ event, showCommunityName = true, seriKalan, frekans }: Props) {
   const cat = byValue(event.community?.category ?? null)
   const st = statusOf(event.event_date)
   const count = typeof event.attendee_count === 'number' ? event.attendee_count : null
@@ -156,6 +162,13 @@ export default function EventCard({ event, showCommunityName = true }: Props) {
               <i>{weekday}</i>
             </span>
             <span className={`ec-live ${st.tone}`}>{st.label}</span>
+            {seriKalan != null && seriKalan > 0 && (
+              <span className="ec-seri">
+                {frekans === 'haftalik' ? 'haftalık'
+                  : frekans === 'iki_haftalik' ? 'iki haftada bir'
+                  : 'aylık'} · {seriKalan} buluşma
+              </span>
+            )}
           </div>
 
           <div className="ec-foot">
@@ -206,6 +219,11 @@ export default function EventCard({ event, showCommunityName = true }: Props) {
           background:var(--card-chip-bg); border:1px solid var(--card-chip-line);
           padding:5px 12px 5px 6px; border-radius:999px;
           max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        }
+        .ec-seri {
+          display:inline-flex; align-items:center;
+          font-size:12px; font-weight:600; color:var(--card-fg-dim);
+          white-space:nowrap;
         }
         .ec-title {
           font-family:var(--font-serif), Georgia, serif;

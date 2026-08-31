@@ -220,6 +220,23 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   const upcoming = upcomingRes.data ?? []
   const past = pastRes.data ?? []
 
+  // Seri rozeti / sayaç düzeltmesi: "yaklaşanlar" vitrinden geldiği için
+  // seri başına tek satır — sayaç bu yüzden serinin kalan buluşma sayısını
+  // tek round-trip'te üstüne ekliyor. Dizi boşsa RPC hiç çağrılmaz.
+  const seriIdler = [...new Set(upcoming.map((e) => e.series_id).filter(Boolean))]
+  const { data: kalanRows } = (seriIdler.length
+    ? await supabase.rpc('seri_kalanlar', { p_series_ids: seriIdler })
+    : { data: [] }) as { data: { series_id: string; kalan: number; frekans: string }[] | null }
+  const kalanMap = new Map<string, { kalan: number; frekans: string }>(
+    (kalanRows ?? []).map((r) => [r.series_id, { kalan: r.kalan, frekans: r.frekans }])
+  )
+  // Katlanmış listedeki her tekil satır 1 sayılır, her seri temsilcisi ise
+  // o serinin kalan buluşma sayısı kadar.
+  const yaklasanToplam = upcoming.reduce(
+    (t, e) => t + (e.series_id ? (kalanMap.get(e.series_id)?.kalan ?? 1) : 1),
+    0
+  )
+
   /** Tarihe göre grupla: [{ key, label, items }] */
   function groupByDay(list: any[]) {
     const groups: { key: string; label: string; items: any[] }[] = []
@@ -495,7 +512,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
               </div>
 
               <div className="cp-stat">
-                <b>{upcoming.length}</b>
+                <b>{yaklasanToplam}</b>
                 <span>yaklaşan buluşma</span>
               </div>
             </div>
