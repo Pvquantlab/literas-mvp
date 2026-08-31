@@ -165,3 +165,28 @@ kullanıcıya bu etiketin neden hiçbir şey getirmediği söylenmiyor. Boş dur
 cümlesi TÜM etiketleri birlikte anıyor. Etiket başına durum göstermek
 ("Müze — henüz topluluk yok") daha dürüst olurdu; katalog büyüyünce
 kendiliğinden çözüleceği için ertelendi.
+
+
+---
+
+# Kapatma turu (01.09.2026)
+
+- **#2 mükerrer üyelik sorgusu — KAPATILDI.** `membershipRes` tek kaynak oldu:
+  `.limit(6)` sorgudan kalkıp kenar çubuğunun kendi `.slice(0, 6)`'sına indi,
+  `select`'e `community_id` eklendi ve ikinci sorgu silindi. Böylece kenar
+  çubuğu ile "Senin için" şeridi AYNI kümeden besleniyor — kenar çubuğunda adı
+  geçmeyen bir topluluğun buluşmasının "topluluklarından" altında çıkması artık
+  mümkün değil. `membershipRes`/`rsvpRes` hataları da artık loglanıyor.
+- **#3 şehir süzgeci — KAPATILDI, genelleştirilerek.** Kişisel şerit artık
+  `!hasFilter` kapısının arkasında, yani şehir/kategori/arama üçünü birden
+  görüyor. Asıl kusur şehrin uygulanmaması değil, süzgecin kapsamının
+  kullanıcının göremediği bir duruma göre değişmesiydi. İlgi alanı önerisi
+  bölümü de aynı kuralı kullanıyor — iki bölüm tek kural paylaşıyor.
+  Yan kazanç: süzgeç açıkken iki gidiş-dönüş hiç yapılmıyor.
+- **#1 yerine koyma mı tamamlama mı — KAPATILMADI.** Bu bir ürün kararı,
+  kusur değil; kullanıcının vermesi gerekiyor.
+- **#4 boşa giden `seri_kalanlar` RPC'si — KAPATILMADI.** Düzgün kapatmak
+  ortak baştaki seri/toplam hesabını yeniden yapılandırmayı gerektiriyor.
+  Kullanıcıya yanlış veri gösterilmiyor, kazanç tek gidiş-dönüş; uzun bir
+  oturumun sonunda taşınacak regresyon riski kazançtan büyük. Süzgeç açıkken
+  zaten hiç çağrılmıyor (yukarıdaki #3 düzeltmesinin yan etkisi).

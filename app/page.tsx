@@ -245,12 +245,17 @@ export default async function HomePage({
       .maybeSingle()
 
     const [membershipRes, rsvpRes] = await Promise.all([
+      // TEK KAYNAK. Eskiden bu sorgu .limit(6) ile YALNIZCA kenar çubuğu için
+      // çekiliyor, üyelik kimlikleri için aşağıda İKİNCİ ve birebir aynı bir
+      // sorgu daha atılıyordu. İki liste ayrı kapsamdan beslendiği için
+      // 9 topluluğa üye kullanıcının kenar çubuğunda ADI HİÇ GEÇMEYEN bir
+      // topluluğun buluşması "topluluklarından" başlığı altında çıkabiliyordu.
+      // Limit artık sorguda değil, kenar çubuğunun kendi diliminde.
       supabase
         .from('community_members')
-        .select('community:communities(id, name)')
+        .select('community_id, community:communities(id, name)')
         .eq('user_id', user.id)
-        .eq('status', 'approved')
-        .limit(6),
+        .eq('status', 'approved'),
       supabase
         .from('rsvps')
         .select('event:events(id, title, event_date)')
@@ -259,9 +264,17 @@ export default async function HomePage({
         .limit(5),
     ])
 
-    const myCommunities = (membershipRes.data ?? [])
+    if (membershipRes.error) console.error('[anasayfa] uyelikler alinamadi:', membershipRes.error)
+    if (rsvpRes.error) console.error('[anasayfa] rsvp listesi alinamadi:', rsvpRes.error)
+
+    const uyelikSatirlari = membershipRes.data ?? []
+    // Kenar çubuğu en fazla 6 gösteriyor — sınır SORGUDA değil burada, ki
+    // "topluluklarım" kümesi tam kalsın.
+    const myCommunities = uyelikSatirlari
       .map((m) => m.community as unknown as { id: string; name: string })
       .filter(Boolean)
+      .slice(0, 6)
+    const topluluklarim = uyelikSatirlari.map((m) => m.community_id).filter(Boolean)
     const myRsvps = (rsvpRes.data ?? [])
       .map((r) => r.event as unknown as { id: string; title: string; event_date: string })
       .filter(Boolean)
@@ -276,19 +289,16 @@ export default async function HomePage({
     // temiz bağlanıyor; ilgi alanı eşleştirmesi (serbest metin ↔ topics.id)
     // gerekmiyor — o ayrı bir iş.
     //
-    // Yukarıdaki membershipRes .limit(6) ile kenar çubuğu için çekiliyor;
-    // burada TÜM üyelikler gerekiyor, o yüzden ayrı ve hafif bir sorgu.
-    const { data: uyelikIdler, error: uyelikIdHata } = await supabase
-      .from('community_members')
-      .select('community_id')
-      .eq('user_id', user.id)
-      .eq('status', 'approved')
-    if (uyelikIdHata) console.error('[anasayfa] uyelik kimlikleri alinamadi:', uyelikIdHata)
-
-    const topluluklarim = (uyelikIdler ?? []).map((m) => m.community_id).filter(Boolean)
-
+    // SÜZGEÇ VARKEN KİŞİSELLEŞTİRME YOK. Eskiden bu şerit `activeCity`,
+    // `activeSlug` ve `activeQuery`'nin ÜÇÜNÜ birden görmezden geliyordu:
+    // kullanıcı Ankara'yı seçse bile İstanbul üyeliklerinin buluşmaları
+    // "Senin için" altında kalıyordu. Asıl kusur şehrin uygulanmaması değil,
+    // SÜZGECİN KAPSAMININ kullanıcının göremediği bir duruma (üyeliğinde
+    // yaklaşan buluşma var mı) göre değişmesiydi. Aynı kural az aşağıdaki
+    // ilgi alanı önerisinde de geçerli — iki bölüm tek kuralı paylaşıyor.
+    // Yan kazanç: süzgeç açıkken iki gidiş-dönüş hiç yapılmıyor.
     let seninIcin: typeof events = []
-    if (topluluklarim.length > 0) {
+    if (!hasFilter && topluluklarim.length > 0) {
       const { data: kisiselRes, error: kisiselHata } = await supabase
         .from('etkinlik_vitrin')
         .select(

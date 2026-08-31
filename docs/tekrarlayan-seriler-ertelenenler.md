@@ -59,3 +59,49 @@ Kendi RPC'sini, rota dalını ve arayüz denetimini gerektiriyor.
 - `CLAUDE.md`'deki tarih kuralına "biçimlendirme için" ibaresi eklendi —
   `timestamptz` serileştirmesi için `toISOString()` zararsız ve depoda 20+
   emsali var; kural metni her incelemede yanlış alarm üretiyordu.
+
+
+---
+
+# Kapatma turu (01.09.2026, commit sonrası)
+
+## Kapatıldı
+
+- **Kuyruk hijyeni** — `seri_sil` yalnızca `reminder` temizliyordu. Ölçerken
+  daha büyük ve BELGELENMEMİŞ bir boşluk çıktı: **tekil etkinlik silme yolu
+  kuyruğu hiç temizlemiyordu**. İkisi birden `events` üzerine konan
+  `AFTER DELETE ... FOR EACH STATEMENT` trigger'ıyla kapandı
+  (migration `20260901140000`). Trigger seçilme sebebi: `email_outbox`'ın
+  sıfır politikası ve sıfır GRANT'i var, RPC olsaydı "kimin hangi etkinliğin
+  kuyruğunu silme hakkı var" sorusunu elle çözmek gerekirdi.
+  Ölçüt `event_id` — bu anahtarı yalnızca `reminder` ve `promotion` taşıyor,
+  `event_cancel` taşımıyor; yoksa trigger `seri_sil`'in silmeden ÖNCE yazdığı
+  iptal maillerini silerdi. Beş maddelik geri sarılan blokla doğrulandı.
+- **Görev 9 · K1** — `role="radiogroup"` + `aria-labelledby` iki forma da
+  eklendi. `<fieldset><legend>` seçilmedi: tarayıcının kendi kenarlık/dolgu
+  stilini getiriyor, tasarım dili ölçülmüş durumda.
+- **Görev 9 · K3** — iptal formundaki radyolar artık `disabled={loading}`.
+- **Görev 11 · K10** — bilinmeyen frekans sessizce "aylık" yazıyordu, iki
+  dosyada birbirinden habersiz. `lib/seri.ts` tek kaynak; tanınmayan değerde
+  `null` dönüyor ve arayüz frekansı YAZMIYOR, yalnızca kalan sayısını
+  gösteriyor. Eksik bilgi, yanlış bilgiden iyidir.
+- **Görev 11 · K7 (kısmen — belge yarı yanlıştı)** — `profile/[id]`'de iki
+  sorgunun `series_id` çektiği yazıyordu. Ölçüldü: `organizedEvents`'teki
+  KULLANILIYOR (seri katlaması, satır ~100). Yalnızca `rsvps` embed'indeki
+  ölüydü ("Katıldığı" listesi seriyi bilinçle katlamıyor) — o kaldırıldı.
+- **Görev 10 · `takvimRes` hatası yutuluyordu** — aynı dosyadaki diğer iki
+  sorgunun hatası da yutuluyordu; üçü de artık loglanıyor.
+
+## Kapatılmadı — gerekçesiyle
+
+- **"Seriye geri kat" eylemi** — kendi RPC'si, rota dalı ve arayüz denetimini
+  gerektiriyor. Bu turun kapsamındaki "ertelenmiş bulgu" değil, ayrı bir
+  özellik.
+- **`accent-color` / `appearance`** — belgenin kendi notu: tasarım dili
+  ÖLÇÜLMÜŞ olduğu için ölçmeden dokunulmamalı. Tarayıcıda ölçüm gerektiriyor
+  ve bu turda giriş yapmış yüzeylere erişemedim.
+- **Görev 1-4 k2/k4/k5b, TOCTOU, Görev 6 K2/K4, Görev 7 K1/K3, Görev 11 K9** —
+  hepsi `seri_sil`/`seri_guncelle`'nin 100+ satırlık gövdelerini yeniden
+  yazmayı ya da davranış kararı vermeyi gerektiriyor. Hiçbirinin bugün
+  kullanıcıya görünen etkisi yok (canlıda sıfır seri var). O fonksiyonlara
+  bir sonraki gerçek dokunuşta toplu ele alınmalı.

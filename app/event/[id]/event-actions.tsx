@@ -115,9 +115,15 @@ export default function EventActions({
       ) : (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <span style={{ color: 'var(--muted)' }}>emin misin? katılımcılara iptal maili gider</span>
+          {/* role="radiogroup" + aria-labelledby: görünür etiket vardı ama
+              ekran okuyucu kullanıcısı üç seçeneği bağımsız radyo olarak
+              duyuyor, NEYİN kapsamı olduğunu duymuyordu. fieldset/legend
+              yerine ARIA: fieldset tarayıcının kendi kenarlık/dolgu stilini
+              getiriyor ve bu depoda tasarım dili ÖLÇÜLMÜŞ durumda. */}
           {seriesId && (
-            <span style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <span style={{ fontWeight: 600, color: 'var(--ink)' }}>Bu iptal neyi kapsasın?</span>
+            <span role="radiogroup" aria-labelledby="iptal-kapsam-basligi"
+                  style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <span id="iptal-kapsam-basligi" style={{ fontWeight: 600, color: 'var(--ink)' }}>Bu iptal neyi kapsasın?</span>
               {([
                 ['tek', 'Yalnızca bu buluşma'],
                 ['sonrakiler', 'Bu buluşma ve sonrakiler'],
@@ -133,6 +139,7 @@ export default function EventActions({
                     value={deger}
                     checked={kapsam === deger}
                     onChange={() => setKapsam(deger)}
+                    disabled={loading}
                     style={{ width: '16px', height: '16px', padding: 0, margin: 0, flex: '0 0 auto' }}
                   />
                   {etiket}

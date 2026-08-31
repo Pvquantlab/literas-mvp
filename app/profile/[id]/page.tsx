@@ -58,7 +58,10 @@ export default async function ProfilePage({
   // Hata artık yutulmuyor: app/page.tsx:139'daki ders ("Sorgu hatasini yutma").
   const { data: rsvps, error: rsvpHata } = await supabase
     .from('rsvps')
-    .select('checked_in_at, event:events(id, title, event_date, location, cover_image_url, series_id, community:communities(name, category))')
+    // `series_id` BİLEREK YOK: "Katıldığı" listesi seriyi KATLAMIYOR (aşağıdaki
+    // yorum), yani kolonun burada tüketicisi hiç olmadı. Yukarıdaki
+    // organizedEvents sorgusunda ise kullanılıyor — oradan silinmemeli.
+    .select('checked_in_at, event:events(id, title, event_date, location, cover_image_url, community:communities(name, category))')
     .eq('user_id', id)
     .order('created_at', { ascending: false })
 

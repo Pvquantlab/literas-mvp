@@ -169,9 +169,11 @@ export default function EditEventForm({ event }: { event: any }) {
         />
       </div>
 
+      {/* bkz. event-actions.tsx: görünür etiket yeterli değil, grubun adı
+          programatik olarak da bağlanmalı. */}
       {event.series_id && (
-        <div style={groupStyle}>
-          <span style={labelStyle}>Bu değişiklik neyi kapsasın?</span>
+        <div role="radiogroup" aria-labelledby="degisiklik-kapsam-basligi" style={groupStyle}>
+          <span id="degisiklik-kapsam-basligi" style={labelStyle}>Bu değişiklik neyi kapsasın?</span>
           {([
             ['tek', 'Yalnızca bu buluşma'],
             ['sonrakiler', 'Bu buluşma ve sonrakiler'],

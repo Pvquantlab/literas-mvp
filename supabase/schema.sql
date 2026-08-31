@@ -1804,6 +1804,48 @@ SELECT c.id, c.name, c.city, c.category, c.cover_image_url, c.member_count,
  LIMIT greatest(1, least(p_limit, 12));
 $function$;
 
+-- -----------------------------------------------------------------------------
+-- etkinlik_silinince_kuyrugu_temizle — silinen etkinliğin bekleyen postaları
+-- -----------------------------------------------------------------------------
+-- Etkinlik silindiğinde `email_outbox`'ta o etkinliğe ait gönderilmemiş
+-- satırlar kalıyordu: kullanıcı iptal mailinden SONRA "Yarın: X" alıyor ve
+-- bağlantı silinmiş uuid'ye 404 dönüyordu. İki boşluk vardı — `seri_sil`
+-- yalnızca 'reminder' temizliyordu ('promotion' da event_id taşıyor) ve
+-- TEKİL silme yolu hiç temizlemiyordu.
+--
+-- Trigger, RPC değil: email_outbox'ın sıfır politikası ve sıfır GRANT'i var,
+-- yalnızca SECURITY DEFINER dokunabiliyor; RPC olsaydı "kimin hangi etkinliğin
+-- kuyruğunu silme hakkı var" sorusu elle çözülecekti. Trigger'da o soru yok.
+--
+-- Ölçüt `event_id`: bu anahtarı YALNIZCA reminder ve promotion taşıyor.
+-- event_cancel/event_change/join_request taşımıyor — kritik, çünkü `seri_sil`
+-- iptal bildirimini silmeden ÖNCE kuyruğa yazıyor.
+-- Ayrıntı: migrations/20260901140000_kuyruk_hijyeni.sql
+CREATE OR REPLACE FUNCTION public.etkinlik_silinince_kuyrugu_temizle()
+RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp
+AS $function$
+BEGIN
+  DELETE FROM email_outbox o
+   WHERE o.sent_at IS NULL
+     AND o.payload ? 'event_id'
+     AND (o.payload->>'event_id')::uuid IN (SELECT s.id FROM silinen s);
+  RETURN NULL;
+END
+$function$;
+
+-- Trigger fonksiyondan SONRA tanımlanmak ZORUNDA: bu dosya taze bir veritabanına
+-- baştan sona uygulanıyor, sıra bozulursa CREATE TRIGGER var olmayan fonksiyonu
+-- arar ve şema kurulumu patlar.
+-- FOR EACH STATEMENT + geçiş tablosu: seri_sil 26 tekrarı tek DELETE ile siler,
+-- satır bazlı trigger 26 kez koşardı.
+DROP TRIGGER IF EXISTS events_kuyruk_temizligi ON public.events;
+CREATE TRIGGER events_kuyruk_temizligi
+  AFTER DELETE ON public.events
+  REFERENCING OLD TABLE AS silinen
+  FOR EACH STATEMENT
+  EXECUTE FUNCTION public.etkinlik_silinince_kuyrugu_temizle();
+
 REVOKE ALL ON FUNCTION public.seri_kalanlar(uuid[]) FROM PUBLIC;
 -- anon da alıyor: ana sayfa ve keşfet giriş yapmamış kullanıcıya da açık.
 GRANT EXECUTE ON FUNCTION public.seri_kalanlar(uuid[]) TO anon, authenticated;
