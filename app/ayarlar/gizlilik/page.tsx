@@ -15,7 +15,7 @@ export default async function GizlilikPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("contact_permission, profile_visibility")
+    .select("contact_permission, profile_visibility, show_participation")
     .eq("id", user.id)
     .single();
 
@@ -52,6 +52,36 @@ export default async function GizlilikPage({
           <p style={{ fontSize: 13, color: "var(--muted)", marginTop: 8 }}>
             Gizli profiller arama sonuçlarında ve üye listelerinde görünmez.
           </p>
+        </div>
+
+        <div style={{ marginBottom: 26 }}>
+          <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, cursor: "pointer" }}>
+            <span style={{ flex: 1 }}>
+              <span style={{ ...labelStyle, marginBottom: 4 }}>Katılım bilgim profilimde görünsün</span>
+              <span style={{ display: "block", fontSize: 13, color: "var(--muted)" }}>
+                Kapalıyken kaç topluluğa üye olduğun, kaç buluşma düzenlediğin ve
+                katıldığın buluşmalar başkalarına görünmez. Sen kendi profilinde
+                her zaman görürsün.
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              name="show_participation"
+              defaultChecked={profile?.show_participation ?? true}
+              className="literas-toggle"
+              style={{
+                appearance: "none",
+                width: 44,
+                height: 24,
+                borderRadius: 999,
+                background: "var(--paper-soft)",
+                position: "relative",
+                cursor: "pointer",
+                transition: "background 0.2s",
+                flexShrink: 0,
+              } as React.CSSProperties}
+            />
+          </label>
         </div>
 
         <button type="submit" style={saveButtonStyle}>

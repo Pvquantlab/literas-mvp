@@ -398,8 +398,29 @@ alıyor, katılımcı listesi canlı, QR ile giriş alınabiliyor.
       bölüm, yalnızca onaylı üyeye görünür. KAPSAM DIŞI: push bildirim,
       görsel/ek dosya, zamanlanmış gönderim, duyuru başına kitle seçimi,
       yorum/tepki.
-- [ ] Katılım karnesi (profilde: katıldığı etkinlik sayısı, üye olduğu topluluklar;
-      gizlilik toggle: show_reading_stats benzeri)
+- [x] **Katılım karnesi** (31.08.2026)
+      Migration'lar `20260831140000` (kolon + vitrin) ve `20260831150000`
+      (fonksiyon). `profiles.show_participation` boolean, varsayılan true;
+      `public_profiles` vitrinine elle eklendi (vitrin açık kolon listesi
+      kullanıyor, yeni kolon kendiliğinden gelmez).
+      SAYAÇLAR ARTIK FONKSİYONDAN: `katilim_karnesi(uuid)` SECURITY DEFINER.
+      Sebebi — `anon` rolünün `rsvps` üzerinde HİÇ yetkisi yok ve profil sayfası
+      sorgunun 42501 hatasını YUTUYORDU: "Katıldığı" giriş yapmamış her
+      ziyaretçide sessizce 0 yazıyordu. `GRANT SELECT ... TO anon` alternatifi
+      reddedildi (kimin nereye katıldığını herkese kazınabilir biçimde açardı);
+      fonksiyon sayıyı veriyor, satırları değil. Gizlilik kuralı fonksiyonun
+      İÇİNDE — `profile_visibility`'nin bir dönem "hiçbir etkisi olmayan" ayar
+      olmasının sebebi kuralın hiçbir yerde uygulanmamasıydı.
+      SECURITY DEFINER RLS'i atladığı için sayımlar elle daraltıldı: yalnızca
+      onaylı topluluğa ait kayıtlar sayılıyor (aksi halde onay bekleyen bir
+      topluluğun varlığı sayı üzerinden sızardı — ahmet'in sayacı 6 yerine 5).
+      Sayaç düzeltmeleri: "Düzenlediği" seriyi TEK sayıyor (seri özelliği ham
+      sayımı 12'ye şişiriyordu), "Katıldığı" yalnızca GEÇMİŞ buluşmaları sayıyor
+      (gelecekteki RSVP henüz katılım değil). Check-in zenginleştirme olarak
+      duruyor, tanım değil: veritabanında hiç check-in yok, tanıma bağlansaydı
+      her profilde sonsuza kadar 0 yazardı.
+      KAPSAM DIŞI: katılım oranı/seri sürekliliği gibi türetilmiş ölçüler,
+      rozet/başarım sistemi.
 - [ ] İlgi alanına göre kişisel keşif
 - [ ] (Talebi kanıtlanırsa) kategori derinlik modülleri
 

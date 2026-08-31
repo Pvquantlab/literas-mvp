@@ -225,6 +225,9 @@ export const gizlilikSchema = z.object({
   profile_visibility: z.enum(['public', 'private'], {
     error: 'Geçersiz profil görünürlüğü',
   }),
+  // İşaretsiz checkbox form verisinde HİÇ GELMEZ; action bunu boolean'a
+  // çevirdikten sonra parse ediyor (bildirimler ayarlarındaki desen).
+  show_participation: z.boolean({ error: 'Geçersiz katılım görünürlüğü' }),
 })
 
 // email BİLİNÇLİ olarak yok: profiles.email artık profiles_guard trigger'ı ile

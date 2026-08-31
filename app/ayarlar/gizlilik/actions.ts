@@ -23,6 +23,8 @@ export async function updatePrivacy(formData: FormData) {
   const parsed = gizlilikSchema.safeParse({
     contact_permission: formData.get("contact_permission"),
     profile_visibility: formData.get("profile_visibility"),
+    // Checkbox işaretsizse alan gövdede hiç bulunmaz; yokluğu "kapalı" demek.
+    show_participation: formData.get("show_participation") === "on",
   });
   if (!parsed.success) {
     return ayarlarSonucu(YOL, ilkHata(parsed.error.flatten().fieldErrors));

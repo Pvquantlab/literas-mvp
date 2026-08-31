@@ -18,7 +18,7 @@ export default async function ProfilePage({
   // Herkese açık profil vitrini (e-posta vb. özel alanlar bu görünümde yok)
   const { data: profile } = await supabase
     .from('public_profiles')
-    .select('id, name, bio, avatar_url, location, created_at')
+    .select('id, name, bio, avatar_url, location, created_at, show_participation')
     .eq('id', id)
     .single()
 
@@ -37,11 +37,29 @@ export default async function ProfilePage({
     .eq('organizer_id', id)
     .order('event_date', { ascending: false })
 
-  const { data: rsvps } = await supabase
+  // DİKKAT: anon rolünün rsvps üzerinde HİÇ yetkisi yok (yalnızca
+  // authenticated'a kolon bazlı SELECT verilmiş). Giriş yapmamış ziyaretçide
+  // bu sorgu 42501 döner ve `rsvps` null kalır — bu yüzden LİSTE onlara
+  // çizilmiyor, SAYILAR ise katilim_karnesi RPC'sinden geliyor.
+  // Hata artık yutulmuyor: app/page.tsx:139'daki ders ("Sorgu hatasini yutma").
+  const { data: rsvps, error: rsvpHata } = await supabase
     .from('rsvps')
-    .select('event:events(id, title, event_date, location, cover_image_url, series_id, community:communities(name, category))')
+    .select('checked_in_at, event:events(id, title, event_date, location, cover_image_url, series_id, community:communities(name, category))')
     .eq('user_id', id)
     .order('created_at', { ascending: false })
+
+  // 42501 = beklenen (anonim ziyaretçi); diğer hatalar gerçek sorun.
+  if (rsvpHata && rsvpHata.code !== '42501') {
+    console.error('[profil] katilim listesi alinamadi:', rsvpHata)
+  }
+
+  // Sayaçlar SECURITY DEFINER fonksiyondan: anonim ziyaretçi de görebilsin
+  // ama ham RSVP satırları dışarı çıkmasın. Gizlilik kuralı fonksiyonun
+  // İÇİNDE uygulanıyor — render koşuluna bırakılmıyor.
+  const { data: karneSatir, error: karneHata } = await supabase
+    .rpc('katilim_karnesi', { p_user_id: id })
+  if (karneHata) console.error('[profil] karne alinamadi:', karneHata)
+  const karne = karneSatir?.[0]
 
   const joinedDate = new Date(profile.created_at)
   const now = new Date()
@@ -54,10 +72,42 @@ export default async function ProfilePage({
 
   const roleLabel = (role: string) => role === 'founder' ? 'kurucu' : role === 'admin' ? 'yönetici' : 'üye'
 
+  const simdi = Date.now()
+
+  // SERİ KATLAMA — 12 tekrarlı bir seri kurmak BİR organizasyon işidir, on iki
+  // değil. Sitenin her yerinde seri tek kart olarak katlanıyor (etkinlik_vitrin);
+  // bu sayaç ham satır saydığı için seri özelliğinden sonra "Düzenlediği 12"
+  // yazıyordu. Sıra korunuyor: her seriden listedeki İLK satır temsilci.
+  const gorulenSeri = new Set<string>()
+  const organizeTemsilciler = (organizedEvents ?? []).filter((e) => {
+    const anahtar = e.series_id ?? e.id
+    if (gorulenSeri.has(anahtar)) return false
+    gorulenSeri.add(anahtar)
+    return true
+  })
+
+  // "Katıldığı" YALNIZCA GEÇMİŞ buluşmaları sayar. Seri burada KATLANMAZ: üç ay
+  // boyunca haftalık giden kişi on iki kez gitmiştir ve karne bunu göstermeli.
+  // Şişmenin kaynağı seri değil, gelecekteki RSVP'lerin sayılmasıydı — bir
+  // seriye kaydolur kaydolmaz "12" yazıyordu.
+  const gecmisKatilimlar = (rsvps ?? []).filter((r) => {
+    // TİP TUZAĞI: PostgREST'te `event:events(...)` TEKİL bir ilişki (rsvps.event_id
+    // → events.id) ve çalışma zamanında NESNE dönüyor. Ama Supabase istemcisi
+    // tipsiz olduğu için çıkarım bunu DİZİ sanıyor. Dosyanın geri kalanı bunu
+    // `any` ile örtüyor; burada `any` eklemek yerine uyumsuzluğu açıkça yazıyoruz.
+    const etkinlik = r.event as unknown as { event_date: string } | null
+    return etkinlik !== null && new Date(etkinlik.event_date).getTime() < simdi
+  })
+
+  // Karne kapalıysa fonksiyon gorunur=false döndürüyor ve sayı vermiyor.
+  // Sahibi ve yönetici istisna — kural fonksiyonun içinde.
+  const karneGorunur = karne?.gorunur ?? false
+  const checkinSayisi = karne?.checkin ?? 0
+
   const stats = [
-    { value: memberships?.length ?? 0, label: 'Topluluk' },
-    { value: organizedEvents?.length ?? 0, label: 'Düzenlediği' },
-    { value: rsvps?.length ?? 0, label: 'Katıldığı' },
+    { value: karne?.topluluk ?? 0, label: 'Topluluk' },
+    { value: karne?.duzenledigi ?? 0, label: 'Düzenlediği' },
+    { value: karne?.katildigi ?? 0, label: 'Katıldığı' },
   ]
 
   return (
@@ -153,18 +203,34 @@ export default async function ProfilePage({
           </p>
         </div>
 
-        {/* Ayraç + istatistikler — içeriğin hemen ardından gelir */}
-        <div>
-          <div style={{ height: '1px', background: 'var(--border)', margin: '22px 0 14px' }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {stats.map((s) => (
-              <div key={s.label} style={{ textAlign: 'center', flex: 1 }}>
-                <div style={{ fontSize: '18px', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.2 }}>{s.value}</div>
-                <div style={{ fontSize: '11.5px', color: 'var(--muted)', marginTop: '2px' }}>{s.label}</div>
-              </div>
-            ))}
+        {/* Ayraç + istatistikler — içeriğin hemen ardından gelir.
+            Katılım karnesi kapalıysa blok hiç çizilmiyor; sahibi her zaman görür. */}
+        {karneGorunur && (
+          <div>
+            <div style={{ height: '1px', background: 'var(--border)', margin: '22px 0 14px' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              {stats.map((s) => (
+                <div key={s.label} style={{ textAlign: 'center', flex: 1 }}>
+                  <div style={{ fontSize: '18px', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.2 }}>{s.value}</div>
+                  <div style={{ fontSize: '11.5px', color: 'var(--muted)', marginTop: '2px' }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+            {checkinSayisi > 0 && (
+              <p style={{ fontSize: '11.5px', color: 'var(--muted)', textAlign: 'center', margin: '10px 0 0' }}>
+                {checkinSayisi} buluşmada giriş yapıldı
+              </p>
+            )}
+            {isOwnProfile && profile.show_participation === false && (
+              <p style={{ fontSize: '11.5px', color: 'var(--muted)', textAlign: 'center', margin: '10px 0 0' }}>
+                Bu bölümü yalnızca sen görüyorsun.{' '}
+                <Link href="/ayarlar/gizlilik" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>
+                  Gizlilik ayarları
+                </Link>
+              </p>
+            )}
           </div>
-        </div>
+        )}
       </aside>
 
       {/* ===== SAĞ: İÇERİK ===== */}
@@ -286,9 +352,9 @@ export default async function ProfilePage({
       {/* Düzenlediği etkinlikler */}
       <section style={{ marginBottom: '48px' }}>
         <h2 className="serif" style={sectionTitleStyle}>Düzenlediği etkinlikler</h2>
-        {organizedEvents && organizedEvents.length > 0 ? (
+        {organizeTemsilciler.length > 0 ? (
           <div className="events-grid-org" style={{ display: 'grid', gap: '20px' }}>
-            {organizedEvents.map((e: any) => (
+            {organizeTemsilciler.map((e: any) => (
               <EventCard key={e.id} event={e} showCommunityName={true} />
             ))}
             <style>{`
@@ -307,12 +373,18 @@ export default async function ProfilePage({
         )}
       </section>
 
-      {/* Katıldığı etkinlikler */}
+      {/* Katıldığı etkinlikler — karne kapalıysa bölüm hiç çizilmiyor.
+          Sayaçla AYNI diziyi kullanıyor: sayı 3 derken liste 36 satır
+          göstermesin (ana sayfada yaşanan çelişkinin aynısı olurdu). */}
+      {/* Liste yalnızca rsvps verisi GERÇEKTEN geldiyse çizilir. Anonim
+          ziyaretçide sorgu 42501 dönüyor; "Henüz bir etkinliğe katılmadı"
+          demek YALAN olurdu — sayıyı karne zaten gösteriyor. */}
+      {karneGorunur && rsvps !== null && (
       <section>
         <h2 className="serif" style={sectionTitleStyle}>Katıldığı etkinlikler</h2>
-        {rsvps && rsvps.length > 0 ? (
+        {gecmisKatilimlar.length > 0 ? (
           <div className="events-grid-rsvp" style={{ display: 'grid', gap: '20px' }}>
-            {rsvps.map((r: any) => (
+            {gecmisKatilimlar.map((r: any) => (
               <EventCard key={r.event.id} event={r.event} showCommunityName={true} />
             ))}
             <style>{`
@@ -333,6 +405,7 @@ export default async function ProfilePage({
           <p style={emptyLineStyle}>Henüz bir etkinliğe katılmadı.</p>
         )}
       </section>
+      )}
       </div>
       <style>{`
         .member-card:hover {

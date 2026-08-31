@@ -112,7 +112,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email_community_announcements boolean DEFAULT true,
   email_new_members boolean DEFAULT true,
   push_suggested_events boolean DEFAULT false,
-  is_admin boolean DEFAULT false
+  is_admin boolean DEFAULT false,
+  -- Katılım karnesi gizliliği. Kolon bazlı GRANT GEREKMİYOR: profiles tablo
+  -- bazlı yetkili ve UPDATE politikası satır bazlı (auth.uid() = id). Bu bir
+  -- ayrıcalık kolonu değil, kişinin kendi tercihi — profiles_guard() de bu
+  -- yüzden ona dokunmuyor (o yalnızca is_admin/email/id kilitliyor).
+  show_participation boolean DEFAULT true NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.communities (
@@ -1473,7 +1478,10 @@ CREATE TRIGGER trg_attendee_count AFTER INSERT OR DELETE OR UPDATE ON public.rsv
 -- kendi satırını görmesine izin veriyor.
 CREATE OR REPLACE VIEW public.public_profiles
 WITH (security_invoker = false) AS
-SELECT id, name, username, bio, avatar_url, location, created_at
+-- show_participation vitrine BİLİNÇLİ eklendi: profil sayfası katılım bloğunu
+-- gizleyebilmek için okuyor. Vitrin açık kolon listesi kullandığı için yeni
+-- kolonlar kendiliğinden GELMEZ — hangi alanın dışarı çıktığı hep görünür.
+SELECT id, name, username, bio, avatar_url, location, created_at, show_participation
 FROM profiles
 WHERE COALESCE(account_active, true)
   AND (COALESCE(profile_visibility, 'public'::text) = 'public'::text
@@ -1533,9 +1541,76 @@ AS $function$
    GROUP BY e.series_id, s.frekans;
 $function$;
 
+-- Katılım karnesi sayaçları. NEDEN FONKSİYON: anon rolünün rsvps üzerinde HİÇ
+-- yetkisi yok, profil sayfası da hatayı yutuyordu — "Katıldığı" giriş yapmamış
+-- her ziyaretçide sessizce 0 yazıyordu. GRANT SELECT ... TO anon alternatifi
+-- reddedildi: kimin nereye katıldığını herkese kazınabilir biçimde açardı.
+-- Fonksiyon SAYIYI veriyor, satırları değil.
+--
+-- SECURITY DEFINER RLS'i atladığı için sayımlar ELLE daraltılıyor: yalnızca
+-- ONAYLI topluluğa ait (ya da topluluğu olmayan) kayıtlar sayılıyor — aksi
+-- halde onay bekleyen bir topluluğun varlığı sayı üzerinden sızardı.
+--
+-- Gizlilik kuralı fonksiyonun İÇİNDE. profile_visibility'nin bir dönem
+-- "hiçbir etkisi olmayan" ayar olmasının sebebi kuralın hiçbir yerde
+-- uygulanmamasıydı; burada veri veritabanından hiç çıkmıyor.
+CREATE OR REPLACE FUNCTION public.katilim_karnesi(p_user_id uuid)
+RETURNS TABLE (topluluk int, duzenledigi int, katildigi int, checkin int, gorunur boolean)
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public, pg_temp
+AS $function$
+DECLARE
+  v_tercih boolean;
+BEGIN
+  SELECT COALESCE(pr.show_participation, true) INTO v_tercih
+    FROM profiles pr WHERE pr.id = p_user_id;
+
+  IF NOT FOUND THEN RETURN; END IF;
+
+  -- Sahibi ve yönetici istisna: kendi karnesini görebilmeli.
+  IF NOT v_tercih AND p_user_id IS DISTINCT FROM auth.uid() AND NOT public.is_admin() THEN
+    RETURN QUERY SELECT 0, 0, 0, 0, false;
+    RETURN;
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    (SELECT count(*)::int
+       FROM community_members cm
+       JOIN communities c ON c.id = cm.community_id
+      WHERE cm.user_id = p_user_id AND cm.status = 'approved'
+        AND c.status = 'approved'),
+    -- SERİ KATLANIR: 12 tekrarlı seri kurmak BİR organizasyon işidir.
+    (SELECT count(DISTINCT COALESCE(e.series_id, e.id))::int
+       FROM events e
+       LEFT JOIN communities c ON c.id = e.community_id
+      WHERE e.organizer_id = p_user_id
+        AND (e.community_id IS NULL OR c.status = 'approved')),
+    -- SERİ KATLANMAZ: haftalık giden kişi on iki kez gitmiştir. Yalnızca GEÇMİŞ.
+    (SELECT count(*)::int
+       FROM rsvps r
+       JOIN events e ON e.id = r.event_id
+       LEFT JOIN communities c ON c.id = e.community_id
+      WHERE r.user_id = p_user_id AND e.event_date < now()
+        AND (e.community_id IS NULL OR c.status = 'approved')),
+    -- Check-in ZENGİNLEŞTİRME, tanım değil.
+    (SELECT count(*)::int
+       FROM rsvps r
+       JOIN events e ON e.id = r.event_id
+       LEFT JOIN communities c ON c.id = e.community_id
+      WHERE r.user_id = p_user_id AND e.event_date < now()
+        AND r.checked_in_at IS NOT NULL
+        AND (e.community_id IS NULL OR c.status = 'approved')),
+    true;
+END;
+$function$;
+
 REVOKE ALL ON FUNCTION public.seri_kalanlar(uuid[]) FROM PUBLIC;
 -- anon da alıyor: ana sayfa ve keşfet giriş yapmamış kullanıcıya da açık.
 GRANT EXECUTE ON FUNCTION public.seri_kalanlar(uuid[]) TO anon, authenticated;
+REVOKE ALL ON FUNCTION public.katilim_karnesi(uuid) FROM PUBLIC;
+-- anon DA alıyor: profil sayfası giriş yapmamış ziyaretçiye de açık ve
+-- karnenin görünmesinin bütün amacı bu.
+GRANT EXECUTE ON FUNCTION public.katilim_karnesi(uuid) TO anon, authenticated;
 
 
 -- -----------------------------------------------------------------------------

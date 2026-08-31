@@ -132,7 +132,7 @@ Ayrıntılar `literas-yol-haritasi.md` dosyasında. Özet durum:
       DSN env'e konmadan sistem tamamen sessiz.
 - [ ] **2.1** OG görselleri ✓ · **2.2** cron hatırlatma ✓ · **2.3** PWA ✓ ·
       **2.4** Realtime katılımcı listesi ✓ · **2.5** Türkçe FTS ✓ · **2.6** QR check-in ✓
-- [ ] **Aşama 3** tekrarlayan etkinlik serileri ✓, topluluk duyuruları ✓, katılım karnesi, kişisel keşif
+- [ ] **Aşama 3** tekrarlayan etkinlik serileri ✓, topluluk duyuruları ✓, katılım karnesi ✓, kişisel keşif
 - [ ] **Aşama 4** iyzico/PayTR ödeme, Expo mobil (kullanıcı çekişi görünce)
 
 Bir görevi bitirince bu listede `[x]` işaretle ve tek satır not düş.
