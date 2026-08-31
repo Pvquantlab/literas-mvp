@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useWizard } from '../wizard-context'
 import { saveDraft } from '../actions'
+import { CATEGORIES } from '@/lib/categories'
 import {
   searchTopics,
   getPopularTopics,
@@ -22,6 +23,9 @@ export default function KonularStep() {
   const { draft, update, isSaving, setSaving } = useWizard()
 
   const [selectedIds, setSelectedIds] = useState<number[]>(draft.topic_ids ?? [])
+  // Kategori: kart görselini ve keşfetteki süzgeci besleyen alan. Sihirbaz
+  // bunu HİÇ sormuyordu, dolayısıyla yeni topluluklar category'siz doğuyordu.
+  const [category, setCategory] = useState<string>(draft.category ?? '')
   const [selectedTopics, setSelectedTopics] = useState<TopicSuggestion[]>([])
   const [results, setResults] = useState<TopicSuggestion[]>([])
   const [popular, setPopular] = useState<TopicSuggestion[]>([])
@@ -104,14 +108,14 @@ export default function KonularStep() {
     }
   }
 
-  const canProceed = selectedIds.length >= MIN_TOPICS
+  const canProceed = selectedIds.length >= MIN_TOPICS && category !== ''
 
   async function handleNext() {
     if (!canProceed || isSaving) return
     setSaving(true)
     try {
-      update({ topic_ids: selectedIds })
-      await saveDraft({ topic_ids: selectedIds }, 'ad')
+      update({ topic_ids: selectedIds, category })
+      await saveDraft({ topic_ids: selectedIds, category }, 'ad')
       router.push('/community/new/ad')
     } catch (e) {
       console.error(e)
@@ -147,6 +151,40 @@ export default function KonularStep() {
       <p style={{ fontSize: '13.5px', color: 'var(--muted)', margin: '0 0 20px' }}>
         En az {MIN_TOPICS}, önerilen {RECOMMENDED_TOPICS}, maksimum {MAX_TOPICS} konu seçebilirsin.
       </p>
+
+      {/* Kategori — konulardan AYRI bir alan. Konular topluluğu ayrıntılı
+          tarif ediyor; kategori ise keşfet şeridindeki süzgeci ve kart
+          görselini belirleyen tek değer. İkisi arasında eşleme tablosu
+          olmadığı için türetilemiyor, açıkça soruluyor. */}
+      <div style={{ marginBottom: '24px' }}>
+        <label
+          htmlFor="kategori"
+          style={{
+            display: 'block',
+            font: "500 12px 'IBM Plex Mono', monospace",
+            letterSpacing: '0.08em',
+            textTransform: 'lowercase',
+            color: 'var(--muted)',
+            marginBottom: '8px',
+          }}
+        >
+          hangi kategoride?
+        </label>
+        <select
+          id="kategori"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          required
+        >
+          <option value="">Kategori seç…</option>
+          {CATEGORIES.map((c) => (
+            <option key={c.slug} value={c.value}>{c.label}</option>
+          ))}
+        </select>
+        <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '8px 0 0' }}>
+          Keşfet sayfasında hangi başlık altında görüneceğini belirler.
+        </p>
+      </div>
 
       {/* Seçtikleriniz */}
       {selectedTopics.length > 0 && (

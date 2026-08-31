@@ -222,6 +222,66 @@ export default async function HomePage({
       .map((r) => r.event as unknown as { id: string; title: string; event_date: string })
       .filter(Boolean)
 
+    // "SENİN İÇİN" GERÇEKTEN KİŞİSEL OLSUN.
+    // Eskiden bu bölüm, misafire "Yaklaşan buluşmalar" diye gösterilen BİREBİR
+    // AYNI sorgunun ilk 4 kaydıydı — user.id bile sorguya girmiyordu. Başlık
+    // kişiselleştirme vaat ediyor, kod hiçbir kişiselleştirme yapmıyordu.
+    //
+    // Taksonomiye dokunmadan gerçek kişiselleştirme: kullanıcının ÜYE OLDUĞU
+    // toplulukların yaklaşan buluşmaları. community_members → events zaten
+    // temiz bağlanıyor; ilgi alanı eşleştirmesi (serbest metin ↔ topics.id)
+    // gerekmiyor — o ayrı bir iş.
+    //
+    // Yukarıdaki membershipRes .limit(6) ile kenar çubuğu için çekiliyor;
+    // burada TÜM üyelikler gerekiyor, o yüzden ayrı ve hafif bir sorgu.
+    const { data: uyelikIdler, error: uyelikIdHata } = await supabase
+      .from('community_members')
+      .select('community_id')
+      .eq('user_id', user.id)
+      .eq('status', 'approved')
+    if (uyelikIdHata) console.error('[anasayfa] uyelik kimlikleri alinamadi:', uyelikIdHata)
+
+    const topluluklarim = (uyelikIdler ?? []).map((m) => m.community_id).filter(Boolean)
+
+    let seninIcin: typeof events = []
+    if (topluluklarim.length > 0) {
+      const { data: kisiselRes, error: kisiselHata } = await supabase
+        .from('etkinlik_vitrin')
+        .select(
+          'id, title, event_date, location, cover_image_url, series_id, seri_disina_alindi_at, community:communities!inner(name, category, city)'
+        )
+        .in('community_id', topluluklarim)
+        .gte('event_date', new Date().toISOString())
+        .order('event_date', { ascending: true })
+        .limit(4)
+      if (kisiselHata) console.error('[anasayfa] kisisel etkinlikler alinamadi:', kisiselHata)
+      seninIcin = (kisiselRes ?? []) as unknown as typeof events
+    }
+
+    // Başlık İÇERİĞE uyar: "Senin için" ancak gerçekten senin içinken yazar.
+    // Üyeliği olmayan ya da topluluklarında yaklaşan buluşma bulunmayan
+    // kullanıcı genel listeyi DÜRÜST başlıkla görür — boş bölüm göstermek
+    // yerine (giriş yapmış dalda tek etkinlik bölümü bu).
+    const kisiselMi = seninIcin.length > 0
+    const gosterilecekEtkinlikler = kisiselMi ? seninIcin : events
+
+    // Rozet için kalan sayısı: kişisel liste farklı serilerden gelebildiği
+    // için kendi haritasını istiyor.
+    let gosterilenKalanMap = kalanMap
+    if (kisiselMi) {
+      const kisiselSeriIdler = [...new Set(seninIcin.map((e) => e.series_id).filter(Boolean))]
+      const { data: kisiselKalan, error: kisiselKalanHata } = (kisiselSeriIdler.length
+        ? await supabase.rpc('seri_kalanlar', { p_series_ids: kisiselSeriIdler })
+        : { data: [], error: null }) as {
+          data: { series_id: string; kalan: number; frekans: string }[] | null
+          error: { message: string } | null
+        }
+      if (kisiselKalanHata) console.error('[anasayfa] kisisel seri kalanlar alinamadi:', kisiselKalanHata)
+      gosterilenKalanMap = new Map(
+        (kisiselKalan ?? []).map((r) => [r.series_id, { kalan: r.kalan, frekans: r.frekans }])
+      )
+    }
+
     const initials = profile?.name
       ? profile.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
       : '?'
@@ -316,17 +376,26 @@ export default async function HomePage({
 
           {/* ---- Ana alan ---- */}
           <div style={{ flex: '3 1 460px', minWidth: 0 }}>
-            {events.length > 0 && (
+            {gosterilecekEtkinlikler.length > 0 && (
               <section style={{ marginBottom: 'var(--s-8)' }}>
-                <SectionHead title="Senin için" href="/kesfet" linkLabel="Tümünü gör" />
+                <SectionHead
+                  title={kisiselMi ? 'Senin için' : 'Yaklaşan buluşmalar'}
+                  href="/kesfet"
+                  linkLabel="Tümünü gör"
+                />
+                {kisiselMi && (
+                  <p className="mono" style={{ fontSize: 12, color: 'var(--muted)', margin: '0 0 var(--s-3)' }}>
+                    topluluklarından
+                  </p>
+                )}
                <div className="grid-communities grid-narrow">
-                  {events.slice(0, 4).map((ev) => (
+                  {gosterilecekEtkinlikler.slice(0, 4).map((ev) => (
                     <EventCard
                       key={ev.id}
                       event={{ ...ev, location: ev.location || "" }}
                       showCommunityName
-                      seriKalan={ev.seri_disina_alindi_at ? null : kalanMap.get(ev.series_id ?? '')?.kalan}
-                      frekans={ev.seri_disina_alindi_at ? null : kalanMap.get(ev.series_id ?? '')?.frekans}
+                      seriKalan={ev.seri_disina_alindi_at ? null : gosterilenKalanMap.get(ev.series_id ?? '')?.kalan}
+                      frekans={ev.seri_disina_alindi_at ? null : gosterilenKalanMap.get(ev.series_id ?? '')?.frekans}
                     />
                   ))}
                 </div>
