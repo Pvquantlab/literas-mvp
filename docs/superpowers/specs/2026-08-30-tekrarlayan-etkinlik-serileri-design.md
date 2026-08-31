@@ -568,6 +568,10 @@ edit-event-form.tsx` (`confirm()` dialogu) ve `app/event/[id]/event-actions.tsx`
   ayrı ayrı gösterir — bilinçli, çünkü profil bir **geçmiş kaydı**, keşif
   yüzeyi değil. `series_id` yine de select listelerine ekleniyor ki kartlarda
   seri rozeti çıksın.
+- **Ana sayfanın herkese açık "Yaklaşan etkinlikler" listesi rozet göstermiyor.**
+  O bölüm `EventCard` kullanmıyor, `<UpcomingEvents>` kendi satırlarını çiziyor.
+  Seri rozeti yalnızca kart kullanan yüzeylerde (keşfet, ana sayfadaki "Senin
+  için" şeridi) görünüyor.
 - **Cron'u saatliğe çıkarmak.** Kuyruk alarmı tetiklenince değerlendirilecek.
 
 ## Kapsam dışı ama BU İŞLE ORTAYA ÇIKAN mevcut hatalar

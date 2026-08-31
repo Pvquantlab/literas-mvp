@@ -34,7 +34,7 @@ Ortam değişkenleri (`.env.example`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_
 
 `CRON_SECRET` üç yerde aynı olmalı: `.env.local`, Vercel env, Supabase `app_secrets` (key=`cron_secret`). Örnek dosyaya gerçek değer yazılmaz.
 
-Tarih/saat: `lib/date.ts` tek kaynaktır. Kodun hiçbir yerinde çıplak `toLocaleDateString`/`toISOString` kullanma — Vercel UTC'de koşuyor, saat 3 saat kayıyor. Form girdisi için `localInputToISO` / `isoToLocalInput`.
+Tarih/saat: `lib/date.ts` tek kaynaktır. Kodun hiçbir yerinde çıplak `toLocaleDateString`/`toISOString`'i **biçimlendirme için** kullanma — Vercel UTC'de koşuyor, saat 3 saat kayıyor. Form girdisi için `localInputToISO` / `isoToLocalInput`. (`toISOString()` bir `timestamptz` parametresine değer serileştirmek için zararsızdır — depoda 20+ emsali var; kural yalnızca kullanıcıya gösterilecek biçimlendirmeyi kapsar.)
 
 ## Dizin haritası (mevcut, çalışıyor)
 
@@ -74,7 +74,9 @@ supabase/migrations/          Tarihsel değişiklik kaydı. Şemayı DEĞİŞTİ
 Gerçek şema Supabase'de yaşıyor. Denetlenmiş tablolar (RLS hepsinde AÇIK):
 `profiles` (is_admin dahil), `communities` (status: pending/approved/rejected, founder_id),
 `community_members` (role: founder/admin/member, status), `events` (organizer_id, community_id,
-event_date, cover_image_url), `rsvps` (email YOK — sadece uuid'ler), `waitlist`, `reports`
+event_date, cover_image_url, series_id), `event_series` (frekans: haftalik/iki_haftalik/aylik,
+tekrar_sayisi 2-26 — yazma yalnızca SECURITY DEFINER fonksiyonlardan), `rsvps` (email YOK —
+sadece uuid'ler), `waitlist`, `reports`
 (reporter_id, target_type: event/community/user, reason enum, description), ayrıca referans
 tabloları: `community_drafts`, `community_topics`, `topics`, `topic_categories`,
 `topic_category_map`, `topic_suggestions`, `locations`.
@@ -130,7 +132,7 @@ Ayrıntılar `literas-yol-haritasi.md` dosyasında. Özet durum:
       DSN env'e konmadan sistem tamamen sessiz.
 - [ ] **2.1** OG görselleri ✓ · **2.2** cron hatırlatma ✓ · **2.3** PWA ✓ ·
       **2.4** Realtime katılımcı listesi ✓ · **2.5** Türkçe FTS ✓ · **2.6** QR check-in ✓
-- [ ] **Aşama 3** tekrarlayan etkinlik serileri, topluluk duyuruları ✓, katılım karnesi, kişisel keşif
+- [ ] **Aşama 3** tekrarlayan etkinlik serileri ✓, topluluk duyuruları ✓, katılım karnesi, kişisel keşif
 - [ ] **Aşama 4** iyzico/PayTR ödeme, Expo mobil (kullanıcı çekişi görünce)
 
 Bir görevi bitirince bu listede `[x]` işaretle ve tek satır not düş.

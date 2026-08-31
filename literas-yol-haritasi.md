@@ -360,7 +360,17 @@ alıyor, katılımcı listesi canlı, QR ile giriş alınabiliyor.
 
 ## AŞAMA 3 — Derinlik (2-3. ay)
 
-- [ ] Tekrarlayan etkinlik serileri
+- [x] **Tekrarlayan etkinlik serileri** (30.08.2026)
+      Migration'lar `20260830120000`..`20260830120300`: `event_series` tablosu
+      (frekans haftalik/iki_haftalik/aylik, tekrar_sayisi 2-26) + `events`'e
+      dört kolon (series_id, occurrence_index, updated_at,
+      seri_disina_alindi_at). Yazma yalnızca SECURITY DEFINER RPC'lerden
+      (`seri_olustur`, `etkinlik_guncelle`, `seri_guncelle`, `seri_sil`) —
+      `events` üzerindeki INSERT/UPDATE tablo bazlı GRANT'ten kolon bazlıya
+      indirildi. Okuma tarafı `etkinlik_vitrin` view'ı (security_invoker) seriyi
+      en yakın gelecek tekrara katlıyor, `seri_kalanlar` kart rozeti için kalan
+      sayıyı döndürüyor. `schema.sql` baseline'ı beşinci migration'la birlikte
+      (ölü `idx_events_community_id` düşürüldü) güncellendi.
 - [x] **Topluluk duyuruları** (28.08.2026)
       Migration `20260829100000_topluluk_duyurulari.sql`: community_announcements
       tablosu (id, community_id, author_id, title, body, created_at, updated_at,

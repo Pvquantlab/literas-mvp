@@ -147,7 +147,38 @@ CREATE TABLE IF NOT EXISTS public.events (
   cover_image_url text,
   reminder_sent_at timestamp with time zone,
   search_vector tsvector GENERATED ALWAYS AS (((setweight(to_tsvector('turkish'::regconfig, immutable_unaccent(COALESCE(title, ''::text))), 'A'::"char") || setweight(to_tsvector('turkish'::regconfig, immutable_unaccent(COALESCE(description, ''::text))), 'B'::"char")) || setweight(to_tsvector('turkish'::regconfig, immutable_unaccent(COALESCE(location, ''::text))), 'C'::"char"))) STORED,
-  attendee_count integer DEFAULT 0 NOT NULL
+  attendee_count integer DEFAULT 0 NOT NULL,
+  -- Tekrarlayan etkinlik serileri (event_series, aşağıda). NULL = tekil
+  -- etkinlik, bu kısıttan etkilenmez.
+  series_id uuid,
+  -- Üretim anındaki sıra. Silme/ekleme sonrası ASLA yeniden numaralanmaz;
+  -- boşluk normaldir ve hiçbir kapsam/sıralama ölçütü DEĞİLDİR — kapsamlar
+  -- event_date ile çözülür.
+  occurrence_index integer,
+  updated_at timestamp with time zone,
+  -- "Bu tekrar elle değiştirildi." Toplu güncelleme (seri_guncelle/seri_sil)
+  -- bu satırları ATLAR.
+  seri_disina_alindi_at timestamp with time zone
+);
+
+-- Tekrarlayan etkinlik serisi. RRULE değil üç sabit frekans: BYSETPOS/EXDATE/
+-- sonsuz seri bu ürünün ihtiyacı değil ve her tüketiciye ayrı yorumlayıcı
+-- yazmayı gerektirirdi.
+CREATE TABLE IF NOT EXISTS public.event_series (
+  id uuid DEFAULT gen_random_uuid() NOT NULL,
+  community_id uuid NOT NULL,
+  organizer_id uuid NOT NULL,
+  frekans text NOT NULL,
+  baslangic timestamp with time zone NOT NULL,
+  -- 26 = haftalık yarım yıl. events satır sayısını ve toplu UPDATE'te RLS'in
+  -- satır başına koşturduğu community_members EXISTS sorgusunu sınırlıyor.
+  tekrar_sayisi integer NOT NULL,
+  -- İstemci üretimli istek kimliği. UNIQUE(series_id, event_date) iki kez
+  -- basılan "Oluştur"u ENGELLEMEZ (ikinci çağrı yeni series_id üretir,
+  -- çatışmaz). Gerçek ikizlenme koruması event_series_istek_benzersiz
+  -- (bölüm 6 İNDEKSLER).
+  istek_id uuid,
+  created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.community_members (
@@ -295,6 +326,7 @@ ALTER TABLE public.community_drafts ADD CONSTRAINT community_drafts_pkey PRIMARY
 ALTER TABLE public.community_members ADD CONSTRAINT community_members_pkey PRIMARY KEY (id);
 ALTER TABLE public.community_topics ADD CONSTRAINT community_topics_pkey PRIMARY KEY (community_id, topic_id);
 ALTER TABLE public.email_outbox ADD CONSTRAINT email_outbox_pkey PRIMARY KEY (id);
+ALTER TABLE public.event_series ADD CONSTRAINT event_series_pkey PRIMARY KEY (id);
 ALTER TABLE public.events ADD CONSTRAINT events_pkey PRIMARY KEY (id);
 ALTER TABLE public.locations ADD CONSTRAINT locations_pkey PRIMARY KEY (id);
 ALTER TABLE public.profiles ADD CONSTRAINT profiles_pkey PRIMARY KEY (id);
@@ -318,6 +350,8 @@ ALTER TABLE public.communities ADD CONSTRAINT communities_status_check CHECK ((s
 ALTER TABLE public.community_drafts ADD CONSTRAINT community_drafts_current_step_check CHECK ((current_step = ANY (ARRAY['konum'::text, 'konular'::text, 'ad'::text, 'aciklama'::text, 'gonder'::text])));
 ALTER TABLE public.community_members ADD CONSTRAINT community_members_role_check CHECK ((role = ANY (ARRAY['founder'::text, 'admin'::text, 'member'::text])));
 ALTER TABLE public.community_members ADD CONSTRAINT community_members_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'approved'::text])));
+ALTER TABLE public.event_series ADD CONSTRAINT event_series_frekans_check CHECK ((frekans = ANY (ARRAY['haftalik'::text, 'iki_haftalik'::text, 'aylik'::text])));
+ALTER TABLE public.event_series ADD CONSTRAINT event_series_tekrar_sayisi_check CHECK ((tekrar_sayisi >= 2) AND (tekrar_sayisi <= 26));
 ALTER TABLE public.locations ADD CONSTRAINT locations_type_check CHECK ((type = ANY (ARRAY['il'::text, 'ilce'::text])));
 ALTER TABLE public.profiles ADD CONSTRAINT profiles_contact_permission_check CHECK ((contact_permission = ANY (ARRAY['everyone'::text, 'community_members'::text, 'nobody'::text])));
 ALTER TABLE public.profiles ADD CONSTRAINT profiles_gender_check CHECK ((gender = ANY (ARRAY['unspecified'::text, 'woman'::text, 'man'::text, 'non_binary'::text])));
@@ -335,8 +369,15 @@ ALTER TABLE public.community_members ADD CONSTRAINT community_members_community_
 ALTER TABLE public.community_members ADD CONSTRAINT community_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.community_topics ADD CONSTRAINT community_topics_community_id_fkey FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE;
 ALTER TABLE public.community_topics ADD CONSTRAINT community_topics_topic_id_fkey FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE;
+ALTER TABLE public.event_series ADD CONSTRAINT event_series_community_id_fkey FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE;
+ALTER TABLE public.event_series ADD CONSTRAINT event_series_organizer_id_fkey FOREIGN KEY (organizer_id) REFERENCES profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.events ADD CONSTRAINT events_community_id_fkey FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE;
 ALTER TABLE public.events ADD CONSTRAINT events_organizer_id_fkey FOREIGN KEY (organizer_id) REFERENCES profiles(id) ON DELETE CASCADE;
+-- ON DELETE SET NULL, CASCADE DEĞİL: CASCADE seçilseydi seriyi silmek events
+-- satırlarını, onlar üzerinden rsvps ve waitlist kayıtlarını uçururdu. Seri
+-- silinince tekrarlar bağımsız etkinliğe döner; toplu silme ayrı işlem
+-- (seri_sil RPC'si).
+ALTER TABLE public.events ADD CONSTRAINT events_series_id_fkey FOREIGN KEY (series_id) REFERENCES event_series(id) ON DELETE SET NULL;
 ALTER TABLE public.locations ADD CONSTRAINT locations_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES locations(id) ON DELETE CASCADE;
 ALTER TABLE public.reports ADD CONSTRAINT reports_reporter_id_fkey FOREIGN KEY (reporter_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 ALTER TABLE public.reports ADD CONSTRAINT reports_reviewed_by_fkey FOREIGN KEY (reviewed_by) REFERENCES auth.users(id);
@@ -357,8 +398,25 @@ CREATE INDEX IF NOT EXISTS communities_search_vector_idx ON public.communities U
 CREATE INDEX IF NOT EXISTS community_announcements_community_created_idx ON public.community_announcements USING btree (community_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS events_search_vector_idx ON public.events USING gin (search_vector);
 CREATE INDEX IF NOT EXISTS community_topics_topic_idx ON public.community_topics USING btree (topic_id);
-CREATE INDEX IF NOT EXISTS idx_events_community_id ON public.events USING btree (community_id);
+CREATE UNIQUE INDEX IF NOT EXISTS event_series_istek_benzersiz ON public.event_series USING btree (organizer_id, istek_id) WHERE (istek_id IS NOT NULL);
+-- idx_events_community_id BİLİNÇLİ OLARAK YOK: idx_events_community_date
+-- (community_id, event_date) onu sütun öneki olarak TAMAMEN kapsıyor; eski
+-- indeks hiçbir sorgu planı için artık seçilemiyordu (Görev 1-4 incelemesinde
+-- tespit edildi, düşürüldü —
+-- supabase/migrations/20260830120400_olu_indeks_dusuruldu.sql).
+CREATE INDEX IF NOT EXISTS idx_events_community_date ON public.events USING btree (community_id, event_date);
+-- Katlama view'ının (etkinlik_vitrin, bölüm 9) kendi WHERE event_date >= now()
+-- koşulu bu indeks olmadan İNDEKSSİZDİ: event_date üzerinde yalnızca kısmi
+-- idx_events_reminder vardı.
+CREATE INDEX IF NOT EXISTS idx_events_date ON public.events USING btree (event_date);
 CREATE INDEX IF NOT EXISTS idx_events_reminder ON public.events USING btree (event_date) WHERE (reminder_sent_at IS NULL);
+-- series_id NULL olan satırlar Postgres'te çakışmaz → tekil etkinlikler bu
+-- kısıttan etkilenmez.
+ALTER TABLE public.events ADD CONSTRAINT events_seri_tarih_benzersiz UNIQUE (series_id, event_date);
+CREATE INDEX IF NOT EXISTS idx_events_series ON public.events USING btree (series_id, event_date);
+-- Buluşma başına RSVP kararının bilinen bedeli: kullanıcı başına rsvps satırı
+-- seri boyu kadar artıyor ve rsvps'te user_id ile BAŞLAYAN hiçbir indeks yoktu.
+CREATE INDEX IF NOT EXISTS idx_rsvps_user ON public.rsvps USING btree (user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_waitlist_promotion_pending ON public.waitlist USING btree (promoted_at) WHERE ((promoted_at IS NOT NULL) AND (promotion_email_sent_at IS NULL));
 CREATE INDEX IF NOT EXISTS locations_parent_idx ON public.locations USING btree (parent_id);
 CREATE INDEX IF NOT EXISTS locations_search_idx ON public.locations USING btree (search_text);
@@ -910,6 +968,462 @@ BEGIN
 END;
 $function$;
 
+-- ---- Tekrarlayan etkinlik serileri — yol haritası Aşama 3 -------------------
+-- SECURITY DEFINER, events UPDATE/DELETE politikalarını (bölüm 11) TAMAMEN
+-- atlar. Yazma kolon bazlıya indirildiği için (bölüm 12 YETKİLER) bu
+-- fonksiyonlar tek yazma yolu; dolayısıyla FONKSİYON İÇİ YETKİ KONTROLÜ TEK
+-- SAVUNMA KATMANIDIR. series_id anon'a bile okunabilir olduğundan hedef
+-- uuid'yi bulmak zahmetsiz.
+
+-- seri_olustur — tek işlem, N tekrar. Neden tek RPC: POST /api/event "strict"
+-- rate limitte (dakikada 3, lib/rate-limit.ts). Seri N ayrı POST ile
+-- kurulamaz — 4. tekrarda 429 alır, yarım kalır ve geri alma yoktur.
+CREATE OR REPLACE FUNCTION public.seri_olustur(
+  p_community_id uuid,
+  p_title text,
+  p_description text,
+  p_location text,
+  p_baslangic timestamptz,
+  p_frekans text,
+  p_tekrar_sayisi int,
+  p_max_attendees int,
+  p_cover_image_url text,
+  p_istek_id uuid
+)
+RETURNS TABLE (series_id uuid, ilk_event_id uuid, uretilen int, yeni_mi boolean)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp
+AS $function$
+DECLARE
+  v_series uuid;
+  v_ilk uuid;
+  v_bu uuid;
+  v_adim interval;
+  v_i int;
+  v_tarih timestamptz;
+  v_sayac int;
+BEGIN
+  IF NOT public.topluluk_yoneticisi_mi(p_community_id) THEN
+    RAISE EXCEPTION 'yetkisiz';
+  END IF;
+
+  -- Savunma iki katmanda: API zod ile, burada CHECK ile aynı sınır.
+  IF p_frekans NOT IN ('haftalik','iki_haftalik','aylik') THEN
+    RAISE EXCEPTION 'gecersiz frekans';
+  END IF;
+  IF p_tekrar_sayisi < 2 OR p_tekrar_sayisi > 26 THEN
+    RAISE EXCEPTION 'tekrar sayisi 2 ile 26 arasinda olmali';
+  END IF;
+
+  -- İkizlenme koruması: aynı istek_id ile ikinci çağrı YENİ seri üretmez,
+  -- mevcut seriyi döndürür. (İki kez basılan "Oluştur" düğmesi.)
+  IF p_istek_id IS NOT NULL THEN
+    SELECT s.id INTO v_series FROM event_series s
+     WHERE s.organizer_id = auth.uid() AND s.istek_id = p_istek_id;
+    IF v_series IS NOT NULL THEN
+      SELECT e.id INTO v_ilk FROM events e
+       WHERE e.series_id = v_series ORDER BY e.event_date LIMIT 1;
+      SELECT count(*)::int INTO v_sayac FROM events e WHERE e.series_id = v_series;
+      RETURN QUERY SELECT v_series, v_ilk, v_sayac, false;
+      RETURN;
+    END IF;
+  END IF;
+
+  BEGIN
+    INSERT INTO event_series (community_id, organizer_id, frekans, baslangic,
+                              tekrar_sayisi, istek_id)
+    VALUES (p_community_id, auth.uid(), p_frekans, p_baslangic,
+            p_tekrar_sayisi, p_istek_id)
+    RETURNING id INTO v_series;
+  EXCEPTION WHEN unique_violation THEN
+    -- Eszamanli ikinci istek: ilk istek commit etmis. Yeni seri uretmiyoruz,
+    -- onun kurdugu seriyi donduruyoruz.
+    SELECT s.id INTO v_series FROM event_series s
+     WHERE s.organizer_id = auth.uid() AND s.istek_id = p_istek_id;
+    SELECT e.id INTO v_ilk FROM events e
+     WHERE e.series_id = v_series ORDER BY e.event_date LIMIT 1;
+    SELECT count(*)::int INTO v_sayac FROM events e WHERE e.series_id = v_series;
+    RETURN QUERY SELECT v_series, v_ilk, v_sayac, false;
+    RETURN;
+  END;
+
+  v_adim := CASE p_frekans
+              WHEN 'haftalik'     THEN interval '7 days'
+              WHEN 'iki_haftalik' THEN interval '14 days'
+              WHEN 'aylik'        THEN interval '1 month'
+            END;
+
+  FOR v_i IN 0 .. p_tekrar_sayisi - 1 LOOP
+    -- Duvar saati aritmetiği: Türkiye 2016'dan beri sabit UTC+3 olsa da
+    -- "her salı 19:00" anlamını yaz saatine bağlı bırakmıyoruz.
+    -- Aylık frekansta Postgres ayın son gününe kendisi düşürür ve çarpım
+    -- HER ZAMAN başlangıçtan yapıldığı için 31 Ocak + 2 ay = 31 Mart olur
+    -- (adım adım eklenseydi 28 Mart'a kayardı).
+    v_tarih := ((p_baslangic AT TIME ZONE 'Europe/Istanbul') + (v_adim * v_i))
+                 AT TIME ZONE 'Europe/Istanbul';
+
+    INSERT INTO events (title, description, location, event_date, organizer_id,
+                        community_id, max_attendees, cover_image_url,
+                        series_id, occurrence_index)
+    VALUES (p_title, p_description, p_location, v_tarih, auth.uid(),
+            p_community_id, p_max_attendees, p_cover_image_url,
+            v_series, v_i)
+    RETURNING id INTO v_bu;
+
+    IF v_i = 0 THEN v_ilk := v_bu; END IF;
+  END LOOP;
+
+  RETURN QUERY SELECT v_series, v_ilk, p_tekrar_sayisi, true;
+END;
+$function$;
+
+-- etkinlik_guncelle — tekil düzenleme + elle düzenleme izi. Yetki
+-- topluluk_yoneticisi_mi ile ÇÖZÜLEMEZ: events.community_id NULLABLE, yani
+-- topluluğa bağlı olmayan etkinliklerde kontrol boşa düşerdi.
+-- etkinlik_yoneticisi_mi checkCanManage()'in birebir DB karşılığı:
+-- organizatör VEYA topluluğun onaylı founder/admin'i.
+--
+-- p_kapak_degissin: cover_image_url ÜÇ DURUMLU (app/api/event/[id]/route.ts).
+-- Alan gövdede yoksa kapak DOKUNULMAZ, boş/null ise kaldırılır, URL ise
+-- değişir. Tek bir text parametre bu üç durumu taşıyamaz — "NULL = dokunma"
+-- deseydik kapağı kaldırmak imkânsız olurdu.
+CREATE OR REPLACE FUNCTION public.etkinlik_guncelle(
+  p_event_id uuid,
+  p_title text,
+  p_description text,
+  p_location text,
+  p_event_date timestamptz,
+  p_max_attendees int,
+  p_cover_image_url text,
+  p_kapak_degissin boolean
+)
+RETURNS TABLE (guncellendi boolean, iz_yazildi boolean)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp
+AS $function$
+DECLARE
+  e record;
+  v_fark boolean;
+  v_tarih_degisti boolean;
+  v_yeni_kapak text;
+BEGIN
+  IF NOT public.etkinlik_yoneticisi_mi(p_event_id) THEN
+    RAISE EXCEPTION 'yetkisiz';
+  END IF;
+
+  SELECT * INTO e FROM events WHERE id = p_event_id;
+  IF NOT FOUND THEN RAISE EXCEPTION 'etkinlik bulunamadi'; END IF;
+
+  v_yeni_kapak := CASE WHEN p_kapak_degissin THEN p_cover_image_url
+                       ELSE e.cover_image_url END;
+
+  v_tarih_degisti := e.event_date IS DISTINCT FROM p_event_date;
+
+  -- Damga GERÇEK farka bağlı ve ALTI alana birden bakıyor. route.ts'teki
+  -- mevcut "changes" hesabı YENİDEN KULLANILMAZ — o hesap yalnızca
+  -- title/event_date/location'a bakıyor, yani sadece açıklamayı değiştiren biri
+  -- iz bırakmazdı. (O hesap MAİL tetikleyicisi olarak yerinde kalıyor; iki
+  -- karar ayrı.)
+  v_fark :=
+       e.title          IS DISTINCT FROM p_title
+    OR e.description    IS DISTINCT FROM p_description
+    OR e.location       IS DISTINCT FROM p_location
+    OR v_tarih_degisti
+    OR e.max_attendees  IS DISTINCT FROM p_max_attendees
+    OR e.cover_image_url IS DISTINCT FROM v_yeni_kapak;
+
+  -- Hiçbir şey değiştirmeden "Kaydet"e basmak iz bırakmamalı.
+  IF NOT v_fark THEN
+    RETURN QUERY SELECT false, false;
+    RETURN;
+  END IF;
+
+  -- UNIQUE (series_id, event_date) capsaminda kaliyoruz: seri_disina_alindi_at
+  -- damgasi series_id'yi TEMIZLEMIYOR. Ham 23505 yerine Turkce mesaj.
+  IF v_tarih_degisti AND e.series_id IS NOT NULL AND EXISTS (
+    SELECT 1 FROM events x
+     WHERE x.series_id = e.series_id
+       AND x.event_date = p_event_date
+       AND x.id <> p_event_id
+  ) THEN
+    RAISE EXCEPTION 'o tarihte seride baska bulusma var';
+  END IF;
+
+  UPDATE events SET
+    title           = p_title,
+    description     = p_description,
+    location        = p_location,
+    event_date      = p_event_date,
+    max_attendees   = p_max_attendees,
+    cover_image_url = v_yeni_kapak,
+    updated_at      = now(),
+    -- Seri üyesiyse artık "elle düzenlenmiş": toplu güncelleme bunu ATLAR.
+    seri_disina_alindi_at = CASE WHEN series_id IS NOT NULL
+                                 THEN now() ELSE seri_disina_alindi_at END,
+    -- Tarih taşındıysa hatırlatma yeniden kuyruğa girebilmeli; yoksa taşınan
+    -- buluşma için hatırlatma bir daha HİÇ gitmez. Kolon istemciye kapalı
+    -- olduğu için sıfırlama burada olmak zorunda.
+    reminder_sent_at = CASE WHEN v_tarih_degisti THEN NULL ELSE reminder_sent_at END
+  WHERE id = p_event_id;
+
+  RETURN QUERY SELECT true, (e.series_id IS NOT NULL);
+END;
+$function$;
+
+-- seri_guncelle — iki toplu kapsam. 'sonrakiler' SERİYİ BÖLER: pivot ve
+-- sonrası yeni bir event_series satırına taşınır (Google Takvim davranışı).
+-- Bölmeseydik iki yarı tek kart olarak katlanır, temsilci en yakın tekrar
+-- olurdu ve YENİ BAŞLIKLA ARAMA HİÇ SONUÇ VERMEZDİ. Bölünce iki yarı ayrı
+-- ayrı katlanır ve ikisi de aranabilir.
+CREATE OR REPLACE FUNCTION public.seri_guncelle(
+  p_series_id uuid,
+  p_kapsam text,              -- 'sonrakiler' | 'tumu'
+  p_from timestamptz,         -- pivot; 'tumu' kapsamında yok sayılır
+  p_title text,
+  p_description text,
+  p_location text,
+  p_max_attendees int,
+  p_cover_image_url text,
+  p_kapak_degissin boolean
+)
+RETURNS TABLE (guncellenen int, atlanan int, yeni_series_id uuid, ayrildi int, bildirilen int)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp
+AS $function$
+DECLARE
+  v_com uuid;
+  v_from timestamptz;
+  v_yeni uuid;
+  v_tasinan int;
+  v_gun int := 0;
+  v_atl int := 0;
+  v_ayrildi int := 0;
+  v_bildirilen int := 0;
+  v_idler uuid[];
+  v_istek_devral uuid;
+  v_kaynak_bosalacak boolean;
+BEGIN
+  -- TEK SAVUNMA KATMANI. SECURITY DEFINER events politikalarını atlıyor;
+  -- p_series_id istemciden geliyor ve series_id anon'a bile okunabilir.
+  SELECT community_id INTO v_com FROM event_series WHERE id = p_series_id;
+  IF v_com IS NULL THEN RAISE EXCEPTION 'seri bulunamadi'; END IF;
+  IF NOT public.topluluk_yoneticisi_mi(v_com) THEN RAISE EXCEPTION 'yetkisiz'; END IF;
+
+  IF p_kapsam NOT IN ('sonrakiler','tumu') THEN
+    RAISE EXCEPTION 'gecersiz kapsam';
+  END IF;
+
+  IF p_kapsam = 'sonrakiler' AND p_from IS NULL THEN
+    RAISE EXCEPTION 'pivot gerekli';
+  END IF;
+
+  -- GEÇMİŞ KORUMASI. eventEditSchema'da "gelecekte olmalı" kısıtı bilinçli
+  -- olarak yok (tek etkinlikte zararsız); seri çapında bu boşluk tüm seriyi
+  -- geçmişe atmayı mümkün kılardı.
+  v_from := GREATEST(COALESCE(p_from, now()), now());
+  IF p_kapsam = 'tumu' THEN v_from := now(); END IF;
+
+  -- Etkilenecek satırlar: elle düzenlenmiş olanlar HARİÇ.
+  SELECT array_agg(e.id) INTO v_idler FROM events e
+   WHERE e.series_id = p_series_id
+     AND e.event_date >= v_from
+     AND e.seri_disina_alindi_at IS NULL;
+
+  SELECT count(*)::int INTO v_atl FROM events e
+   WHERE e.series_id = p_series_id
+     AND e.event_date >= v_from
+     AND e.seri_disina_alindi_at IS NOT NULL;
+
+  IF v_idler IS NULL THEN
+    RETURN QUERY SELECT 0, v_atl, NULL::uuid, 0, 0;
+    RETURN;
+  END IF;
+
+  IF p_kapsam = 'sonrakiler' THEN
+    SELECT count(*)::int INTO v_tasinan FROM events e WHERE e.id = ANY(v_idler);
+
+    -- tekrar_sayisi CHECK BETWEEN 2 AND 26. İki satırdan azı taşınacaksa
+    -- bölmek anlamsız: o satır(lar) seriden ÇIKARILIR (elle düzenlenmiş
+    -- sayılır) ki yeni başlığıyla kendi kartında görünüp aranabilsin.
+    IF v_tasinan < 2 THEN
+      UPDATE events SET seri_disina_alindi_at = now() WHERE id = ANY(v_idler);
+      GET DIAGNOSTICS v_ayrildi = ROW_COUNT;
+    ELSE
+      -- istek_id yalnizca kaynak seri BU BOLMEYLE BOSALACAKSA devrediliyor.
+      -- Kaynak hayatta kalirsa erken tekrarlar onda; ikizlenme anahtari da
+      -- onda kalmali — aksi halde yeni yari (mesela seri_sil ile) silindiginde
+      -- anahtar tamamen kaybolur ve bayat bir sekmeden gelen retry, hayatta
+      -- kalan kaynagin yanina ikinci bir tam seri kurar.
+      SELECT NOT EXISTS (
+        SELECT 1 FROM events e
+         WHERE e.series_id = p_series_id AND e.id <> ALL(v_idler)
+      ) INTO v_kaynak_bosalacak;
+
+      -- NULL'lama adimi kaynak bosalacak dalda bile gerekli: kismi benzersiz
+      -- indeks (event_series_istek_benzersiz) DEFERRABLE degil, INSERT aninda
+      -- kontrol edilir ve kaynak satir o an hala (silinmeden once) duruyor.
+      IF v_kaynak_bosalacak THEN
+        SELECT s.istek_id INTO v_istek_devral FROM event_series s WHERE s.id = p_series_id;
+        IF v_istek_devral IS NOT NULL THEN
+          UPDATE event_series SET istek_id = NULL WHERE id = p_series_id;
+        END IF;
+      ELSE
+        v_istek_devral := NULL;
+      END IF;
+
+      INSERT INTO event_series (community_id, organizer_id, frekans, baslangic,
+                                tekrar_sayisi, istek_id)
+      SELECT s.community_id, s.organizer_id, s.frekans, v_from,
+             LEAST(v_tasinan, 26), v_istek_devral
+        FROM event_series s WHERE s.id = p_series_id
+      RETURNING id INTO v_yeni;
+
+      UPDATE events SET series_id = v_yeni WHERE id = ANY(v_idler);
+    END IF;
+  END IF;
+
+  -- Beş alan da yazılır (form hepsini gönderiyor). event_date YOK.
+  -- GERÇEKTEN DEĞİŞTİ mi kapısı: WHERE'e distinctness eklenmezse UPDATE
+  -- kosulsuz calisir, updated_at her satira basilir ve asagidaki bildirim
+  -- kosulsuz mail kuyruklar (bos "Kaydet" tikinca bile).
+  UPDATE events SET
+    title           = p_title,
+    description     = p_description,
+    location        = p_location,
+    max_attendees   = p_max_attendees,
+    cover_image_url = CASE WHEN p_kapak_degissin THEN p_cover_image_url
+                           ELSE cover_image_url END,
+    updated_at      = now()
+  WHERE id = ANY(v_idler)
+    AND (title           IS DISTINCT FROM p_title
+      OR description     IS DISTINCT FROM p_description
+      OR location        IS DISTINCT FROM p_location
+      OR max_attendees   IS DISTINCT FROM p_max_attendees
+      OR (p_kapak_degissin AND cover_image_url IS DISTINCT FROM p_cover_image_url));
+  GET DIAGNOSTICS v_gun = ROW_COUNT;
+
+  -- Kaynak seri boşaldıysa (pivot ilk tekrarsa hepsi taşınmış olur) artık
+  -- kimsenin işaret etmediği satırı bırakmıyoruz.
+  DELETE FROM event_series s
+   WHERE s.id = p_series_id
+     AND NOT EXISTS (SELECT 1 FROM events e WHERE e.series_id = s.id);
+
+  -- BİLDİRİM: yalnizca GERCEKTEN degisen satir varsa. Bölme (v_yeni)
+  -- gerceklesmisse bile hicbir alan degismediyse mail atilmaz — bölme
+  -- kendi basina "degisiklik" sayilmiyor, form alanlarindaki fark sayiliyor.
+  IF v_gun > 0 THEN
+    -- kişi başına TEK mail, tekrar başına değil. 26 tekrarlı bir seri
+    -- tekrar başına mail atsaydı tek işlemde 26 × katılımcı mail üretirdi.
+    -- Adresler uygulama koduna HİÇ İNMİYOR: kasaya to_user_id yazılıyor,
+    -- claim_email_outbox cron sırrıyla açıp profiles'tan adresi kendisi alıyor.
+    INSERT INTO email_outbox (to_user_id, template, payload)
+    SELECT DISTINCT r.user_id, 'event_change',
+      jsonb_build_object(
+        'tur', 'seri',
+        'series_id', COALESCE(v_yeni, p_series_id),
+        'title', p_title,
+        'location', p_location,
+        'adet', v_gun,
+        'community_id', v_com,
+        'community_name', (SELECT c.name FROM communities c WHERE c.id = v_com)
+      )
+    FROM rsvps r
+    WHERE r.event_id = ANY(v_idler)
+      AND r.user_id <> auth.uid()
+      AND public.email_izni(r.user_id, 'event_change');
+    GET DIAGNOSTICS v_bildirilen = ROW_COUNT;
+  END IF;
+
+  RETURN QUERY SELECT v_gun, v_atl, v_yeni, v_ayrildi, v_bildirilen;
+END;
+$function$;
+
+-- seri_sil — 'tumu' dalında da ikinci event_date >= now() koşulu fazlalık
+-- DEĞİL: geçmişi kilitleyen ikinci savunma. seri_disina_alindi_at IS NULL
+-- koşulu seri_guncelle ile SİMETRİK — elle düzenlenmiş, kendi RSVP'lerini
+-- toplamış bir buluşma "tümünü sil" ile yok olmasın (rsvps/waitlist
+-- ON DELETE CASCADE geri dönüşsüz).
+CREATE OR REPLACE FUNCTION public.seri_sil(
+  p_series_id uuid,
+  p_kapsam text,              -- 'sonrakiler' | 'tumu'
+  p_from timestamptz
+)
+RETURNS TABLE (silinen int, atlanan int, bildirilen int)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp
+AS $function$
+DECLARE
+  v_com uuid;
+  v_from timestamptz;
+  v_idler uuid[];
+  v_sil int := 0;
+  v_atl int := 0;
+  v_bildirilen int := 0;
+BEGIN
+  SELECT community_id INTO v_com FROM event_series WHERE id = p_series_id;
+  IF v_com IS NULL THEN RAISE EXCEPTION 'seri bulunamadi'; END IF;
+  IF NOT public.topluluk_yoneticisi_mi(v_com) THEN RAISE EXCEPTION 'yetkisiz'; END IF;
+
+  IF p_kapsam NOT IN ('sonrakiler','tumu') THEN
+    RAISE EXCEPTION 'gecersiz kapsam';
+  END IF;
+
+  IF p_kapsam = 'sonrakiler' AND p_from IS NULL THEN
+    RAISE EXCEPTION 'pivot gerekli';
+  END IF;
+
+  v_from := GREATEST(COALESCE(p_from, now()), now());
+  IF p_kapsam = 'tumu' THEN v_from := now(); END IF;
+
+  SELECT array_agg(e.id) INTO v_idler FROM events e
+   WHERE e.series_id = p_series_id
+     AND e.event_date >= v_from
+     AND e.event_date >= now()
+     AND e.seri_disina_alindi_at IS NULL;
+
+  SELECT count(*)::int INTO v_atl FROM events e
+   WHERE e.series_id = p_series_id
+     AND e.event_date >= v_from
+     AND e.event_date >= now()
+     AND e.seri_disina_alindi_at IS NOT NULL;
+
+  IF v_idler IS NULL THEN
+    RETURN QUERY SELECT 0, v_atl, 0;
+    RETURN;
+  END IF;
+
+  -- BİLDİRİM SİLMEDEN ÖNCE yazılmak zorunda: rsvps.event_id ON DELETE CASCADE,
+  -- yani silmeden sonra kime haber verileceği bilgisi kalmaz.
+  -- Kişi başına TEK iptal maili.
+  INSERT INTO email_outbox (to_user_id, template, payload)
+  SELECT DISTINCT r.user_id, 'event_cancel',
+    jsonb_build_object(
+      'tur', 'seri',
+      'title', (SELECT e.title FROM events e WHERE e.id = v_idler[1]),
+      'adet', array_length(v_idler, 1),
+      'community_id', v_com,
+      'community_name', (SELECT c.name FROM communities c WHERE c.id = v_com)
+    )
+  FROM rsvps r
+  WHERE r.event_id = ANY(v_idler)
+    AND r.user_id <> auth.uid()
+    AND public.email_izni(r.user_id, 'event_cancel');
+  GET DIAGNOSTICS v_bildirilen = ROW_COUNT;
+
+  -- Kuyruk temizliği: yoksa iptal mailinden SONRA "Yarın: X" gider ve
+  -- mailin bağlantısı silinmiş uuid'ye 404 döner.
+  DELETE FROM email_outbox
+   WHERE sent_at IS NULL
+     AND template = 'reminder'
+     AND (payload->>'event_id')::uuid = ANY(v_idler);
+
+  DELETE FROM events WHERE id = ANY(v_idler);
+  GET DIAGNOSTICS v_sil = ROW_COUNT;
+
+  DELETE FROM event_series s
+   WHERE s.id = p_series_id
+     AND NOT EXISTS (SELECT 1 FROM events e WHERE e.series_id = s.id);
+
+  RETURN QUERY SELECT v_sil, v_atl, v_bildirilen;
+END;
+$function$;
+
 
 -- -----------------------------------------------------------------------------
 -- 8. TRIGGER'LAR
@@ -966,6 +1480,63 @@ WHERE COALESCE(account_active, true)
        OR id = auth.uid()
        OR is_admin());
 
+-- Etkinlik vitrini: tekrarlayan seri gelecekteki en yakın tekrara katlanır.
+-- security_invoker = true ZORUNLU: unutulursa view events SELECT politikasını
+-- (bölüm 11) atlar ve onaylanmamış topluluk etkinlikleri sızar. Görünür bir
+-- patlama olmaz; sessiz bir güvenlik açığıdır.
+--
+-- Yalnızca WHERE içeriyor → çağıranın sorgusuna düzleştirilir (pull-up), yani
+-- .textSearch, city_key ilike ve community_id koşulları doğrudan events'e
+-- uygulanır ve GIN/b-tree indeksleri kullanılır.
+--
+-- SELECT e.* : kolon listesi events ile birebir aynı kalmalı. search_vector
+-- (generated tsvector) de dahil — keşfetteki .textSearch onu okuyor.
+CREATE OR REPLACE VIEW public.etkinlik_vitrin WITH (security_invoker = true) AS
+SELECT e.*
+FROM public.events e
+WHERE e.event_date >= now()
+  AND (
+    -- tekil etkinlik
+    e.series_id IS NULL
+    -- elle düzenlenmiş tekrar: artık serinin temsilcisi değil, kendi kartı var
+    OR e.seri_disina_alindi_at IS NOT NULL
+    -- seri temsilcisi = aynı seride kendisinden önce gelen gelecek tekrar YOK
+    OR NOT EXISTS (
+      SELECT 1 FROM public.events e2
+      WHERE e2.series_id = e.series_id
+        AND e2.seri_disina_alindi_at IS NULL
+        AND e2.event_date >= now()
+        AND e2.event_date < e.event_date
+    )
+  );
+
+-- View'lar GRANT gerektirir (emsal: public_profiles, bölüm 12 YETKİLER).
+-- Unutulursa altı yüzey "permission denied for view" alır.
+GRANT SELECT ON public.etkinlik_vitrin TO anon, authenticated;
+
+-- seri_kalanlar — rozet sayacı. Bu sayı view'ın target list'inde korele alt
+-- sorgu olarak DURMUYOR: orada olsaydı satır başına koşardı ve asıl maliyet
+-- kaynağı olurdu. Sayfa topladığı seri kimliklerini tek çağrıda soruyor.
+--
+-- SECURITY INVOKER (varsayılan) BİLİNÇLİ: sayım çağıranın RLS'i altında
+-- yapılır, yani görmediği bir seri için sayı üretmez.
+CREATE OR REPLACE FUNCTION public.seri_kalanlar(p_series_ids uuid[])
+RETURNS TABLE (series_id uuid, kalan int, frekans text)
+LANGUAGE sql STABLE SECURITY INVOKER SET search_path = public, pg_temp
+AS $function$
+  SELECT e.series_id, count(*)::int, s.frekans
+    FROM public.events e
+    JOIN public.event_series s ON s.id = e.series_id
+   WHERE e.series_id = ANY(p_series_ids)
+     AND e.event_date >= now()
+     AND e.seri_disina_alindi_at IS NULL
+   GROUP BY e.series_id, s.frekans;
+$function$;
+
+REVOKE ALL ON FUNCTION public.seri_kalanlar(uuid[]) FROM PUBLIC;
+-- anon da alıyor: ana sayfa ve keşfet giriş yapmamış kullanıcıya da açık.
+GRANT EXECUTE ON FUNCTION public.seri_kalanlar(uuid[]) TO anon, authenticated;
+
 
 -- -----------------------------------------------------------------------------
 -- 10. RLS
@@ -977,6 +1548,7 @@ ALTER TABLE public.community_drafts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_topics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.email_outbox ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.event_series ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -1058,6 +1630,25 @@ CREATE POLICY "Yetkili kisi etkinligi siler" ON public.events FOR DELETE
     SELECT 1 FROM community_members cm
     WHERE cm.community_id = events.community_id AND cm.user_id = auth.uid()
       AND cm.role = ANY (ARRAY['founder'::text, 'admin'::text]) AND cm.status = 'approved'::text)));
+
+-- event_series
+-- events SELECT politikasının aynası: onaylanmamış topluluğun serisi yalnızca
+-- kendi organizatörüne ve yöneticiye görünür. INSERT/UPDATE/DELETE için NE
+-- politika NE grant var — bilinçli (bölüm 12 YETKİLER'de ayrıca yorumlu):
+-- yazan tek şey SECURITY DEFINER fonksiyonlar (app_secrets/email_outbox
+-- kalıbı). REVOKE ALL şart: baseline panelden (supabase_admin olarak)
+-- koşturulduğunda varsayılan authenticated'a arwdDxtm veriyor; o hâlde
+-- herhangi bir kayıtlı kullanıcı DELETE FROM event_series çağırabilir ve
+-- series_id ON DELETE SET NULL olduğu için TÜM SERİLER tek seferde dağılırdı.
+CREATE POLICY "Seriler herkese acik" ON public.event_series
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.communities c
+      WHERE c.id = community_id AND c.status = 'approved'
+    )
+    OR organizer_id = auth.uid()
+    OR public.is_admin()
+  );
 
 -- community_members
 CREATE POLICY "Uyelikler okunabilir" ON public.community_members FOR SELECT USING (true);
@@ -1149,6 +1740,18 @@ GRANT SELECT ON TABLE public.profiles, public.community_drafts,
   public.topic_suggestions TO authenticated;
 GRANT SELECT ON TABLE public.profiles TO anon;
 
+-- event_series: yalnızca SELECT, üstteki toplu listeye BİLİNÇLİ OLARAK
+-- EKLENMEDİ (community_announcements yorumunda yazılı, bir kez yaşandı: kolon/
+-- politika bazlı koruma tablo bazlı GRANT'i EZMEZ). INSERT/UPDATE/DELETE için
+-- ne politika ne grant var — yazan tek şey aşağıdaki SECURITY DEFINER
+-- fonksiyonlar (seri_olustur/seri_guncelle/seri_sil). REVOKE ALL şart:
+-- panelden (supabase_admin olarak) koşturulduğunda varsayılan authenticated'a
+-- arwdDxtm veriyor; REVOKE olmadan herhangi bir kayıtlı kullanıcı
+-- DELETE FROM event_series çağırabilir ve series_id ON DELETE SET NULL
+-- olduğu için TÜM SERİLER tek seferde dağılırdı.
+REVOKE ALL ON TABLE public.event_series FROM anon, authenticated;
+GRANT SELECT ON TABLE public.event_series TO anon, authenticated;
+
 -- rsvps: kolon bazlı. checkin_token DIŞARIDA bırakılır — herkesin başkasının
 -- giriş kodunu okuyup onun adına giriş yapabilmesini engeller.
 -- DİKKAT: kolon bazlı REVOKE, tablo bazlı GRANT'i geçersiz kılmaz — komut
@@ -1158,7 +1761,11 @@ REVOKE SELECT ON public.rsvps FROM authenticated;
 GRANT  SELECT (id, event_id, user_id, created_at, checked_in_at, checked_in_by)
   ON public.rsvps TO authenticated;
 
-GRANT INSERT, UPDATE, DELETE ON TABLE public.communities, public.events TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON TABLE public.communities TO anon, authenticated;
+-- public.events BİLİNÇLİ olarak çıkarıldı: yazma yetkisi kolon bazlı
+-- (aşağıda, rsvps emsalinden sonra). Tablo bazlı GRANT burada kalsaydı kolon
+-- listeleri sessizce anlamsızlaşırdı — kolon bazlı yetki tablo bazlı GRANT'i
+-- EZMEZ.
 GRANT INSERT, UPDATE, DELETE ON TABLE public.profiles TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON TABLE public.community_members, public.community_topics,
   public.community_drafts TO authenticated;
@@ -1176,6 +1783,32 @@ GRANT INSERT ON TABLE public.topic_suggestions TO authenticated;
 REVOKE INSERT, UPDATE ON public.rsvps FROM authenticated, anon;
 GRANT DELETE ON TABLE public.rsvps TO authenticated;
 GRANT INSERT (event_id, user_id) ON public.rsvps TO authenticated;
+
+-- events: yazma da kolon bazlı (rsvps emsali, yukarıda). series_id eklenince
+-- kullanıcı kendi etkinliğini başkasının serisine yazabilir, occurrence_index'i
+-- bozabilir, seri_disina_alindi_at'ı temizleyip düzenleme izini silebilirdi.
+-- ÖNCE REVOKE, SONRA KOLON BAZLI GRANT — sıra önemli: ters çevrilirse
+-- yukarıdaki toplu GRANT SELECT/INSERT/UPDATE/DELETE listeleri kolon
+-- listelerini ezer.
+REVOKE INSERT, UPDATE ON TABLE public.events FROM anon, authenticated;
+
+-- DELETE tablo bazlı kalıyor; "Yetkili kisi etkinligi siler" politikası ona
+-- dayanıyor (rsvps DELETE emsali, yukarıda). anon'a verilmiyor: RLS zaten
+-- auth.uid()'e bağlı olduğu için anon'un tablo düzeyi DELETE hakkı gereksiz
+-- bir ayrıcalıktı (community_announcements emsali).
+GRANT DELETE ON TABLE public.events TO authenticated;
+
+GRANT INSERT (title, description, location, event_date, organizer_id,
+              community_id, cover_image_url, max_attendees)
+  ON public.events TO authenticated;
+
+GRANT UPDATE (title, description, location, event_date, cover_image_url,
+              max_attendees)
+  ON public.events TO authenticated;
+
+-- Listede OLMAYANLAR: series_id, occurrence_index, updated_at,
+-- seri_disina_alindi_at, attendee_count, reminder_sent_at, search_vector,
+-- created_at. Onları yalnızca SECURITY DEFINER fonksiyonlar yazabilir.
 
 -- community_announcements: DİKKAT — üstteki toplu INSERT/UPDATE/DELETE
 -- listelerine EKLENMEZ. Kolon bazlı yetki tablo bazlı GRANT'i ezmez; birlikte
@@ -1243,6 +1876,26 @@ REVOKE ALL ON FUNCTION public.checkin_yap(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.checkin_yap(uuid) TO authenticated;
 REVOKE ALL ON FUNCTION public.checkin_geri_al(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.checkin_geri_al(uuid) TO authenticated;
+
+-- Tekrarlayan etkinlik serileri: yetki kontrolü fonksiyonun içinde
+-- (topluluk_yoneticisi_mi / etkinlik_yoneticisi_mi). anon'a hiçbirinde
+-- EXECUTE verilmiyor. (seri_kalanlar'ın kendi REVOKE/GRANT'i bölüm 9
+-- GÖRÜNÜM'de, etkinlik_vitrin'in yanında — orada yaşamasının nedeni view'ın
+-- doğrudan yardımcısı olması.)
+REVOKE ALL ON FUNCTION public.seri_olustur(uuid, text, text, text, timestamptz,
+  text, int, int, text, uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.seri_olustur(uuid, text, text, text, timestamptz,
+  text, int, int, text, uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.etkinlik_guncelle(uuid, text, text, text,
+  timestamptz, int, text, boolean) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.etkinlik_guncelle(uuid, text, text, text,
+  timestamptz, int, text, boolean) TO authenticated;
+REVOKE ALL ON FUNCTION public.seri_guncelle(uuid, text, timestamptz, text, text,
+  text, int, text, boolean) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.seri_guncelle(uuid, text, timestamptz, text, text,
+  text, int, text, boolean) TO authenticated;
+REVOKE ALL ON FUNCTION public.seri_sil(uuid, text, timestamptz) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.seri_sil(uuid, text, timestamptz) TO authenticated;
 
 
 -- -----------------------------------------------------------------------------
