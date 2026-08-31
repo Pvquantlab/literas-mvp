@@ -1,0 +1,61 @@
+# Tekrarlayan seriler — ertelenmiş bulgular ve sonraki tur
+
+PR [#13](https://github.com/Pvquantlab/literas-mvp/pull/13) birleşti (31.08.2026).
+
+Aşağıdakiler 12 görevlik uygulama ve beş mercekli final inceleme sırasında
+tespit edilip **bilinçli olarak ertelenmiş** bulgular. Hiçbiri birleşmeyi
+engellemedi; final inceleme her birini tek tek triyaj etti.
+
+## Sonraki turun ilk maddesi
+
+**"Seriye geri kat" eylemi yok.** Bir tekrarı tek başına düzenlemek onu seriden
+**kalıcı** olarak çıkarıyor. Spec ilk yazıldığında bu eylemi öngörüyordu
+(`seri_disina_alindi_at = NULL`); uygulanmadı ve açıkça kapsam dışına alındı.
+Kendi RPC'sini, rota dalını ve arayüz denetimini gerektiriyor.
+
+## Ertelenmiş bulgular (18)
+
+- **Görev 1-4** · k2 — seri_sil iptal maili başlığını v_idler[1]'den okuyor, array_agg sırası tanımsız. K2 düzeltmesinden sonra başlıklar tekdüze olacağı için pratik etkisi kalmıyor.
+- **Görev 1-4** · k3 — kuyruk temizliği yalnızca 'reminder' şablonunu siliyor; 'promotion' satırı da payload->>'event_id' taşıyor.
+- **Görev 1-4** · k4 — seri fonksiyonları p_title/p_location'ı NOT NULL kolonlara doğrulamadan yazıyor; zod katmanı atlanırsa ham 23502.
+- **Görev 1-4** · k5b — hiçbir alan değişmese bile `sonrakiler` seriyi bölüyor ("değişti mi" kapısı yalnızca UPDATE'i ve maili tutuyor, bölme ondan önce ve koşulsuz). İncelemeci kural ihlali saymadı; bölme zaten anlamlı bir işlem olarak döndürülüyor. Son incelemede triyaj edilsin.
+- **Görev 1-4** · `etkinlik_guncelle`'deki yeni EXISTS tarih kontrolü TOCTOU — iki eşzamanlı tarih taşıma hâlâ ham 23505 üretebilir. Pencere çok dar.
+- **Görev 6** · K2 — seri duyurusu `sendBulkEmail` kullanıyor (`Promise.all`, hepsi paralel), oysa aynı hedef kitle için `sendChunkedEmail` yazılmıştı. 60 üyeli toplulukta Resend saniyelik sınırına çarpanlar sessizce düşüyor. Kardeş dalla tutarlı (bilinçli borç) ama yeni bir çağrı noktası açıyor.
+- **Görev 6** · K4 — mail gövdesinde `seri.uretilen` (int) ve `seri.ilk_event_id` (uuid) `escapeHtml`'siz. Enjeksiyon mümkün değil (RPC'nin tip güvenli dönüşü), ama kural mutlak yazılmış ve duyuru şablonu uuid'yi kaçırıyor. Tutarlılık notu.
+- **Görev 7** · K1 — `kapsam !== 'tek'` ama `series_id` NULL ise sessizce tekil yola düşüyor. Bayat sekme senaryosu (başkası seriyi silmiş, `ON DELETE SET NULL` ile series_id boşalmış). Yanıt şekli farklı olduğu için arayüz ayırt EDEBİLİR ama açık sinyal yok.
+- **Görev 7** · K3 — boş `seriRows`/`silRows` gerçek sıfır sonuçtan ayırt edilmiyor (`?? 0` fallback'i beklenmeyen boş dönüşü başarı gibi gösterir).
+- **Görev 9** · K1 — radyo gruplarında `role="radiogroup"` / `<fieldset><legend>` yok. Görünür etiket var (bağlayıcı gereksinim karşılanıyor) ama ekran okuyucu kullanıcısı grubun neyle ilgili olduğunu duymuyor.
+- **Görev 9** · K2 — inline ezme radyonun boyutunu düzeltiyor ama `border`/`background`/`border-radius`'unu değil; Firefox'ta 16×16 krem yuvarlatılmış kare, Chrome'da daire görünebilir. globals.css'e `accent-color` ya da `appearance` eklemek Görev 8 ve 9'u tek seferde çözer — AYRI İŞ.
+- **Görev 9** · K3 — radyolar `disabled={loading}` almıyor (fonksiyonel etkisi yok, kapanış submit anındaki değeri yakalıyor).
+- **Görev 9** · K6 — onay satırının dikey hizası `center`, radyo kolonu geldiği için `flex-start` daha okunur olurdu. Kozmetik.
+- **Görev 10** · detay sayfasında "diğer etkinlikler" listesi seri elenince 4'ten 3'e düşebilir, yerine yenisi çekilmiyor. Brief'in kabul ettiği davranış.
+- **Görev 10** · `takvimRes` hatası yutuluyor (console.error yok). Dosyadaki diğer iki sorgu da aynı desende — tutarlı ama ana sayfa logluyor.
+- **Görev 11** · K7 — `profile/[id]` iki sorguda `series_id` çekiyor ama hiç kullanmıyor (rozet o sayfada bilinçli olarak yok). Ölü kolon.
+- **Görev 11** · K9 — detayda iki seri sorgusu sequential, Promise.all ile tek gidiş-dönüşe inebilir.
+- **Görev 11** · K10 — bilinmeyen frekans sessizce "aylık" yazıyor (bugün CHECK üç değere kilitli, zararsız).
+
+## Ayrı iş olarak ayrılanlar
+
+- **globals.css'e `accent-color` / `appearance`** — radyo ve checkbox'ların
+  tarayıcılar arası görünümünü Görev 8 ve 9 için tek seferde çözer. Tasarım dili
+  ölçülmüş olduğu için **ölçmeden dokunulmamalı**.
+- **Toplu mail chunking** — seri duyurusu `sendBulkEmail` kullanıyor; aynı hedef
+  kitle için yazılmış `sendChunkedEmail` var ama event rotaları bilinçli olarak
+  eskisinde kalmış. Dalın borcu değil, deponun borcu.
+- **Kuyruk hijyeni** — `seri_sil` yalnızca `reminder` şablonunu temizliyor;
+  `promotion` satırı da `payload->>'event_id'` taşıyor.
+
+## Final düzeltme dalgasında kapatılanlar
+
+- **Görev 11 K8** — ana sayfanın "Yaklaşan etkinlikler" listesine seri ibaresi
+  eklendi. Erteleme kararı GERİ ALINDI: sayaç düzeltilince ekran kendi kendini
+  yalanlayacaktı (başlık "24 buluşma", liste 2 satır).
+- **Görev 9** — `edit-event-form`'un `handleDelete`'i artık başarı gövdesini
+  okuyor ve `atlanan` sayısını söylüyor.
+
+## Görev 12'de kapatılanlar
+
+- Ölü indeks `idx_events_community_id` düşürüldü (migration 20260830120400).
+- `CLAUDE.md`'deki tarih kuralına "biçimlendirme için" ibaresi eklendi —
+  `timestamptz` serileştirmesi için `toISOString()` zararsız ve depoda 20+
+  emsali var; kural metni her incelemede yanlış alarm üretiyordu.
