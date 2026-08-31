@@ -1571,13 +1571,19 @@ BEGIN
 
   IF NOT FOUND THEN RETURN; END IF;
 
-  -- VİTRİNLE AYNI KAPI (public_profiles WHERE koşulu). Bu olmadan sayfa yolu
-  -- kapalıyken RPC yolu AÇIK kalıyordu: gizli/dondurulmuş profilin sayaçları
-  -- anon'a sızıyordu — hem de anon'un rsvps'e HİÇ erişemediği veriden türeyen
-  -- sayılar. Hiç satır dönmüyor: "profil yok" ile ayırt edilemez.
-  IF (NOT v_aktif OR v_gorunurluk <> 'public')
-     AND p_user_id IS DISTINCT FROM auth.uid()
-     AND NOT public.is_admin() THEN
+  -- Bu kapi olmadan sayfa yolu kapaliyken RPC yolu ACIK kaliyordu: gizli/
+  -- dondurulmus profilin sayaclari anon'a siziyordu — hem de anon'un rsvps'e
+  -- HIC erisemedigi veriden tureyen sayilar. Hic satir donmuyor, yani
+  -- "profil yok" ile ayirt edilemez.
+  -- Parantezleme vitrindekiyle BIREBIR: gorunur <=> aktif AND (public OR ben OR
+  -- admin). account_active KOSULSUZ bir AND — sahibi/yonetici kacisi yalnizca
+  -- profile_visibility icin gecerli. Onceki hali account_active'i de kacisin
+  -- icine almisti: dondurulmus hesabin sahibi vitrinde 404 alirken fonksiyondan
+  -- sayac aliyordu. Sizinti degildi ama iki kapi ayrisiyordu.
+  IF (NOT v_aktif
+      OR (v_gorunurluk <> 'public'
+          AND p_user_id IS DISTINCT FROM auth.uid()
+          AND NOT public.is_admin())) THEN
     RETURN;
   END IF;
 
