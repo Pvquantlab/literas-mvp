@@ -117,7 +117,7 @@ export default async function HomePage({
   let eventQuery = supabase
     .from('etkinlik_vitrin')
     .select(
-      'id, title, event_date, location, cover_image_url, community:communities!inner(name, category, city)'
+      'id, title, event_date, location, cover_image_url, series_id, community:communities!inner(name, category, city)'
     )
     .gte('event_date', new Date().toISOString())
     .order('event_date', { ascending: true })

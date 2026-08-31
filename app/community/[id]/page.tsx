@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { byValue } from '@/lib/categories'
+import { localInputToISO } from '@/lib/date'
 import { GlossyIcon } from '@/components/category-art'
 import { RolyefMasa, RolyefKahve, RolyefKitap, RolyefSandalye, RolyefSehir, RolyefKap } from '@/components/rolyef'
 import MemberActions from './member-actions'
@@ -185,10 +186,12 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   const nowIst = istParts(new Date())
   const calY = nowIst.y
   const calM = nowIst.m
-  // Türkiye 2016'dan beri yaz saati uygulamıyor, ofset sabit +03:00 — bu yüzden
-  // İstanbul ayı başlangıcı/bitişi UTC'ye 3 saat geri kaydırılarak bulunuyor.
-  const ayBasiIso = new Date(Date.UTC(calY, calM, 1) - 3 * 60 * 60 * 1000).toISOString()
-  const aySonuIso = new Date(Date.UTC(calY, calM + 1, 1) - 3 * 60 * 60 * 1000).toISOString()
+  // Sabit +03:00 varsaymak yerine lib/date.ts'teki localInputToISO Intl'e
+  // sorup ofseti kendi hesaplıyor — ofset kuralı değişirse kod bozulmaz.
+  const ayBasiIso = localInputToISO(`${calY}-${String(calM + 1).padStart(2, '0')}-01T00:00`)
+  const aySonuIso = localInputToISO(
+    `${calM === 11 ? calY + 1 : calY}-${String(calM === 11 ? 1 : calM + 2).padStart(2, '0')}-01T00:00`
+  )
 
   const [upcomingRes, pastRes, takvimRes] = await Promise.all([
     supabase
