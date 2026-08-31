@@ -81,3 +81,87 @@ hesabını `if (!user)` ile koşullandır. Kullanıcıya yanlış veri gösteril
 - **Canlıda `category`'si boş iki topluluk** (Eyüpsultan Erasmus, Kadıköy
   Felsefe & Kahve). Kullanıcı verisi tahmin edilmesin diye dokunulmadı;
   kurucularına mı bırakılacak, elle mi doldurulacak — karar bekliyor.
+
+---
+
+# İkinci tur — ilgi alanı motoru (01.09.2026)
+
+Migration `20260901100000_ilgi_onerileri.sql` ile `profiles.interests` ilk kez
+okunuyor. Aşağıdakiler bu turda **bilinçli olarak** dışarıda bırakıldı.
+
+## 1. Kategori kolu yazılmadı (kullanıcı kararı)
+
+`communities.category` üzerinden ikinci bir eşleştirme kolu kurulabilirdi.
+Kurulmadı: 14'lü `lib/categories.ts` ile 25'li `topic_categories` arasında
+elle yazılmış bir eşleme tablosu gerektiriyordu.
+
+**Ölçülen bedel** — bugün iki onaylı topluluğun (`kadıköy kitap kulübü`,
+`taksim yürüyüş kulübü`) hiç konusu yok, dolayısıyla **hiçbir ilgi alanından
+görünmüyorlar**. Somut örnek: `{Kısa Öykü, Felsefe}` ilgi alanlı bir kullanıcı
+iki kart görüyor; kategori kolu olsaydı üç görecekti. `Doğa Yürüyüşü` sıfır
+dönüyor — oysa `taksim yürüyüş kulübü`nün `category` değeri `yürüyüş` ve
+`lib/categories.ts`'in `ALIASES` tablosu bunu `doga`'ya bağlıyor.
+
+**Neden geri gelmeyebilir:** sihirbaz artık hem kategoriyi hem en az bir konuyu
+zorunlu kılıyor, yani bundan sonra doğan her topluluk konu taşıyor. Kol
+yalnızca ESKİ kayıtlar için değerliydi. Bu iki kayda konu eklenirse ihtiyaç
+tamamen ortadan kalkar.
+
+**Gerektiği gün yeri belli:** `Category` tipine `dbKategoriler: string[]` alanı
+(tek dosya, migration yok) + fonksiyona `p_kopru jsonb` parametresi.
+Eşanlamlılar mevcut `ALIASES`'tan programatik türetilmeli, ikinci bir kopya
+yazılmamalı.
+
+## 2. `match_distance_km` hâlâ ölü, ama artık işaretli
+
+Kolon yazılıyor, hiçbir sorguda okunmuyor. Bu turda "yakında" rozeti aldı.
+Gerçekten çalışması için topluluklarda **koordinat** gerekiyor; bugün yalnızca
+serbest metin `city` var (`taksim yürüyüş kulübü` gibi kayıtlarda şehir bile
+tutarsız). Ya koordinat toplanmalı ya da ayar kaldırılmalı — rozet kalıcı
+çözüm değil.
+
+## 3. Keşfet yüzeyi dokunulmadı
+
+Öneri yalnızca ana sayfada. `/kesfet` kendi `CATS` dizisini taşıyor, kategori
+parametresi `?kategori=doğa` (aksanlı) — ana sayfa `?category=doga` (ASCII).
+Aynı süzgeç, iki ayrı sözlük. İlgi alanı önerisini oraya taşımadan önce bu
+ikiliğin çözülmesi gerekir.
+
+## 4. Tohumlanmış `topic_category_map`'te kalite kusurları var
+
+Ölçülen örnekler: `Fotoğrafçılık` → `film-dizi-medya` (sanat ya da hobi
+olmalıydı), `Felsefe` → `kisisel-gelisim` (bilim-egitim olabilirdi). Eşleştirme
+bu tabloya güveniyor; yanlış eşleme yanlış gerekçe üretir. Ayrı bir gözden
+geçirme işi.
+
+## 5. Katalog darboğazı — ve onunla karıştırılan sözlük kusuru
+
+25 konu kategorisinin 20'si hiçbir onaylı topluluğa ulaşmıyor. `spor-fitness`'ta
+46, `teknoloji`'de 36, `oyunlar`'da 30 konu var ve üçü de sıfır döndürüyor.
+Bunu kod çözmez; katalog 5 onaylı topluluk.
+
+AMA uygulamanın kendi önerdiği 20 ilgi etiketinden sıfır dönenlerin sayısı 9
+değil **10**'du, ve tek sebepten değildi (ölçüm 01.09.2026):
+
+- **Dördü katalog darboğazı:** Doğa Yürüyüşü, Konser, Müze, Sergi. Konuya
+  çözülüyorlar, kategorilerinde onaylı topluluk yok. Kod çözmez.
+- **Altısı sözlük kusuruydu, düzeltildi:** Bisiklet Turu, Dil Pratiği,
+  Fotoğraf Yürüyüşü, Kahve Tadımı, Kitap + Kahve, Vinil Plak — hiçbir konuya
+  çözülmüyorlardı (birebir 0, önek 0). `topics` kapalı bir tohum kümesi
+  (RLS'te INSERT politikası yok, sihirbaz yalnızca seçtiriyor), yani katalog
+  ne kadar büyürse büyüsün sıfır kalacaklardı. Altısı da `topics`'te birebir
+  karşılığı olan adlarla değiştirildi; yirmi etiketin yirmisi de artık
+  çözülüyor (17 birebir, 3 önek — doğrulandı).
+
+Kalıcı çözüm ayrı tura bırakıldı: `SUGGESTED_INTERESTS` elle yazılmayı bırakıp
+`topics`'ten türetilmeli (sayfa zaten sunucu bileşeni, `getPopularTopics()`
+çağrılabilir). O zaman "uygulamanın önerdiği bir çip hiçbir konuya
+çözülmüyor" durumu yapısal olarak imkânsız hâle gelir.
+
+## 6. Konu kategorisi hiç eşleşmeyen ilgi alanı sessiz kalıyor
+
+"Müze" gibi bir etiket konuya çözülüyor ama kategorisinde onaylı topluluk yok;
+kullanıcıya bu etiketin neden hiçbir şey getirmediği söylenmiyor. Boş durum
+cümlesi TÜM etiketleri birlikte anıyor. Etiket başına durum göstermek
+("Müze — henüz topluluk yok") daha dürüst olurdu; katalog büyüyünce
+kendiliğinden çözüleceği için ertelendi.

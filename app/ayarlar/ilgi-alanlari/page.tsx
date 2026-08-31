@@ -4,11 +4,23 @@ import AyarlarDurum from "@/components/ayarlar-durum";
 import { updateIlgiAlanlari } from "./actions";
 import InterestPicker from "./interest-picker";
 
+// HER ETİKET `topics` TABLOSUNDA BİREBİR KARŞILIĞI OLAN BİR ADDIR.
+// Eskiden altısı (Kahve Tadımı, Kitap + Kahve, Vinil Plak, Bisiklet Turu,
+// Dil Pratiği, Fotoğraf Yürüyüşü) hiçbir konuya çözülmüyordu — ne birebir ne
+// önekle. `topics` kapalı bir tohum kümesi (RLS'te INSERT politikası yok,
+// sihirbaz yalnızca seçtiriyor), yani katalog ne kadar büyürse büyüsün o altı
+// çip SONSUZA KADAR sıfır sonuç verecekti: uygulamanın kendi önerdiği etiketi
+// seçen kullanıcı hiçbir şey görmüyordu.
+//
+// KALICI ÇÖZÜM AYRI TUR: bu dizi elle yazılmayı bırakıp `topics`ten
+// türetilmeli (sayfa zaten sunucu bileşeni, getPopularTopics() çağrılabilir).
+// O zaman "önerilen çip hiçbir konuya çözülmüyor" durumu yapısal olarak
+// imkânsız olur.
 const SUGGESTED_INTERESTS = [
-  "Şiir", "Kısa Öykü", "Felsefe", "Kahve Tadımı", "Doğa Yürüyüşü",
+  "Şiir", "Kısa Öykü", "Felsefe", "Kahve", "Doğa Yürüyüşü",
   "Fotoğrafçılık", "Tiyatro", "Bağımsız Sinema", "Podcast", "Yaratıcı Yazarlık",
-  "Kitap Kulübü", "Edebiyat", "Kitap + Kahve", "Fotoğraf Yürüyüşü", "Dil Pratiği",
-  "Müze", "Sergi", "Konser", "Vinil Plak", "Bisiklet Turu",
+  "Kitap Kulübü", "Edebiyat", "Kahve ve Kitaplar", "Fotoğraf Gezileri", "Dil ve Kültür",
+  "Müze", "Sergi", "Konser", "Plak Koleksiyonculuğu", "Bisiklet",
 ];
 
 export default async function IlgiAlanlariPage({
@@ -36,15 +48,31 @@ export default async function IlgiAlanlariPage({
         İlgi Alanları
       </h1>
       <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 28px", maxWidth: "56ch" }}>
-        Favori ilgi alanlarınızı seçin; size yakın toplulukları bunlara göre önerelim.
+        Seçtiğiniz ilgi alanlarına uyan toplulukları ana sayfanızda öneririz.
       </p>
 
       <AyarlarDurum durum={durum} hata={hata} />
 
       <form action={updateIlgiAlanlari}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-          <span style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.05em", color: "var(--muted)" }}>
+          <span style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.05em", color: "var(--muted)", display: "flex", alignItems: "center", gap: 8 }}>
             eşleşme mesafesi:
+            {/* match_distance_km yazılıyor ama HİÇBİR sorguda okunmuyor:
+                topluluklarda koordinat yok, yalnızca serbest metin şehir var,
+                dolayısıyla mesafe bugün hesaplanamıyor. Sözü tutulmayan bir
+                ayarı sessiz bırakmak yerine işaretliyoruz — ayarlar/bildirimler
+                sayfasındaki kalıbın aynısı. */}
+            <span style={{
+              font: "500 10.5px 'IBM Plex Mono', monospace",
+              letterSpacing: "0.08em",
+              textTransform: "lowercase",
+              padding: "2px 7px",
+              borderRadius: 999,
+              border: "1px solid var(--border)",
+              color: "var(--muted)",
+            }}>
+              yakında
+            </span>
           </span>
           <select name="match_distance_km" defaultValue={profile?.match_distance_km || 80} style={{
             padding: "8px 14px",

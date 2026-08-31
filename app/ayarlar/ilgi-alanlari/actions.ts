@@ -45,5 +45,9 @@ export async function updateIlgiAlanlari(formData: FormData) {
   }
 
   revalidatePath(YOL);
+  // Ana sayfa artık bu kolonu OKUYOR (ilgi_onerileri). Sayfa dinamik olduğu
+  // için bugün davranış değişmiyor; niyeti yazılı bırakıyoruz ki ileride
+  // ana sayfa önbelleğe alınırsa öneriler bayat kalmasın.
+  revalidatePath("/");
   ayarlarSonucu(YOL);
 }
