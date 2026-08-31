@@ -357,8 +357,17 @@ gerçekten değiştiyse yazılır. `route.ts:138-147`'deki mevcut `changes` hesa
 yani sadece açıklamayı değiştiren biri iz bırakmazdı. Hiçbir şey değişmeden
 "Kaydet"e basmak da iz bırakmamalı.
 
-Arayüzde izi temizleyen açık ve geri alınabilir bir eylem var: **"bu buluşmayı
-seriye geri kat"** (`seri_disina_alindi_at = NULL`).
+**Damga KALICIDIR ve bu turda geri alınamaz.** Spec ilk yazıldığında arayüze
+"bu buluşmayı seriye geri kat" (`seri_disina_alindi_at = NULL`) eylemi
+öngörülmüştü; **uygulanmadı** ve bilinçli olarak kapsam dışına alındı — kendi
+RPC'sini, rota dalını ve arayüz denetimini gerektiriyor. Depoda kolona yazan
+iki ifade de `now()` yazıyor; `NULL` yazan hiçbir satır yok ve kolon istemci
+`UPDATE` yetki listesinde de değil.
+
+Pratik sonucu: bir tekrarı tek başına düzenleyen organizatör onu seriden
+kalıcı olarak çıkarmış olur ve bundan sonra o buluşmayı tek tek yönetir.
+Arayüz kapsam seçicisinde bunu söylüyor ("elle düzenlenmiş buluşmalar
+atlanır"), ama geri alma yolu yok. Sonraki turun ilk maddesi.
 
 ### Silme
 
