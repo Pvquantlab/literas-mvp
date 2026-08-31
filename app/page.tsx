@@ -14,7 +14,12 @@ import EventCard from '@/components/event-card'
 import SearchBox from './search-box'
 import CityFilter from './city-filter'
 
-export const revalidate = 60
+// force-dynamic, revalidate DEĞİL. Sayfa zaten dinamik (createClient()
+// cookies() çağırıyor), yani `revalidate = 60` bugün etkisizdi. Ama sayfa
+// artık kullanıcıya ÖZEL içerik basıyor: biri ileride cookie bağımlılığını
+// kaldırırsa o satır bir kullanıcının önerilerini 60 saniye boyunca PAYLAŞILAN
+// önbellekte tutardı. Niyet yazılı olsun.
+export const dynamic = 'force-dynamic'
 
 /* --- Künye ızgarasının iki stil sabiti -------------------------------
    week.wild.plus ölçümünden: etiketler minik/büyük harf/harf arası açık,
@@ -42,6 +47,12 @@ type IlgiOnerisi = CommunitySummary & {
   skor: number
   /** Eşleşmeyi doğuran ilgi alanlarının KULLANICININ KENDİ yazdığı hâli. */
   eslesen_ilgiler: string[]
+  /**
+   * Bunların ALT KÜMESİ: topluluğun konu listesinde BİREBİR duranlar.
+   * Kalanı yalnızca aynı konu kategorisinden geliyor — gerekçe cümlesi bu
+   * ikisini aynı kelimeyle anlatamaz.
+   */
+  dogrudan_ilgiler: string[]
 }
 
 /**
@@ -50,11 +61,22 @@ type IlgiOnerisi = CommunitySummary & {
  * Kullanıcının kendi kelimeleri geri yazılıyor — "sana uygun" demek yerine
  * NEDEN uygun olduğunu göstermek, öneriyi rastgele bir karttan ayıran tek şey.
  */
-function ilgiGerekcesi(etiketler: string[]): string {
-  const e = [...etiketler].sort((a, b) => a.localeCompare(b, 'tr'))
+function ilgiGerekcesi(etiketler: string[], dogrudan: string[] = []): string {
+  const siral = (d: string[]) => [...d].sort((a, b) => a.localeCompare(b, 'tr'))
+  const liste = (d: string[]) =>
+    d.length === 1 ? d[0] : `${d.slice(0, -1).join(', ')} ve ${d[d.length - 1]}`
+
+  // İKİ AYRI CÜMLE, ÇÜNKÜ İKİ AYRI İDDİA VAR. `dogrudan` = kullanıcının
+  // etiketi topluluğun konu listesinde BİREBİR duruyor. Kategori kolunda ise
+  // bağ yalnızca "aynı konu kategorisi" — orada "Podcast ilgi alanından"
+  // demek, okuyucuya var olmayan bir bağ vaat etmek olurdu.
+  const d = siral(dogrudan)
+  if (d.length > 0) {
+    return `${liste(d)} ilgi ${d.length === 1 ? 'alanından' : 'alanlarından'}`
+  }
+  const e = siral(etiketler)
   if (e.length === 0) return ''
-  if (e.length === 1) return `${e[0]} ilgi alanından`
-  return `${e.slice(0, -1).join(', ')} ve ${e[e.length - 1]} ilgi alanlarından`
+  return `${liste(e)} ilgi ${e.length === 1 ? 'alanına' : 'alanlarına'} yakın konulardan`
 }
 
 /* ---------------------------------------------------------------------- */
@@ -319,11 +341,15 @@ export default async function HomePage({
     const ilgiAlanlari = ((profile?.interests as string[] | null) ?? []).filter(Boolean)
 
     let oneriler: IlgiOnerisi[] = []
+    let oneriHatasi = false
     if (ilgiAlanlari.length > 0 && !hasFilter) {
       const { data: oneriRes, error: oneriHata } = await supabase.rpc('ilgi_onerileri', {
         p_limit: 4,
       })
-      if (oneriHata) console.error('[anasayfa] ilgi onerileri alinamadi:', oneriHata)
+      if (oneriHata) {
+        console.error('[anasayfa] ilgi onerileri alinamadi:', oneriHata)
+        oneriHatasi = true
+      }
       oneriler = (oneriRes ?? []) as IlgiOnerisi[]
     }
     // Aynı kart iki kez basılmasın: öneri bölümünde çıkanlar ızgaradan düşer.
@@ -483,13 +509,20 @@ export default async function HomePage({
                 <p className="mono" style={{ fontSize: 12, color: 'var(--muted)', margin: '0 0 var(--s-3)' }}>
                   henüz üyesi olmadığın topluluklar
                 </p>
-                {oneriler.length > 0 ? (
+                {/* HATA, BOŞ DEĞİLDİR. Sorgu patladığında "uyan topluluk
+                    yok" demek kesin bir yalan olur — veri yokluğu ile veri
+                    alınamaması aynı cümleye düşemez. */}
+                {oneriHatasi ? (
+                  <div className="empty-state">
+                    <p>Öneriler yüklenemedi, az sonra tekrar dene.</p>
+                  </div>
+                ) : oneriler.length > 0 ? (
                   <div className="grid-communities grid-narrow">
                     {oneriler.map((o) => (
                       <CommunityCard
                         key={o.id}
                         community={o}
-                        ilgiEtiketi={ilgiGerekcesi(o.eslesen_ilgiler)}
+                        ilgiEtiketi={ilgiGerekcesi(o.eslesen_ilgiler, o.dogrudan_ilgiler)}
                       />
                     ))}
                   </div>
@@ -499,7 +532,10 @@ export default async function HomePage({
                      ayardan farkı tam olarak bu satır. */
                   <div className="empty-state">
                     <p>
-                      {ilgiAlanlari.join(', ')} ilgi
+                      {ilgiAlanlari.slice(0, 6).join(', ')}
+                      {ilgiAlanlari.length > 6
+                        ? ` ve ${ilgiAlanlari.length - 6} ilgi alanı daha`
+                        : ''} ilgi
                       {ilgiAlanlari.length === 1 ? ' alanına' : ' alanlarına'} uyan,
                       henüz üyesi olmadığın topluluk yok.
                     </p>
@@ -523,6 +559,13 @@ export default async function HomePage({
 
               {izgaraTopluluklari.length > 0 ? (
 <div className="grid-communities grid-narrow">                  {izgaraTopluluklari.map((c) => <CommunityCard key={c.id} community={c} />)}
+                </div>
+              ) : !hasFilter && oneriler.length > 0 ? (
+                /* Izgara boş çünkü kartların HEPSİ yukarıdaki öneri şeridine
+                   gitti. "Henüz topluluk yok" demek, aynı ekranda duran
+                   kartları yok saymak olurdu. */
+                <div className="empty-state">
+                  <p>Onaylı toplulukların tümü yukarıda, ilgi alanlarına göre listelendi.</p>
                 </div>
               ) : (
                 <div className="empty-state">

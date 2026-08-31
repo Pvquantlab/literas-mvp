@@ -539,7 +539,14 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   border-radius: var(--r-md);
   background: var(--panel);   /* kesikli çerçeve kalktı: DNA'da çerçeve yok */
 }
-.empty-state p { color: var(--muted); margin-bottom: var(--s-4); }
+/* Ölçü kapağı: boş durum metni artık KULLANICININ kendi etiketlerini
+   basabiliyor. Deponun her yerdeki prose ölçüsüyle aynı refleks (56ch/58ch). */
+.empty-state p {
+  color: var(--muted);
+  margin-bottom: var(--s-4);
+  max-width: 52ch;
+  margin-inline: auto;
+}
 
 /* --- Kategori çipi ------------------------------------------------------
    116px daireler yerine yatay çip satırı. Daire class'ı geriye dönük

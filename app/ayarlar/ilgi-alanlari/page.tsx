@@ -4,11 +4,23 @@ import AyarlarDurum from "@/components/ayarlar-durum";
 import { updateIlgiAlanlari } from "./actions";
 import InterestPicker from "./interest-picker";
 
+// HER ETİKET `topics` TABLOSUNDA BİREBİR KARŞILIĞI OLAN BİR ADDIR.
+// Eskiden altısı (Kahve Tadımı, Kitap + Kahve, Vinil Plak, Bisiklet Turu,
+// Dil Pratiği, Fotoğraf Yürüyüşü) hiçbir konuya çözülmüyordu — ne birebir ne
+// önekle. `topics` kapalı bir tohum kümesi (RLS'te INSERT politikası yok,
+// sihirbaz yalnızca seçtiriyor), yani katalog ne kadar büyürse büyüsün o altı
+// çip SONSUZA KADAR sıfır sonuç verecekti: uygulamanın kendi önerdiği etiketi
+// seçen kullanıcı hiçbir şey görmüyordu.
+//
+// KALICI ÇÖZÜM AYRI TUR: bu dizi elle yazılmayı bırakıp `topics`ten
+// türetilmeli (sayfa zaten sunucu bileşeni, getPopularTopics() çağrılabilir).
+// O zaman "önerilen çip hiçbir konuya çözülmüyor" durumu yapısal olarak
+// imkânsız olur.
 const SUGGESTED_INTERESTS = [
-  "Şiir", "Kısa Öykü", "Felsefe", "Kahve Tadımı", "Doğa Yürüyüşü",
+  "Şiir", "Kısa Öykü", "Felsefe", "Kahve", "Doğa Yürüyüşü",
   "Fotoğrafçılık", "Tiyatro", "Bağımsız Sinema", "Podcast", "Yaratıcı Yazarlık",
-  "Kitap Kulübü", "Edebiyat", "Kitap + Kahve", "Fotoğraf Yürüyüşü", "Dil Pratiği",
-  "Müze", "Sergi", "Konser", "Vinil Plak", "Bisiklet Turu",
+  "Kitap Kulübü", "Edebiyat", "Kahve ve Kitaplar", "Fotoğraf Gezileri", "Dil ve Kültür",
+  "Müze", "Sergi", "Konser", "Plak Koleksiyonculuğu", "Bisiklet",
 ];
 
 export default async function IlgiAlanlariPage({

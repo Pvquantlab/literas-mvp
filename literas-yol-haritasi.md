@@ -440,14 +440,21 @@ alıyor, katılımcı listesi canlı, QR ile giriş alınabiliyor.
       o etiket için hiç sonuç yoksa önek) → `topic_category_map` → aynı
       kategorideki konular → `community_topics`. SECURITY INVOKER: zincirin
       dört halkası da `USING (true)` politikalı, aşılacak duvar yok.
-      KATEGORİ DÜZEYİNDE DURULUYOR: ölçüldü, konu düzeyinde birebir
-      eşleştirme sıfır dönüyor (kullanıcı ilgilerinin çözüldüğü konular
-      hiçbir toplulukta kullanılmıyor).
-      İKİ KAPI, ikisi de ölçümle doğrulandı: JOKER — `%` kaçırılmazsa tek
-      etiket 571 konunun tamamıyla eşleşiyor; AYIRT EDİCİLİK — onaylı
-      katalogun yarısından fazlasına ulaşan konu kategorisi düşer (bugün
-      yalnızca 'sosyal', 3/5), eşik verinin kendisinden hesaplandığı için
-      katalog büyüdükçe gevşiyor.
+      İKİ KOL: birebir konu vuruşu (ayırt edicilik kapısından MUAF) +
+      aynı kategorideki konular. "Konu düzeyi sıfır dönüyor" ölçümü yalnızca
+      bugünkü TEK dolu profil içindi (ahmet'in üç etiketinin çözüldüğü konular
+      hiçbir toplulukta kullanılmıyor), genel iddia DEĞİL: uygulamanın 20
+      çipinden Felsefe, Fotoğrafçılık ve Kitap Kulübü konu düzeyinde birebir
+      vuruyor ve sıralamada kategori komşusunun ÜSTÜNE çıkıyor.
+      İKİ KAPI, ikisi de ölçümle doğrulandı: JOKER — uzunluk kapısını
+      geçen bir joker deseni (`___` 569 konu, `%e%` 332 konu) kaçırılmazsa
+      konusu olan üç onaylı topluluğun tamamına yayılıyor ('%' tek başına
+      uzunluk kapısına takıldığı için bu kolu hiç görmüyor); AYIRT EDİCİLİK —
+      onaylı katalogun yarısından fazlasına ulaşan konu kategorisi düşer
+      (bugün yalnızca 'sosyal', 3/5). Eşik oransal olduğu için katalog
+      büyüdükçe gevşiyor ama KÜÇÜLDÜKÇE SIKIŞIYOR — N=1'de her kategoriyi
+      eliyordu, bu yüzden `>= 3` mutlak tabanı var. Kapı yalnızca kategori
+      yayılımını buduyor; birebir konu vuruşu her hâlükârda geçiyor.
       İKİ AÇIK YÜKLEM ZORUNLU (ikisi de kanıtlandı): `profiles`'ta
       `id = auth.uid()` — politika yöneticiye tüm satırları açıyor, yüklemsiz
       hâlde başka kullanıcının ilgi alanı eşleştirmeye karışıyordu;

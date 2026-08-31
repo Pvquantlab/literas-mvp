@@ -134,9 +134,34 @@ olmalıydı), `Felsefe` → `kisisel-gelisim` (bilim-egitim olabilirdi). Eşleş
 bu tabloya güveniyor; yanlış eşleme yanlış gerekçe üretir. Ayrı bir gözden
 geçirme işi.
 
-## 5. Katalog darboğazı — kodla çözülmez
+## 5. Katalog darboğazı — ve onunla karıştırılan sözlük kusuru
 
 25 konu kategorisinin 20'si hiçbir onaylı topluluğa ulaşmıyor. `spor-fitness`'ta
 46, `teknoloji`'de 36, `oyunlar`'da 30 konu var ve üçü de sıfır döndürüyor.
-Uygulamanın kendi önerdiği 20 ilgi etiketinden 9'u sıfır dönüyor. Motorun
-kusuru değil; katalog 5 onaylı topluluk.
+Bunu kod çözmez; katalog 5 onaylı topluluk.
+
+AMA uygulamanın kendi önerdiği 20 ilgi etiketinden sıfır dönenlerin sayısı 9
+değil **10**'du, ve tek sebepten değildi (ölçüm 01.09.2026):
+
+- **Dördü katalog darboğazı:** Doğa Yürüyüşü, Konser, Müze, Sergi. Konuya
+  çözülüyorlar, kategorilerinde onaylı topluluk yok. Kod çözmez.
+- **Altısı sözlük kusuruydu, düzeltildi:** Bisiklet Turu, Dil Pratiği,
+  Fotoğraf Yürüyüşü, Kahve Tadımı, Kitap + Kahve, Vinil Plak — hiçbir konuya
+  çözülmüyorlardı (birebir 0, önek 0). `topics` kapalı bir tohum kümesi
+  (RLS'te INSERT politikası yok, sihirbaz yalnızca seçtiriyor), yani katalog
+  ne kadar büyürse büyüsün sıfır kalacaklardı. Altısı da `topics`'te birebir
+  karşılığı olan adlarla değiştirildi; yirmi etiketin yirmisi de artık
+  çözülüyor (17 birebir, 3 önek — doğrulandı).
+
+Kalıcı çözüm ayrı tura bırakıldı: `SUGGESTED_INTERESTS` elle yazılmayı bırakıp
+`topics`'ten türetilmeli (sayfa zaten sunucu bileşeni, `getPopularTopics()`
+çağrılabilir). O zaman "uygulamanın önerdiği bir çip hiçbir konuya
+çözülmüyor" durumu yapısal olarak imkânsız hâle gelir.
+
+## 6. Konu kategorisi hiç eşleşmeyen ilgi alanı sessiz kalıyor
+
+"Müze" gibi bir etiket konuya çözülüyor ama kategorisinde onaylı topluluk yok;
+kullanıcıya bu etiketin neden hiçbir şey getirmediği söylenmiyor. Boş durum
+cümlesi TÜM etiketleri birlikte anıyor. Etiket başına durum göstermek
+("Müze — henüz topluluk yok") daha dürüst olurdu; katalog büyüyünce
+kendiliğinden çözüleceği için ertelendi.
