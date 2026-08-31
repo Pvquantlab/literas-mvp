@@ -330,6 +330,23 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   box-shadow: 0 6px 14px -8px rgba(22, 22, 15, .28);
   background: var(--ink-deep);
 }
+/* Pasif durum. .btn-primary background'ı, color'ı ve cursor'ı AÇIKÇA
+   verdiği için tarayıcının kendi disabled görünümü tamamen eziliyordu:
+   pasif buton aktifiyle piksel piksel aynı çıkıyor, :hover basılma
+   hareketini hâlâ yapıyor ve imleç pointer kalıyordu. Kullanıcı basıyor,
+   hiçbir şey olmuyor, sebebini de göremiyordu. Depoda tek disabled kuralı
+   .btn-google:disabled idi; bu kural sihirbazın her adımını birden düzeltir. */
+.btn-primary:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.btn-primary:disabled:hover {
+  transform: none;
+  background: var(--ink);
+  box-shadow: none;
+}
+
 .btn-primary.btn-sm { padding: 9px 18px; font-size: var(--t-sm); box-shadow: var(--shadow-press-sm); }
 
 .btn-secondary {

@@ -5,6 +5,7 @@
 
 import { z } from 'zod'
 import { CATEGORIES } from './categories'
+import { MAX_TOPICS, MIN_TOPICS } from './limits'
 
 // ---- Yardımcılar ----------------------------------------------------------
 
@@ -35,7 +36,13 @@ const httpUrl = z
       .refine((v) => /^https?:\/\//i.test(v), 'Bağlantı http:// veya https:// ile başlamalı'),
     z.literal(''),
   ])
-  .optional()
+  // .optional() DEĞİL .nullish(): alan boş bırakıldığında arayüz `null`
+  // gönderiyor (ör. sihirbazın kapak yükleyicisi useState<string | null>).
+  // Sadece .optional() olduğu sürece `null` doğrulamadan geçemiyordu ve
+  // saveDraft kendi kapısında "Invalid input" ile — İngilizce, üstelik
+  // "(opsiyonel)" etiketli bir alan için — patlıyordu. Kapak fotoğrafı
+  // yüklemeyen HİÇBİR kullanıcı topluluk kuramıyordu.
+  .nullish()
   .transform((v) => (v ? v : null))
 
 // ---- Etkinlik -------------------------------------------------------------
@@ -172,7 +179,7 @@ export const taslakSchema = z.object({
   location_name: z.string().trim().max(120, 'Konum en fazla 120 karakter olabilir').optional(),
   topic_ids: z
     .array(z.coerce.number().int().positive())
-    .max(10, 'En fazla 10 konu seçebilirsin')
+    .max(MAX_TOPICS, `En fazla ${MAX_TOPICS} konu seçebilirsin`)
     .optional(),
   category: kategoriDegeri.optional(),
   name: z.string().trim().max(80, 'Topluluk adı en fazla 80 karakter olabilir').optional(),
@@ -196,8 +203,8 @@ export const communitySchema = z
       .or(z.literal('').transform(() => undefined)),
     topic_ids: z
       .array(z.coerce.number().int().positive())
-      .min(1, 'En az bir konu seç')
-      .max(10, 'En fazla 10 konu seçebilirsin'),
+      .min(MIN_TOPICS, 'En az bir konu seç')
+      .max(MAX_TOPICS, `En fazla ${MAX_TOPICS} konu seçebilirsin`),
     // Sihirbaz bu alanı HİÇ yazmıyordu: 15 Temmuz'dan sonra kurulan
     // toplulukların category'si NULL kalıyor, hiçbir kategori süzgecine
     // düşmüyor ve kartlarında varsayılan rölyef çıkıyordu. Artık zorunlu.

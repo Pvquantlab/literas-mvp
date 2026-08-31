@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useWizard } from '../wizard-context'
 import { saveDraft } from '../actions'
 import { CATEGORIES } from '@/lib/categories'
+import { MAX_TOPICS, MIN_TOPICS } from '@/lib/limits'
 import {
   searchTopics,
   getPopularTopics,
@@ -14,9 +15,7 @@ import {
   type TopicSuggestion,
 } from '../topic-actions'
 
-const MIN_TOPICS = 1
 const RECOMMENDED_TOPICS = 3
-const MAX_TOPICS = 15
 
 export default function KonularStep() {
   const router = useRouter()
@@ -108,7 +107,16 @@ export default function KonularStep() {
     }
   }
 
-  const canProceed = selectedIds.length >= MIN_TOPICS && category !== ''
+  // Engelin GEREKÇESİ. Pasif buton tek başına "neden" sorusunu
+  // cevaplamıyor, üstelik kategori seçicisi kartın en üstünde: kullanıcı
+  // butona bastığında ekranda görünmüyor bile.
+  const ilerlemeEngeli =
+    selectedIds.length < MIN_TOPICS
+      ? 'En az bir konu seç'
+      : category === ''
+        ? 'Önce kategori seç'
+        : null
+  const canProceed = ilerlemeEngeli === null
 
   async function handleNext() {
     if (!canProceed || isSaving) return
@@ -452,17 +460,30 @@ export default function KonularStep() {
           ← Geri
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: '3px',
             fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: '12.5px',
-            color: selectedIds.length < RECOMMENDED_TOPICS ? 'var(--muted)' : 'var(--ink)',
           }}>
-            {selectedIds.length} / {MAX_TOPICS}
-          </span>
+            <span style={{
+              fontSize: '12.5px',
+              color: selectedIds.length < RECOMMENDED_TOPICS ? 'var(--muted)' : 'var(--ink)',
+            }}>
+              {selectedIds.length} / {MAX_TOPICS}
+            </span>
+            {ilerlemeEngeli && (
+              <span id="ilerleme-engeli" style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                {ilerlemeEngeli}
+              </span>
+            )}
+          </div>
           <button
             className="btn-primary"
             onClick={handleNext}
             disabled={!canProceed || isSaving}
+            aria-describedby={ilerlemeEngeli ? 'ilerleme-engeli' : undefined}
           >
             {isSaving ? 'Kaydediliyor…' : 'İleri →'}
           </button>
