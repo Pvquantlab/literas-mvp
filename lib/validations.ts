@@ -4,6 +4,8 @@
 // Not: `npm i zod` gerekli (zod v4).
 
 import { z } from 'zod'
+import { CATEGORIES } from './categories'
+import { MAX_TOPICS, MIN_TOPICS } from './limits'
 
 // ---- Yardımcılar ----------------------------------------------------------
 
@@ -34,7 +36,13 @@ const httpUrl = z
       .refine((v) => /^https?:\/\//i.test(v), 'Bağlantı http:// veya https:// ile başlamalı'),
     z.literal(''),
   ])
-  .optional()
+  // .optional() DEĞİL .nullish(): alan boş bırakıldığında arayüz `null`
+  // gönderiyor (ör. sihirbazın kapak yükleyicisi useState<string | null>).
+  // Sadece .optional() olduğu sürece `null` doğrulamadan geçemiyordu ve
+  // saveDraft kendi kapısında "Invalid input" ile — İngilizce, üstelik
+  // "(opsiyonel)" etiketli bir alan için — patlıyordu. Kapak fotoğrafı
+  // yüklemeyen HİÇBİR kullanıcı topluluk kuramıyordu.
+  .nullish()
   .transform((v) => (v ? v : null))
 
 // ---- Etkinlik -------------------------------------------------------------
@@ -157,14 +165,23 @@ export const reportUpdateSchema = z.object({
 // app/community/new/actions.ts içindeki DraftData tipiyle birebir aynı.
 // İkisi ayrışırsa doğrulama sessizce yanlış şeyi kontrol eder.
 
+// Kategori doğrulaması CATEGORIES'ten türetiliyor — dördüncü bir sabit liste
+// açmamak için. z.enum literal tuple istediğinden refine kullanılıyor.
+const kategoriDegeri = z
+  // Taban hataya da Türkçe mesaj: alan hiç gelmediğinde zod'un varsayılanı
+  // İngilizce ("expected string, received undefined") ve bu mesaj forma düşüyor.
+  .string({ error: 'Kategori seçilmeli' })
+  .refine((v) => CATEGORIES.some((c) => c.value === v), 'Geçersiz kategori')
+
 /** Sihirbazın her adımda kaydettiği taslak parçası — hepsi opsiyonel. */
 export const taslakSchema = z.object({
   location_type: z.enum(['physical', 'online'], { error: 'Geçersiz konum türü' }).optional(),
   location_name: z.string().trim().max(120, 'Konum en fazla 120 karakter olabilir').optional(),
   topic_ids: z
     .array(z.coerce.number().int().positive())
-    .max(10, 'En fazla 10 konu seçebilirsin')
+    .max(MAX_TOPICS, `En fazla ${MAX_TOPICS} konu seçebilirsin`)
     .optional(),
+  category: kategoriDegeri.optional(),
   name: z.string().trim().max(80, 'Topluluk adı en fazla 80 karakter olabilir').optional(),
   description: z
     .string()
@@ -186,8 +203,12 @@ export const communitySchema = z
       .or(z.literal('').transform(() => undefined)),
     topic_ids: z
       .array(z.coerce.number().int().positive())
-      .min(1, 'En az bir konu seç')
-      .max(10, 'En fazla 10 konu seçebilirsin'),
+      .min(MIN_TOPICS, 'En az bir konu seç')
+      .max(MAX_TOPICS, `En fazla ${MAX_TOPICS} konu seçebilirsin`),
+    // Sihirbaz bu alanı HİÇ yazmıyordu: 15 Temmuz'dan sonra kurulan
+    // toplulukların category'si NULL kalıyor, hiçbir kategori süzgecine
+    // düşmüyor ve kartlarında varsayılan rölyef çıkıyordu. Artık zorunlu.
+    category: kategoriDegeri,
     name: trimmed(3, 80, 'Topluluk adı'),
     description: trimmed(20, 3000, 'Açıklama'),
     cover_image_url: httpUrl,

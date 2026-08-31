@@ -6,6 +6,7 @@ import { useWizard } from '../wizard-context'
 import { submitCommunity } from '../actions'
 import { getTopicsByIds, type TopicSuggestion } from '../topic-actions'
 import ImageUpload from '@/components/image-upload'
+import { CATEGORIES } from '@/lib/categories'
 
 export default function GonderStep() {
   const { draft, update, isSaving, setSaving } = useWizard()
@@ -42,11 +43,21 @@ export default function GonderStep() {
     }
   }
 
+  // DB Türkçe aksanlı `value` tutuyor (community-card.tsx:22'deki uyarı):
+  // ham değeri basmak yerine etikete çeviriyoruz.
+  const kategoriEtiketi = CATEGORIES.find((c) => c.value === draft.category)?.label ?? null
+
+  // category BURADA da kontrol edilmeli. Sihirbaz kullanıcıyı kaydedilmiş
+  // current_step'e yönlendiriyor, yani bu commit'ten önce başlanmış ve
+  // 'gonder' adımında duran bir taslakla dönen kullanıcı Konular adımına
+  // hiç uğramıyor — kategori seçicisini görmüyor. Kontrol olmasaydı aktif
+  // görünen butona basıp garantili doğrulama hatası alırdı.
   const canSubmit =
     !!draft.location_type &&
     !!draft.name &&
     !!draft.description &&
-    (draft.topic_ids?.length ?? 0) > 0
+    (draft.topic_ids?.length ?? 0) > 0 &&
+    !!draft.category
 
   return (
     <div className="auth-card" style={{ padding: '32px' }}>
@@ -72,6 +83,11 @@ export default function GonderStep() {
               ? topics.map((t) => t.name).join(' · ')
               : `${draft.topic_ids?.length ?? 0} konu`
           }
+          editHref="/community/new/konular"
+        />
+        <SummaryRow
+          label="Kategori"
+          value={kategoriEtiketi ?? 'Seçilmedi'}
           editHref="/community/new/konular"
         />
         <SummaryRow label="Ad" value={draft.name ?? '-'} editHref="/community/new/ad" />
@@ -157,13 +173,26 @@ export default function GonderStep() {
         >
           ← Geri
         </Link>
-        <button
-          className="btn-primary"
-          onClick={handleSubmit}
-          disabled={!canSubmit || isSaving}
-        >
-          {isSaving ? 'Gönderiliyor…' : 'Grubu Oluştur'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {!canSubmit && (
+            <span id="gonderim-engeli" style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: '12px',
+              color: 'var(--muted)',
+              textAlign: 'right',
+            }}>
+              {!draft.category ? 'Önce kategori seç' : 'Eksik adım var'}
+            </span>
+          )}
+          <button
+            className="btn-primary"
+            onClick={handleSubmit}
+            disabled={!canSubmit || isSaving}
+            aria-describedby={!canSubmit ? 'gonderim-engeli' : undefined}
+          >
+            {isSaving ? 'Gönderiliyor…' : 'Grubu Oluştur'}
+          </button>
+        </div>
       </div>
     </div>
   )

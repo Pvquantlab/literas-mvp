@@ -13,6 +13,7 @@ export type DraftData = {
   location_type?: LocationType
   location_name?: string
   topic_ids?: number[]
+  category?: string
   name?: string
   description?: string
   cover_image_url?: string | null
@@ -128,6 +129,10 @@ export async function submitCommunity() {
       location_name: d.location_name ?? null,
       // eski kolonlar geriye dönük — city artık location_name ile aynı
       city: d.location_name ?? null,
+      // Bu satır YOKTU: sihirbazdan kurulan her topluluk category'siz doğuyordu
+      // (canlıda iki topluluk böyle). Kategori süzgeci ve kart görseli bu
+      // kolona bağlı.
+      category: d.category,
       status: 'pending_review',
     })
     .select()
