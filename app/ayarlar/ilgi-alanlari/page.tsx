@@ -36,15 +36,31 @@ export default async function IlgiAlanlariPage({
         İlgi Alanları
       </h1>
       <p style={{ fontSize: 15, lineHeight: 1.55, color: "var(--muted)", margin: "0 0 28px", maxWidth: "56ch" }}>
-        Favori ilgi alanlarınızı seçin; size yakın toplulukları bunlara göre önerelim.
+        Seçtiğiniz ilgi alanlarına uyan toplulukları ana sayfanızda öneririz.
       </p>
 
       <AyarlarDurum durum={durum} hata={hata} />
 
       <form action={updateIlgiAlanlari}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-          <span style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.05em", color: "var(--muted)" }}>
+          <span style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.05em", color: "var(--muted)", display: "flex", alignItems: "center", gap: 8 }}>
             eşleşme mesafesi:
+            {/* match_distance_km yazılıyor ama HİÇBİR sorguda okunmuyor:
+                topluluklarda koordinat yok, yalnızca serbest metin şehir var,
+                dolayısıyla mesafe bugün hesaplanamıyor. Sözü tutulmayan bir
+                ayarı sessiz bırakmak yerine işaretliyoruz — ayarlar/bildirimler
+                sayfasındaki kalıbın aynısı. */}
+            <span style={{
+              font: "500 10.5px 'IBM Plex Mono', monospace",
+              letterSpacing: "0.08em",
+              textTransform: "lowercase",
+              padding: "2px 7px",
+              borderRadius: 999,
+              border: "1px solid var(--border)",
+              color: "var(--muted)",
+            }}>
+              yakında
+            </span>
           </span>
           <select name="match_distance_km" defaultValue={profile?.match_distance_km || 80} style={{
             padding: "8px 14px",

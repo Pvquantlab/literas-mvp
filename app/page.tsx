@@ -37,6 +37,26 @@ const kunyeHucre = {
 
 type SearchParams = { category?: string; city?: string; q?: string }
 
+/** `ilgi_onerileri` RPC'sinin dönüş satırı. CommunitySummary'yi kapsıyor. */
+type IlgiOnerisi = CommunitySummary & {
+  skor: number
+  /** Eşleşmeyi doğuran ilgi alanlarının KULLANICININ KENDİ yazdığı hâli. */
+  eslesen_ilgiler: string[]
+}
+
+/**
+ * Kartın altındaki gerekçe satırı.
+ *
+ * Kullanıcının kendi kelimeleri geri yazılıyor — "sana uygun" demek yerine
+ * NEDEN uygun olduğunu göstermek, öneriyi rastgele bir karttan ayıran tek şey.
+ */
+function ilgiGerekcesi(etiketler: string[]): string {
+  const e = [...etiketler].sort((a, b) => a.localeCompare(b, 'tr'))
+  if (e.length === 0) return ''
+  if (e.length === 1) return `${e[0]} ilgi alanından`
+  return `${e.slice(0, -1).join(', ')} ve ${e[e.length - 1]} ilgi alanlarından`
+}
+
 /* ---------------------------------------------------------------------- */
 
 function SectionHead({
@@ -194,9 +214,11 @@ export default async function HomePage({
      ================================================================= */
 
   if (user) {
+    // `interests` BURADAN geliyor: profil satırı zaten çekiliyor, kolonu
+    // eklemek sıfır ek gidiş-dönüş demek. Sinyalin kaynağı bedava.
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, name, avatar_url')
+      .select('id, name, avatar_url, interests')
       .eq('id', user.id)
       .maybeSingle()
 
@@ -281,6 +303,34 @@ export default async function HomePage({
         (kisiselKalan ?? []).map((r) => [r.series_id, { kalan: r.kalan, frekans: r.frekans }])
       )
     }
+
+    // İLGİ ALANLARINA GÖRE TOPLULUK ÖNERİSİ
+    //
+    // `profiles.interests` bu satıra kadar depoda ÜÇ YERDE yazılıp SIFIR
+    // sorguda okunuyordu; ayarlar sayfası ise açıkça "bunlara göre önerelim"
+    // diye söz veriyordu. Bu, profile_visibility ve show_participation'dan
+    // sonra ÜÇÜNCÜ ölü ayardı. Kolonun okunduğu ilk yer burası.
+    //
+    // SÜZGEÇ VARKEN GÖSTERİLMİYOR. Kullanıcı şehir/kategori/arama seçtiğinde
+    // ekranda gördüğü şey onun sorusunun cevabı olmalı; araya süzgece tabi
+    // olmayan ikinci bir liste sokmak, kapsamı kullanıcının göremediği bir
+    // duruma göre değiştirir (docs/kisisel-kesif-ertelenenler.md #3'ün
+    // "Senin için" şeridinde bıraktığı kusurun aynısı).
+    const ilgiAlanlari = ((profile?.interests as string[] | null) ?? []).filter(Boolean)
+
+    let oneriler: IlgiOnerisi[] = []
+    if (ilgiAlanlari.length > 0 && !hasFilter) {
+      const { data: oneriRes, error: oneriHata } = await supabase.rpc('ilgi_onerileri', {
+        p_limit: 4,
+      })
+      if (oneriHata) console.error('[anasayfa] ilgi onerileri alinamadi:', oneriHata)
+      oneriler = (oneriRes ?? []) as IlgiOnerisi[]
+    }
+    // Aynı kart iki kez basılmasın: öneri bölümünde çıkanlar ızgaradan düşer.
+    const oneriIdler = new Set(oneriler.map((o) => o.id))
+    const izgaraTopluluklari = oneriler.length > 0
+      ? communities.filter((c) => !oneriIdler.has(c.id))
+      : communities
 
     const initials = profile?.name
       ? profile.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
@@ -372,6 +422,27 @@ export default async function HomePage({
                 </>
               )}
             </div>
+
+            {/* DAVET — bu turun en çok kişiye dokunan parçası.
+                Ölçüm (01.09.2026): dört profilden ÜÇÜNDE ilgi alanı boş.
+                Sebebi isteksizlik değil görünmezlik: /ayarlar/ilgi-alanlari'na
+                depoda TEK link var (ayarlar menüsünün 7. maddesi, 3 tık) ve
+                kayıt akışı ilgi alanını HİÇ sormuyor. Öneri sorgusunu yazıp
+                bu daveti yazmamak, motoru kurup yakıt musluğunu kapalı
+                bırakmak olurdu. İlgi alanı dolar dolmaz kart kaybolur. */}
+            {ilgiAlanlari.length === 0 && (
+              <div className="card" style={{ padding: 'var(--s-4)' }}>
+                <h2 style={{ fontSize: 'var(--t-md)', fontWeight: 600, marginBottom: 'var(--s-3)' }}>
+                  Neyi seversin?
+                </h2>
+                <p style={{ fontSize: 'var(--t-sm)', color: 'var(--muted)', marginBottom: 'var(--s-4)' }}>
+                  İlgi alanlarını seç; sana uyan toplulukları burada gösterelim.
+                </p>
+                <Link href="/ayarlar/ilgi-alanlari" className="btn-secondary btn-sm">
+                  İlgi alanlarını seç
+                </Link>
+              </div>
+            )}
           </aside>
 
           {/* ---- Ana alan ---- */}
@@ -402,6 +473,47 @@ export default async function HomePage({
               </section>
             )}
 
+            {/* İLGİ ALANLARINA GÖRE — ASLA "Senin için" değil.
+                O ad üyelik şeridinin ve başlık-içerik sözleşmesi bu depoda
+                zaten bir kez kırılmıştı. İki bölüm iki ayrı soruyu yanıtlıyor:
+                "topluluklarında ne var" vs "hangi topluluğa katılmalısın". */}
+            {ilgiAlanlari.length > 0 && !hasFilter && (
+              <section style={{ marginBottom: 'var(--s-8)' }}>
+                <SectionHead title="İlgi alanlarına göre" />
+                <p className="mono" style={{ fontSize: 12, color: 'var(--muted)', margin: '0 0 var(--s-3)' }}>
+                  henüz üyesi olmadığın topluluklar
+                </p>
+                {oneriler.length > 0 ? (
+                  <div className="grid-communities grid-narrow">
+                    {oneriler.map((o) => (
+                      <CommunityCard
+                        key={o.id}
+                        community={o}
+                        ilgiEtiketi={ilgiGerekcesi(o.eslesen_ilgiler)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  /* BOŞ AMA DÜRÜST. Kullanıcının etiketlerini ADIYLA geri
+                     yazmak, ayarın gerçekten OKUNDUĞUNUN tek kanıtı — ölü
+                     ayardan farkı tam olarak bu satır. */
+                  <div className="empty-state">
+                    <p>
+                      {ilgiAlanlari.join(', ')} ilgi
+                      {ilgiAlanlari.length === 1 ? ' alanına' : ' alanlarına'} uyan,
+                      henüz üyesi olmadığın topluluk yok.
+                    </p>
+                    <div className="row" style={{ gap: 'var(--s-2)', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <Link href="/kesfet" className="btn-secondary btn-sm">Toplulukları keşfet</Link>
+                      <Link href="/ayarlar/ilgi-alanlari" className="btn-secondary btn-sm">
+                        İlgi alanlarını düzenle
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
             <section>
               <SectionHead title="Topluluklar" />
               <div className="row" style={{ gap: 'var(--s-3)', marginBottom: 'var(--s-5)', flexWrap: 'wrap' }}>
@@ -409,8 +521,8 @@ export default async function HomePage({
                 <CityFilter cities={cities} activeCity={activeCity ?? ''} />
               </div>
 
-              {communities.length > 0 ? (
-<div className="grid-communities grid-narrow">                  {communities.map((c) => <CommunityCard key={c.id} community={c} />)}
+              {izgaraTopluluklari.length > 0 ? (
+<div className="grid-communities grid-narrow">                  {izgaraTopluluklari.map((c) => <CommunityCard key={c.id} community={c} />)}
                 </div>
               ) : (
                 <div className="empty-state">

@@ -47,7 +47,23 @@ function RolyefIcin({ slug }: { slug?: string | null }) {
 
 const FRESH_BELOW = 5
 
-export default function CommunityCard({ community }: { community: CommunitySummary }) {
+export default function CommunityCard({
+  community,
+  ilgiEtiketi,
+}: {
+  community: CommunitySummary
+  /**
+   * Bu kartın NEDEN gösterildiği. Yalnızca ilgi alanı önerisi bölümünde
+   * dolu gelir; ızgarada undefined.
+   *
+   * AÇIKLANABİLİRLİK ZORUNLU: gerekçesiz bir "sana özel" kartı, kullanıcı
+   * açısından rastgele bir karttan ayırt edilemez — geçen turda kapatılan
+   * kusur tam olarak buydu ("Senin için" başlığı altında misafirle
+   * BİREBİR aynı liste). Eşleşmeyi doğuran ilgi alanının adı yazılmadan
+   * bu özellik gönderilmez.
+   */
+  ilgiEtiketi?: string
+}) {
   const cat = byValue(community.category)
   const members = community.member_count ?? 0
   const fresh = members < FRESH_BELOW
@@ -106,6 +122,10 @@ export default function CommunityCard({ community }: { community: CommunitySumma
             </div>
           )}
 
+          {ilgiEtiketi && (
+            <p className="cm-neden">{ilgiEtiketi}</p>
+          )}
+
           <div className="cm-foot">
             <span className={fresh ? 'cm-go ghost' : 'cm-go'} aria-hidden="true">
               {fresh ? 'İlk sen katıl' : 'Katıl'}
@@ -116,6 +136,12 @@ export default function CommunityCard({ community }: { community: CommunitySumma
 
       <style>{`
         .cm-link { display:block; text-decoration:none; color:inherit; height:100%; }
+        /* Gerekçe satırı: kartın geri kalanıyla yarışmasın diye mono ve
+           sessiz. Kendi rengini icat etmiyor, --muted kullanıyor. */
+        .cm-neden {
+          margin:6px 0 0; font-family:'IBM Plex Mono', monospace;
+          font-size:11.5px; line-height:1.35; color:var(--muted);
+        }
         .cm-card {
           position:relative; display:flex; flex-direction:column; height:100%;
           padding:16px; border-radius:4px;

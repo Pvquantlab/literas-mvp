@@ -421,7 +421,50 @@ alıyor, katılımcı listesi canlı, QR ile giriş alınabiliyor.
       her profilde sonsuza kadar 0 yazardı.
       KAPSAM DIŞI: katılım oranı/seri sürekliliği gibi türetilmiş ölçüler,
       rozet/başarım sistemi.
-- [ ] İlgi alanına göre kişisel keşif
+- [x] **İlgi alanına göre kişisel keşif** (01.09.2026)
+      İKİ TURDA: önce kusur yarısı (30.08), sonra motor (01.09).
+      KUSUR YARISI — "Senin için" bölümü hiçbir kişiselleştirme yapmıyordu:
+      kaynağı, misafire "Yaklaşan buluşmalar" diye gösterilen BİREBİR AYNI
+      sorgunun ilk 4 kaydıydı, `user.id` sorguya hiç girmiyordu. Artık
+      kullanıcının ÜYE OLDUĞU toplulukların yaklaşan buluşmaları; üyelik ya
+      da buluşma yoksa genel liste DÜRÜST başlıkla. Aynı turda sihirbaz
+      `communities.category` yazmaya başladı (hiç yazmıyordu, canlıda iki
+      topluluk kategorisiz) ve iki eski tıkanma açıldı: kapak fotoğrafı
+      yüklemeyen kullanıcı topluluk kuramıyordu (`httpUrl` `null` reddediyor,
+      İngilizce "Invalid input"), sayfa 15 konu seçtirirken şema 10'da
+      kesiyordu (`lib/limits.ts` ile tek kaynağa bağlandı).
+      MOTOR — migration `20260901100000_ilgi_onerileri.sql`.
+      `profiles.interests` bu sorguya kadar ÜÇ YERDE yazılıp SIFIR yerde
+      okunuyordu; depoda ÜÇÜNCÜ ölü ayar (profile_visibility,
+      show_participation, interests). Zincir: interests → `topics` (birebir,
+      o etiket için hiç sonuç yoksa önek) → `topic_category_map` → aynı
+      kategorideki konular → `community_topics`. SECURITY INVOKER: zincirin
+      dört halkası da `USING (true)` politikalı, aşılacak duvar yok.
+      KATEGORİ DÜZEYİNDE DURULUYOR: ölçüldü, konu düzeyinde birebir
+      eşleştirme sıfır dönüyor (kullanıcı ilgilerinin çözüldüğü konular
+      hiçbir toplulukta kullanılmıyor).
+      İKİ KAPI, ikisi de ölçümle doğrulandı: JOKER — `%` kaçırılmazsa tek
+      etiket 571 konunun tamamıyla eşleşiyor; AYIRT EDİCİLİK — onaylı
+      katalogun yarısından fazlasına ulaşan konu kategorisi düşer (bugün
+      yalnızca 'sosyal', 3/5), eşik verinin kendisinden hesaplandığı için
+      katalog büyüdükçe gevşiyor.
+      İKİ AÇIK YÜKLEM ZORUNLU (ikisi de kanıtlandı): `profiles`'ta
+      `id = auth.uid()` — politika yöneticiye tüm satırları açıyor, yüklemsiz
+      hâlde başka kullanıcının ilgi alanı eşleştirmeye karışıyordu;
+      `communities`'te `status = 'approved'` — politika kurucuya kendi
+      pending kaydını gösteriyor.
+      YÜZEY TOPLULUK, ETKİNLİK DEĞİL: ölçüm gününde yaklaşan etkinlik sayısı
+      SIFIR (8 etkinliğin 8'i geçmişte), etkinlik üstüne kurulan her
+      kişiselleştirme %100 boş dönerdi.
+      DÜRÜSTLÜK YARISI: ayarlar sayfasının "size yakın toplulukları önerelim"
+      vaadi yapılana daraltıldı, `match_distance_km`'ye "yakında" rozeti
+      (koordinat yok, mesafe hesaplanamıyor), ve ana sayfaya davet kartı —
+      ilgi alanları sayfasına depoda TEK link vardı (ayarlar menüsünün 7.
+      maddesi) ve kayıt akışı hiç sormuyordu.
+      KAPSAM DIŞI: `communities.category` üzerinden ikinci kol (kullanıcı
+      kararı — 14'lü kod taksonomisi ile 25'li DB taksonomisi arasında elle
+      eşleme gerektiriyordu; bedeli konusuz toplulukların görünmemesi),
+      taksonomi birleştirme, mesafe/konum eşleştirmesi, keşfet yüzeyi.
 - [ ] (Talebi kanıtlanırsa) kategori derinlik modülleri
 
 ---
