@@ -185,6 +185,12 @@ export default async function EventPage({
   const isOrganizer = user?.id === event.organizer_id
   const canManage = isOrganizer || isCommunityModerator
 
+  // seri_disina_alindi_at doluysa bu etkinlik artık serinin temsilcisi
+  // değil, kendi kartı var. series_id damga sonrasında da dolu kalıyor —
+  // "bu etkinlik hâlâ aktif bir serinin üyesi mi" sorusunun tek doğru
+  // cevabı bu bayrak; aşağıdaki filtre ve Seri bloğu ikisi de buna bağlı.
+  const seriAktif = Boolean(event.series_id) && !event.seri_disina_alindi_at
+
   // Topluluğun diğer yaklaşan etkinlikleri — kenar kolonundaki liste için
   // (Luma'daki "Upcoming Events" karşılığı). Bu etkinlik hariç, en yakın 4.
   // Vitrin seri başına tek satır verdiği için bulunduğumuz serinin temsilcisi
@@ -200,15 +206,16 @@ export default async function EventPage({
         .limit(4)
     : { data: [] as any[] }
 
+  // Yalnızca AKTİF bir serideysek eleriz — kopmuş etkinlikte series_id hâlâ
+  // dolu ama seri bloğu (Seri satırı + sonraki buluşmalar) hiç gösterilmiyor;
+  // eleme de yapılırsa topluluğun serisiz başka etkinliği yoksa panel
+  // tamamen boşalıp seriye dönüş yolu kalmıyordu.
   const otherEvents = (otherEventsData ?? []).filter(
-    (e) => !event.series_id || e.series_id !== event.series_id
+    (e) => !seriAktif || e.series_id !== event.series_id
   )
 
   // Seri rozeti: frekans + kalan buluşma sayısı. Ayrı bir sayım yazmak
   // yerine aynı seri_kalanlar RPC'si tek elemanlı diziyle çağrılıyor.
-  // seri_disina_alindi_at doluysa bu etkinlik artık serinin temsilcisi
-  // değil, kendi kartı var — Seri bloğu hiç sorgulanmıyor.
-  const seriAktif = Boolean(event.series_id) && !event.seri_disina_alindi_at
   const { data: seriKalanRows, error: seriKalanError } = seriAktif
     ? await supabase.rpc('seri_kalanlar', { p_series_ids: [event.series_id] })
     : { data: [], error: null }

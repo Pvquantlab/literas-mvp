@@ -220,10 +220,13 @@ export default function EventCard({ event, showCommunityName = true, seriKalan, 
           padding:5px 12px 5px 6px; border-radius:999px;
           max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
         }
+        /* flex-basis:100% rozeti kendi satirina zorluyor — boylece
+           rozetsiz kartlarin duzeni (.ec-when tabani) hic degismiyor. */
         .ec-seri {
           display:inline-flex; align-items:center;
           font-size:12px; font-weight:600; color:var(--card-fg-dim);
           white-space:nowrap;
+          flex-basis:100%;
         }
         .ec-title {
           font-family:var(--font-serif), Georgia, serif;
@@ -245,9 +248,7 @@ export default function EventCard({ event, showCommunityName = true, seriKalan, 
         }
         .ec-cal b { font-family:var(--font-mono), monospace; font-size:9px; letter-spacing:.08em; color:var(--card-fg-muted); }
         .ec-cal i { font-style:normal; font-size:18px; font-weight:700; color:var(--card-fg-strong); }
-        /* flex:1 1 0% idi: taban 0 oldugu icin rozet eklendiginde tum
-           negatif boslugu bu emiyor ve tarih satiri sifira iniyordu. */
-        .ec-when { display:flex; flex-direction:column; min-width:0; flex:1 1 auto; }
+        .ec-when { display:flex; flex-direction:column; min-width:0; flex:1; }
         .ec-when b { font-size:13.5px; font-weight:600; color:var(--card-fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .ec-when i { font-style:normal; font-size:12px; color:var(--card-fg-muted); }
 
