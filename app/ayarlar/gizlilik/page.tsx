@@ -59,9 +59,14 @@ export default async function GizlilikPage({
             <span style={{ flex: 1 }}>
               <span style={{ ...labelStyle, marginBottom: 4 }}>Katılım bilgim profilimde görünsün</span>
               <span style={{ display: "block", fontSize: 13, color: "var(--muted)" }}>
-                Kapalıyken kaç topluluğa üye olduğun, kaç buluşma düzenlediğin ve
-                katıldığın buluşmalar başkalarına görünmez. Sen kendi profilinde
-                her zaman görürsün.
+                Kapalıyken <strong>profil sayfanda</strong> katılım sayaçların,
+                toplulukların ve etkinlik listelerin başkalarına görünmez. Sen
+                kendi profilinde her zaman görürsün.
+              </span>
+              <span style={{ display: "block", fontSize: 12.5, color: "var(--muted)", marginTop: 6 }}>
+                Bu ayar profil sayfanı kapsar. Katıldığın bir etkinliğin
+                katılımcı listesinde ya da üyesi olduğun bir topluluğun üye
+                listesinde adın görünmeye devam eder.
               </span>
             </span>
             <input

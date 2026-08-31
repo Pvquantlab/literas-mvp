@@ -1560,11 +1560,26 @@ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public, pg_temp
 AS $function$
 DECLARE
   v_tercih boolean;
+  v_aktif boolean;
+  v_gorunurluk text;
 BEGIN
-  SELECT COALESCE(pr.show_participation, true) INTO v_tercih
+  SELECT COALESCE(pr.show_participation, true),
+         COALESCE(pr.account_active, true),
+         COALESCE(pr.profile_visibility, 'public')
+    INTO v_tercih, v_aktif, v_gorunurluk
     FROM profiles pr WHERE pr.id = p_user_id;
 
   IF NOT FOUND THEN RETURN; END IF;
+
+  -- VİTRİNLE AYNI KAPI (public_profiles WHERE koşulu). Bu olmadan sayfa yolu
+  -- kapalıyken RPC yolu AÇIK kalıyordu: gizli/dondurulmuş profilin sayaçları
+  -- anon'a sızıyordu — hem de anon'un rsvps'e HİÇ erişemediği veriden türeyen
+  -- sayılar. Hiç satır dönmüyor: "profil yok" ile ayırt edilemez.
+  IF (NOT v_aktif OR v_gorunurluk <> 'public')
+     AND p_user_id IS DISTINCT FROM auth.uid()
+     AND NOT public.is_admin() THEN
+    RETURN;
+  END IF;
 
   -- Sahibi ve yönetici istisna: kendi karnesini görebilmeli.
   IF NOT v_tercih AND p_user_id IS DISTINCT FROM auth.uid() AND NOT public.is_admin() THEN

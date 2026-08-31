@@ -24,18 +24,32 @@ export default async function ProfilePage({
 
   if (!profile) notFound()
 
-  const { data: memberships } = await supabase
+  const { data: memberships, error: uyelikHata } = await supabase
     .from('community_members')
-    .select('role, community:communities(id, name, city, category, cover_image_url)')
+    // !inner + status süzgeci ZORUNLU: sayaç (katilim_karnesi) yalnızca ONAYLI
+    // toplulukları sayıyor. Süzgeç olmadan RLS kurucuya onay bekleyen kaydı da
+    // veriyordu ve yeni bir kurucu kendi profilinde "Topluluk 0" yazarken
+    // hemen altında kartı görüyordu. Yan fayda: gömülü ilişki artık null
+    // dönemiyor (null'da patlayan m.community.id kaynağı kurudu).
+    .select('role, community:communities!inner(id, name, city, category, cover_image_url)')
     .eq('user_id', id)
     .eq('status', 'approved')
+    .eq('community.status', 'approved')
     .order('created_at', { ascending: false })
 
-  const { data: organizedEvents } = await supabase
+  const { data: organizedEvents, error: etkinlikHata } = await supabase
     .from('events')
-    .select('id, title, event_date, location, cover_image_url, series_id, community:communities(name, category)')
+    // Sayaç yalnızca onaylı topluluğun (ya da topluluğu olmayan) etkinliklerini
+    // sayıyor; liste de aynı kümeyi göstermeli. Süzgeç JS tarafında: !inner
+    // community_id NULL olan etkinlikleri elerdi, oysa sayaç onları sayıyor.
+    .select('id, title, event_date, location, cover_image_url, series_id, community_id, community:communities(name, category, status)')
     .eq('organizer_id', id)
     .order('event_date', { ascending: false })
+
+  // Sorgu hatasını yutma (app/page.tsx:139'daki ders): hata olsa bile boş liste
+  // görünüyordu ve ekranda "veri yok" yazıyordu, gerçekte sorgu patlamıştı.
+  if (uyelikHata) console.error('[profil] uyelikler alinamadi:', uyelikHata)
+  if (etkinlikHata) console.error('[profil] duzenlenen etkinlikler alinamadi:', etkinlikHata)
 
   // DİKKAT: anon rolünün rsvps üzerinde HİÇ yetkisi yok (yalnızca
   // authenticated'a kolon bazlı SELECT verilmiş). Giriş yapmamış ziyaretçide
@@ -80,6 +94,9 @@ export default async function ProfilePage({
   // yazıyordu. Sıra korunuyor: her seriden listedeki İLK satır temsilci.
   const gorulenSeri = new Set<string>()
   const organizeTemsilciler = (organizedEvents ?? []).filter((e) => {
+    // Sayaçla AYNI görünürlük kuralı: topluluğu yok ya da topluluğu onaylı.
+    const top = e.community as unknown as { status?: string } | null
+    if (e.community_id !== null && top?.status !== 'approved') return false
     const anahtar = e.series_id ?? e.id
     if (gorulenSeri.has(anahtar)) return false
     gorulenSeri.add(anahtar)
@@ -261,7 +278,9 @@ export default async function ProfilePage({
           </section>
         )}
 
-      {/* Topluluklar */}
+      {/* Topluluklar — karne kapalıysa çizilmiyor: sayıyı gizleyip listeyi
+          açık bırakmak sahte koruma olurdu, sayı kartlar sayılarak geri gelir. */}
+      {karneGorunur && (
       <section style={{ marginBottom: '48px' }}>
         <h2 className="serif" style={sectionTitleStyle}>Toplulukları</h2>
         {memberships && memberships.length > 0 ? (
@@ -348,8 +367,11 @@ export default async function ProfilePage({
           <p style={emptyLineStyle}>Henüz bir topluluğa katılmadı.</p>
         )}
       </section>
+      )}
 
-      {/* Düzenlediği etkinlikler */}
+      {/* Düzenlediği etkinlikler — aynı gerekçe: sayaç gizliyken liste
+          "Düzenlediği" sayısını birebir geri verirdi. */}
+      {karneGorunur && (
       <section style={{ marginBottom: '48px' }}>
         <h2 className="serif" style={sectionTitleStyle}>Düzenlediği etkinlikler</h2>
         {organizeTemsilciler.length > 0 ? (
@@ -372,6 +394,7 @@ export default async function ProfilePage({
           <p style={emptyLineStyle}>Henüz bir etkinlik düzenlemedi.</p>
         )}
       </section>
+      )}
 
       {/* Katıldığı etkinlikler — karne kapalıysa bölüm hiç çizilmiyor.
           Sayaçla AYNI diziyi kullanıyor: sayı 3 derken liste 36 satır
