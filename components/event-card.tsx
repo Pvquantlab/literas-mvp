@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { frekansEtiketi } from '@/lib/seri'
 import { byValue, trLower } from '@/lib/categories'
 import { GlossyIcon } from '@/components/category-art'
 
@@ -164,9 +165,8 @@ export default function EventCard({ event, showCommunityName = true, seriKalan, 
             <span className={`ec-live ${st.tone}`}>{st.label}</span>
             {seriKalan != null && seriKalan > 0 && (
               <span className="ec-seri">
-                {frekans === 'haftalik' ? 'haftalık'
-                  : frekans === 'iki_haftalik' ? 'iki haftada bir'
-                  : 'aylık'} · {seriKalan} buluşma
+                {frekansEtiketi(frekans) ? `${frekansEtiketi(frekans)} · ` : ''}
+                {seriKalan} buluşma
               </span>
             )}
           </div>

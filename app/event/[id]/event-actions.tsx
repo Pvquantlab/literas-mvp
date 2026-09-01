@@ -115,9 +115,15 @@ export default function EventActions({
       ) : (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <span style={{ color: 'var(--muted)' }}>emin misin? katılımcılara iptal maili gider</span>
+          {/* role="radiogroup" + aria-labelledby: görünür etiket vardı ama
+              ekran okuyucu kullanıcısı üç seçeneği bağımsız radyo olarak
+              duyuyor, NEYİN kapsamı olduğunu duymuyordu. fieldset/legend
+              yerine ARIA: fieldset tarayıcının kendi kenarlık/dolgu stilini
+              getiriyor ve bu depoda tasarım dili ÖLÇÜLMÜŞ durumda. */}
           {seriesId && (
-            <span style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <span style={{ fontWeight: 600, color: 'var(--ink)' }}>Bu iptal neyi kapsasın?</span>
+            <span role="radiogroup" aria-labelledby="iptal-kapsam-basligi"
+                  style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <span id="iptal-kapsam-basligi" style={{ fontWeight: 600, color: 'var(--ink)' }}>Bu iptal neyi kapsasın?</span>
               {([
                 ['tek', 'Yalnızca bu buluşma'],
                 ['sonrakiler', 'Bu buluşma ve sonrakiler'],
@@ -133,6 +139,7 @@ export default function EventActions({
                     value={deger}
                     checked={kapsam === deger}
                     onChange={() => setKapsam(deger)}
+                    disabled={loading}
                     style={{ width: '16px', height: '16px', padding: 0, margin: 0, flex: '0 0 auto' }}
                   />
                   {etiket}
@@ -180,12 +187,21 @@ export default function EventActions({
         </span>
       )}
 
+      {/* role="alert" örtük assertive taşır ve DOM'a girdiği anda okunur,
+          koşullu render sorun değil. */}
       {error && (
-        <p style={{ color: 'var(--coral-deep)', fontSize: '13px', width: '100%', marginTop: '8px' }}>{error}</p>
+        <p role="alert" style={{ color: 'var(--coral-deep)', fontSize: '13px', width: '100%', marginTop: '8px' }}>{error}</p>
       )}
       {uyari && (
-        <p style={{ color: 'var(--ink)', fontSize: '13px', width: '100%', marginTop: '8px' }}>{uyari}</p>
+        <p aria-hidden="true" style={{ color: 'var(--ink)', fontSize: '13px', width: '100%', marginTop: '8px' }}>{uyari}</p>
       )}
+      {/* Bilgilendirme (polite) bölgesi KOŞULSUZ mount'lu olmak zorunda:
+          `{uyari && <p role="status">}` biçiminde bölge içeriğiyle AYNI ANDA
+          DOM'a girer ve çoğu ekran okuyucu polite duyuruyu kaçırır — bölgenin
+          önce var olup sonra DEĞİŞMESİ gerekiyor. Görünür kopya aria-hidden,
+          metin iki kez okunmasın diye. .sr-only position:absolute olduğu için
+          (globals.css:640) esnek satıra hiçbir boşluk eklemiyor. */}
+      <p className="sr-only" role="status" aria-live="polite">{uyari}</p>
     </div>
   )
 }

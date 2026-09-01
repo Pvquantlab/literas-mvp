@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { frekansEtiketi } from '@/lib/seri'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { byValue } from '@/lib/categories'
@@ -343,9 +344,9 @@ export default async function EventPage({
               <div>
                 <dt>R.</dt><dd>Seri</dd>
                 <dd>
-                  {seriInfo.frekans === 'haftalik' ? 'haftalık'
-                    : seriInfo.frekans === 'iki_haftalik' ? 'iki haftada bir'
-                    : 'aylık'} · {seriInfo.kalan} buluşma
+                  {frekansEtiketi(seriInfo.frekans)
+                    ? `${frekansEtiketi(seriInfo.frekans)} · `
+                    : ''}{seriInfo.kalan} buluşma
                 </dd>
               </div>
             )}

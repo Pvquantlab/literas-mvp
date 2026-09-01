@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { frekansEtiketi } from '@/lib/seri'
 import { createClient } from '@/lib/supabase-server'
 import { sendBulkEmail, escapeHtml } from '@/lib/email'
 import { eventSchema, seriOlusturSchema } from '@/lib/validations'
@@ -106,8 +107,10 @@ export async function POST(req: Request) {
     // gelen tekrar cagri (cift tiklama, ag yeniden denemesi) veritabaninda
     // hicbir sey uretmiyor; posta kutusunda da uretmemeli.
     if (seri.yeni_mi && seriEmails.length > 0) {
-      const sikligi = tekrar.frekans === 'haftalik' ? 'haftalık'
-        : tekrar.frekans === 'iki_haftalik' ? 'iki haftada bir' : 'aylık'
+      // lib/seri.ts ile TEK KAYNAK. Bilinmeyen frekansta null dönüyor ve
+      // cümle sıfatsız kuruluyor ("12 buluşma") — Türkçede sorunsuz bozunuyor,
+      // o yüzden burada yedek metin seçmek gerekmedi.
+      const sikligi = frekansEtiketi(tekrar.frekans)
       const safeTitle = escapeHtml(title)
       const safeLocation = escapeHtml(location)
       const ilkTarih = formatDateTimeLong(event_date.toISOString())
@@ -121,7 +124,7 @@ export async function POST(req: Request) {
         <p style="font-style: italic; color: #B8541A;">No. 0001</p>
         <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">${safeTitle}</h1>
         <p style="color: #1F2A24;">
-          ${escapeHtml(sikligi)} tekrarlanan <strong>${seri.uretilen}</strong> buluşma.
+          ${sikligi ? escapeHtml(sikligi) + ' tekrarlanan ' : ''}<strong>${seri.uretilen}</strong> buluşma.
           İlki: ${ilkTarih}
         </p>
         <p style="color: #1F2A24;">${safeLocation}</p>

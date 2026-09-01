@@ -423,6 +423,14 @@ CREATE INDEX IF NOT EXISTS idx_events_series ON public.events USING btree (serie
 -- seri boyu kadar artıyor ve rsvps'te user_id ile BAŞLAYAN hiçbir indeks yoktu.
 CREATE INDEX IF NOT EXISTS idx_rsvps_user ON public.rsvps USING btree (user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_waitlist_promotion_pending ON public.waitlist USING btree (promoted_at) WHERE ((promoted_at IS NOT NULL) AND (promotion_email_sent_at IS NULL));
+
+-- Trigger'ın (etkinlik_silinince_kuyrugu_temizle) taradığı ifade indekssizdi
+-- ve email_outbox gönderilmiş satırları HİÇ budamıyor: tarama maliyeti sürekli
+-- büyüyor. Kısmi olduğu için yalnızca BEKLEYEN satırları kapsıyor.
+-- İFADE trigger'ın yüklemiyle BİREBİR aynı olmalı: `::uuid`li hâli eşleşmez.
+-- Ölçüm (300.000 gönderilmiş + az bekleyen): 43,997 ms -> 1,794 ms, indeks 16 kB.
+CREATE INDEX IF NOT EXISTS email_outbox_bekleyen_event_idx
+  ON public.email_outbox ((payload->>'event_id')) WHERE (sent_at IS NULL);
 CREATE INDEX IF NOT EXISTS locations_parent_idx ON public.locations USING btree (parent_id);
 CREATE INDEX IF NOT EXISTS locations_search_idx ON public.locations USING btree (search_text);
 CREATE INDEX IF NOT EXISTS locations_type_idx ON public.locations USING btree (type);
@@ -1803,6 +1811,56 @@ SELECT c.id, c.name, c.city, c.category, c.cover_image_url, c.member_count,
           c.member_count DESC NULLS LAST, c.created_at DESC
  LIMIT greatest(1, least(p_limit, 12));
 $function$;
+
+-- -----------------------------------------------------------------------------
+-- etkinlik_silinince_kuyrugu_temizle — silinen etkinliğin bekleyen postaları
+-- -----------------------------------------------------------------------------
+-- Etkinlik silindiğinde `email_outbox`'ta o etkinliğe ait gönderilmemiş
+-- satırlar kalıyordu: kullanıcı iptal mailinden SONRA "Yarın: X" alıyor ve
+-- bağlantı silinmiş uuid'ye 404 dönüyordu. İki boşluk vardı — `seri_sil`
+-- yalnızca 'reminder' temizliyordu ('promotion' da event_id taşıyor) ve
+-- TEKİL silme yolu hiç temizlemiyordu.
+--
+-- Trigger, RPC değil: email_outbox'ın sıfır politikası ve sıfır GRANT'i var,
+-- yalnızca SECURITY DEFINER dokunabiliyor; RPC olsaydı "kimin hangi etkinliğin
+-- kuyruğunu silme hakkı var" sorusu elle çözülecekti. Trigger'da o soru yok.
+--
+-- Ölçüt `event_id`: bu anahtarı YALNIZCA reminder ve promotion taşıyor.
+-- event_cancel/event_change/join_request taşımıyor — kritik, çünkü `seri_sil`
+-- iptal bildirimini silmeden ÖNCE kuyruğa yazıyor.
+-- Ayrıntı: migrations/20260901140000_kuyruk_hijyeni.sql
+CREATE OR REPLACE FUNCTION public.etkinlik_silinince_kuyrugu_temizle()
+RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp
+AS $function$
+BEGIN
+  -- ÇEVRİM YÖNÜ HAYATİ: metni uuid'ye DEĞİL, uuid'yi metne çeviriyoruz.
+  -- Ters yönde (`(payload->>'event_id')::uuid`) kuyruğa uuid olmayan tek bir
+  -- event_id düşse 22P02 bu trigger'ın İÇİNDE patlar ve `DELETE FROM events`
+  -- ifadesini komple geri alır: tekil iptal, seri_sil, topluluk silme ve
+  -- hesap silme (events CASCADE) dâhil HEPSİ 500 döner. Bu yönde bozuk değer
+  -- yalnızca EŞLEŞMEZ.
+  -- Önceki `payload ? 'event_id'` koruması İŞE YARAMIYORDU: WHERE içindeki
+  -- AND'ler için kısa devre garantisi yok, planlayıcı çevrimi korumadan önce
+  -- koşabilir. Anahtar yoksa ->> zaten NULL döner ve IN eşleşmez.
+  DELETE FROM email_outbox o
+   WHERE o.sent_at IS NULL
+     AND o.payload->>'event_id' IN (SELECT s.id::text FROM silinen s);
+  RETURN NULL;
+END
+$function$;
+
+-- Trigger fonksiyondan SONRA tanımlanmak ZORUNDA: bu dosya taze bir veritabanına
+-- baştan sona uygulanıyor, sıra bozulursa CREATE TRIGGER var olmayan fonksiyonu
+-- arar ve şema kurulumu patlar.
+-- FOR EACH STATEMENT + geçiş tablosu: seri_sil 26 tekrarı tek DELETE ile siler,
+-- satır bazlı trigger 26 kez koşardı.
+DROP TRIGGER IF EXISTS events_kuyruk_temizligi ON public.events;
+CREATE TRIGGER events_kuyruk_temizligi
+  AFTER DELETE ON public.events
+  REFERENCING OLD TABLE AS silinen
+  FOR EACH STATEMENT
+  EXECUTE FUNCTION public.etkinlik_silinince_kuyrugu_temizle();
 
 REVOKE ALL ON FUNCTION public.seri_kalanlar(uuid[]) FROM PUBLIC;
 -- anon da alıyor: ana sayfa ve keşfet giriş yapmamış kullanıcıya da açık.

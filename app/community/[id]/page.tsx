@@ -217,6 +217,15 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
       .gte('event_date', ayBasiIso)
       .lt('event_date', aySonuIso),
   ])
+  // Sorgu hatası YUTULMAZ. Üçü de `.data ?? []` ile sessizce boş listeye
+  // düşüyordu: RLS reddi ya da şema hatası, "bu toplulukta hiç etkinlik yok"
+  // diye görünüyordu ve loglarda hiçbir iz kalmıyordu. Aynı ders bu depoda
+  // katılım karnesinde pahalıya öğrenildi (anon'un rsvps yetkisi yoktu,
+  // sayaç sessizce 0 yazıyordu).
+  if (upcomingRes.error) console.error('[topluluk] yaklasan etkinlikler alinamadi:', upcomingRes.error)
+  if (pastRes.error) console.error('[topluluk] gecmis etkinlikler alinamadi:', pastRes.error)
+  if (takvimRes.error) console.error('[topluluk] takvim alinamadi:', takvimRes.error)
+
   const upcoming = upcomingRes.data ?? []
   const past = pastRes.data ?? []
 

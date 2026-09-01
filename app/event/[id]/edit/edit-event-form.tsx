@@ -56,7 +56,12 @@ export default function EditEventForm({ event }: { event: any }) {
           (data.ayrildi > 0 ? '. Bu buluşma seriden ayrıldı.' : '') +
           // Kullanicinin o an baktigi bulusma elle duzenlenmisse toplu
           // guncelleme TAM DA ONU atliyor; sayfa degismemis gorunur.
-          (data.bu_atlandi ? '. Baktığın buluşma elle düzenlendiği için atlandı — onu tek tek güncelleyebilirsin.' : '')
+          (data.bu_atlandi ? '. Baktığın buluşma elle düzenlendiği için atlandı — onu tek tek güncelleyebilirsin.' : '') +
+          // Tarih toplu dalda SUNUCUDA düşürülüyor (api/event/[id]/route.ts:
+          // "Gövdedeki event_date bu dalda YOK SAYILIR"). Kullanıcı tarih
+          // alanını doldurmuş olabilir; söylemezsek 12 buluşmanın saatini
+          // değiştirdiğine inanarak sayfadan ayrılır.
+          '. Tarih değiştirilmedi — toplu düzenleme tarihe dokunmaz.'
       )
       setLoading(false)
       router.refresh()
@@ -169,9 +174,11 @@ export default function EditEventForm({ event }: { event: any }) {
         />
       </div>
 
+      {/* bkz. event-actions.tsx: görünür etiket yeterli değil, grubun adı
+          programatik olarak da bağlanmalı. */}
       {event.series_id && (
-        <div style={groupStyle}>
-          <span style={labelStyle}>Bu değişiklik neyi kapsasın?</span>
+        <div role="radiogroup" aria-labelledby="degisiklik-kapsam-basligi" style={groupStyle}>
+          <span id="degisiklik-kapsam-basligi" style={labelStyle}>Bu değişiklik neyi kapsasın?</span>
           {([
             ['tek', 'Yalnızca bu buluşma'],
             ['sonrakiler', 'Bu buluşma ve sonrakiler'],
@@ -179,7 +186,7 @@ export default function EditEventForm({ event }: { event: any }) {
           ] as const).map(([deger, etiket]) => (
             <label
               key={deger}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: busy ? 'wait' : 'pointer', fontSize: '14px' }}
             >
               <input
                 type="radio"
@@ -187,13 +194,30 @@ export default function EditEventForm({ event }: { event: any }) {
                 value={deger}
                 checked={kapsam === deger}
                 onChange={() => setKapsam(deger)}
+                // Formdaki DİĞER HER kontrol busy ile kapanıyordu; kapsam
+                // radyoları açık kalıyordu. Uçuştaki istek etkilenmiyor
+                // (closure değeri çağrı anında yakalıyor) ama yıkıcı bir
+                // istek uçarken kapsamın girdi kabul etmesi kullanıcıya
+                // "hasarı sınırladım" yanılsaması veriyor.
+                disabled={busy}
+                aria-describedby={deger === 'tek' ? undefined : 'kapsam-toplu-aciklama'}
                 style={{ width: '16px', height: '16px', padding: 0, margin: 0, flex: '0 0 auto' }}
               />
               {etiket}
             </label>
           ))}
+          {/* KALICI açıklama. İki toplu seçenek, grubun DIŞINDAKİ "Tarih ve
+              saat" alanını kapatıyor — uzaktan bir durum değişikliği, sıfır
+              duyuru. Açıklamayı ALANA bağlamak işe yaramaz: alan disabled,
+              yani odaklanamıyor ve açıklaması hiç okunmaz. Radyonun kendisine
+              bağlıyoruz ki kullanıcı seçeneğe GELDİĞİ anda sonucu duysun,
+              seçtikten sonra değil. Koşulsuz DOM'da: seçime bağlı belirip
+              kaybolan bir düğüm güvenilir duyurulmuyor. */}
+          <span id="kapsam-toplu-aciklama" className="sr-only">
+            Toplu düzenlemede tarih değiştirilemez; elle düzenlenmiş buluşmalar atlanır.
+          </span>
           {kapsam !== 'tek' && (
-            <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
+            <span aria-hidden="true" style={{ fontSize: '13px', color: 'var(--muted)' }}>
               Toplu düzenlemede tarih değiştirilemez — serinin ritmini
               değiştirmek ayrı bir işlem. Elle düzenlenmiş buluşmalar atlanır.
             </span>
@@ -215,12 +239,21 @@ export default function EditEventForm({ event }: { event: any }) {
         />
       </div>
 
+      {/* role="alert" örtük assertive taşır ve DOM'a girdiği anda okunur,
+          koşullu render sorun değil. */}
       {error && (
-        <p style={{ color: 'var(--seal)', fontSize: '0.9rem' }}>{error}</p>
+        <p role="alert" style={{ color: 'var(--seal)', fontSize: '0.9rem' }}>{error}</p>
       )}
       {sonuc && (
-        <p style={{ color: 'var(--ink)', fontSize: '0.9rem' }}>{sonuc}</p>
+        <p aria-hidden="true" style={{ color: 'var(--ink)', fontSize: '0.9rem' }}>{sonuc}</p>
       )}
+      {/* Bilgilendirme (polite) bölgesi KOŞULSUZ mount'lu olmak zorunda:
+          `{sonuc && <p role="status">}` biçiminde bölge içeriğiyle AYNI ANDA
+          DOM'a girer ve çoğu ekran okuyucu polite duyuruyu kaçırır — bölgenin
+          önce var olup sonra DEĞİŞMESİ gerekiyor. Görünür kopya aria-hidden,
+          metin iki kez okunmasın diye. .sr-only position:absolute olduğu için
+          (globals.css:640) esnek sütuna hiçbir boşluk eklemiyor. */}
+      <p className="sr-only" role="status" aria-live="polite">{sonuc}</p>
 
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
         <button type="submit" disabled={busy} className="btn-primary">

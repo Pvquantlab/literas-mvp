@@ -59,3 +59,92 @@ Kendi RPC'sini, rota dalını ve arayüz denetimini gerektiriyor.
 - `CLAUDE.md`'deki tarih kuralına "biçimlendirme için" ibaresi eklendi —
   `timestamptz` serileştirmesi için `toISOString()` zararsız ve depoda 20+
   emsali var; kural metni her incelemede yanlış alarm üretiyordu.
+
+
+---
+
+# Kapatma turu (01.09.2026, commit sonrası)
+
+## Kapatıldı
+
+- **Kuyruk hijyeni** — `seri_sil` yalnızca `reminder` temizliyordu. Ölçerken
+  daha büyük ve BELGELENMEMİŞ bir boşluk çıktı: **tekil etkinlik silme yolu
+  kuyruğu hiç temizlemiyordu**. İkisi birden `events` üzerine konan
+  `AFTER DELETE ... FOR EACH STATEMENT` trigger'ıyla kapandı
+  (migration `20260901140000`). Trigger seçilme sebebi: `email_outbox`'ın
+  sıfır politikası ve sıfır GRANT'i var, RPC olsaydı "kimin hangi etkinliğin
+  kuyruğunu silme hakkı var" sorusunu elle çözmek gerekirdi.
+  Ölçüt `event_id` — bu anahtarı yalnızca `reminder` ve `promotion` taşıyor,
+  `event_cancel` taşımıyor; yoksa trigger `seri_sil`'in silmeden ÖNCE yazdığı
+  iptal maillerini silerdi. Beş maddelik geri sarılan blokla doğrulandı.
+- **Görev 9 · K1** — `role="radiogroup"` + `aria-labelledby` iki forma da
+  eklendi. `<fieldset><legend>` seçilmedi: tarayıcının kendi kenarlık/dolgu
+  stilini getiriyor, tasarım dili ölçülmüş durumda.
+- **Görev 9 · K3** — iptal formundaki radyolar artık `disabled={loading}`,
+  düzenleme formundakiler `disabled={busy}` (ilk turda ikincisi atlanmıştı;
+  formdaki diğer HER kontrol zaten `busy` ile kapanıyordu).
+- **WCAG 4.1.3 durum mesajları** — iptal/kaydetme sonucu ekran okuyucuya hiç
+  duyurulmuyordu. Hata dalı `role="alert"` aldı; bilgilendirme için `.sr-only`
+  + `role="status"` bölgesi KOŞULSUZ mount'lu (içerikle aynı anda DOM'a giren
+  polite bölge duyurulmuyor), görünür kopya `aria-hidden`. NOT: ekran
+  okuyucuyla ELLE doğrulanmadı — "duyuruluyor" diye yazmıyorum, yalnızca
+  yapının doğru olduğunu söylüyorum.
+- **Toplu kapsamın tarihi düşürdüğü** artık hem kalıcı bir `.sr-only`
+  açıklamayla radyolara bağlı (alan `disabled` olduğu için açıklamayı ALANA
+  bağlamak işe yaramaz — odaklanamıyor), hem de sonuç metninde yazıyor.
+  Öncesinde kullanıcı tarihi doldurup "tümü" seçiyor, sunucu tarihi sessizce
+  atıyor ve hiçbir yerde söylenmiyordu.
+- **Görev 11 · K10** — bilinmeyen frekans sessizce "aylık" yazıyordu; İKİ
+  değil **DÖRT** yerde birbirinden habersiz (`components/event-card.tsx`,
+  `app/event/[id]/page.tsx`, `components/upcoming-events.tsx` ve
+  `app/api/event/route.ts` seri duyuru maili). İlk turda ikisini bağlayıp
+  "tek kaynak" yazmıştım; inceleme kalan ikisini buldu. Dördü de `lib/seri.ts`e
+  bağlandı. Tanınmayan değerde `null` dönüyor ve arayüz frekansı YAZMIYOR;
+  duyuru mailinde cümle sıfatsız kuruluyor ("12 buluşma"), Türkçede sorunsuz
+  bozunduğu için yedek metin seçmek gerekmedi. Eksik bilgi, yanlış bilgiden
+  iyidir.
+- **Görev 11 · K7 (kısmen — belge yarı yanlıştı)** — `profile/[id]`'de iki
+  sorgunun `series_id` çektiği yazıyordu. Ölçüldü: `organizedEvents`'teki
+  KULLANILIYOR (seri katlaması, satır ~100). Yalnızca `rsvps` embed'indeki
+  ölüydü ("Katıldığı" listesi seriyi bilinçle katlamıyor) — o kaldırıldı.
+- **Görev 10 · `takvimRes` hatası yutuluyordu** — aynı dosyadaki diğer iki
+  sorgunun hatası da yutuluyordu; üçü de artık loglanıyor.
+
+## Kapatılmadı — gerekçesiyle
+
+- **"Seriye geri kat" eylemi** — kendi RPC'si, rota dalı ve arayüz denetimini
+  gerektiriyor. Bu turun kapsamındaki "ertelenmiş bulgu" değil, ayrı bir
+  özellik.
+- **`accent-color` / `appearance`** — belgenin kendi notu: tasarım dili
+  ÖLÇÜLMÜŞ olduğu için ölçmeden dokunulmamalı. Tarayıcıda ölçüm gerektiriyor
+  ve bu turda giriş yapmış yüzeylere erişemedim.
+- **Görev 1-4 k2/k4/k5b, TOCTOU, Görev 6 K2/K4, Görev 7 K1/K3, Görev 11 K9** —
+  hepsi `seri_sil`/`seri_guncelle`'nin 100+ satırlık gövdelerini yeniden
+  yazmayı ya da davranış kararı vermeyi gerektiriyor. Hiçbirinin bugün
+  kullanıcıya görünen etkisi yok (canlıda sıfır seri var). O fonksiyonlara
+  bir sonraki gerçek dokunuşta toplu ele alınmalı.
+
+## Bu turun incelemesinden çıkan yeni defter maddeleri
+
+- **`seri_sil` içindeki çevrim hâlâ korumasız.** Trigger'ın çevrim yönü
+  düzeltildi ama `seri_sil`'in kendi satır içi `DELETE`'i hâlâ
+  `(payload->>'event_id')::uuid = ANY(v_idler)` kullanıyor
+  (`20260830120200`:255). O gövdeye dokunmak "bilinçli kapatılmayanlar"
+  listesinde. Bir sonraki dokunuşta hem çevrim yönü hem de yeni METİN
+  indeksiyle uyum (`email_outbox_bekleyen_event_idx` uuid ifadeli yükleme
+  eşleşmez) birlikte ele alınmalı.
+- **`email_outbox` gönderilmiş satırları hiç budanmıyor.** Tabloya dokunan
+  iki `DELETE` de `sent_at IS NULL` ile sınırlı. Kısmi indeks trigger tarafını
+  çözdü ama günde bir koşan `claim_email_outbox`'ın taraması duruyor.
+  `sent_at < now() - interval '90 days'` süpüren bakım işi ayrı bir iş.
+- **`login`/`signup` sayfalarındaki `<p role="status">`** bu turda düzeltilen
+  zayıflığın aynısını taşıyor: bölge içeriğiyle aynı anda mount ediliyor,
+  polite duyuru kaçabilir.
+- **Kenar çubuğuna taşma göstergesi ("+N daha").** Eklenirse kişisel şerit ile
+  kenar çubuğu arasındaki kapsam farkı gerçekten kapanır.
+- **SÜREÇ KUSURU: migration'lar dosyadan uygulanmıyor.** İnceleme yakaladı —
+  canlı defterde kayıt `20260831232330 kuyruk_hijyeni`, depodaki dosya
+  `20260901140000_kuyruk_hijyeni.sql`, ve canlı gövdenin yorumları ASCII'ye
+  çevrilmişti (MCP ile elle uygulandığı için). Yani depoyu düzeltmek üretimi
+  düzeltmiyor; bu turda ikisi de ayrı ayrı uygulandı ve `pg_get_functiondef`
+  ile doğrulandı. Kalıcı çözüm: migration'ları dosyadan uygulayan bir yol.
