@@ -247,10 +247,17 @@ export default async function HomePage({
     const [membershipRes, rsvpRes] = await Promise.all([
       // TEK KAYNAK. Eskiden bu sorgu .limit(6) ile YALNIZCA kenar çubuğu için
       // çekiliyor, üyelik kimlikleri için aşağıda İKİNCİ ve birebir aynı bir
-      // sorgu daha atılıyordu. İki liste ayrı kapsamdan beslendiği için
-      // 9 topluluğa üye kullanıcının kenar çubuğunda ADI HİÇ GEÇMEYEN bir
-      // topluluğun buluşması "topluluklarından" başlığı altında çıkabiliyordu.
-      // Limit artık sorguda değil, kenar çubuğunun kendi diliminde.
+      // sorgu daha atılıyordu. Artık tek sorgu: limit sorguda değil, kenar
+      // çubuğunun kendi diliminde (aşağıda .slice(0, 6)).
+      //
+      // DİKKAT — bu, kenar çubuğu ile "Senin için" şeridinin aynı KÜMEYE
+      // dayandığı anlamına GELMEZ: şerit `topluluklarim`'ın TAMAMINDAN, kenar
+      // çubuğu ilk 6'sından besleniyor ve sorguda .order() yok, yani o 6 keyfi
+      // bir 6. 6'dan fazla onaylı üyelikte kenar çubuğunda adı geçmeyen bir
+      // topluluğun buluşması şeritte çıkabilir — adı kartın üzerinde yazıyor
+      // (EventCard showCommunityName), o yüzden "tanımadığım topluluk" değil,
+      // "listeyi tam sanmıştım" kusuru. Kapatmak istenirse kenar çubuğuna
+      // taşma göstergesi ("+N daha") eklenmeli; `topluluklarim` KIRPILMAMALI.
       supabase
         .from('community_members')
         .select('community_id, community:communities(id, name)')
@@ -289,16 +296,24 @@ export default async function HomePage({
     // temiz bağlanıyor; ilgi alanı eşleştirmesi (serbest metin ↔ topics.id)
     // gerekmiyor — o ayrı bir iş.
     //
-    // SÜZGEÇ VARKEN KİŞİSELLEŞTİRME YOK. Eskiden bu şerit `activeCity`,
-    // `activeSlug` ve `activeQuery`'nin ÜÇÜNÜ birden görmezden geliyordu:
-    // kullanıcı Ankara'yı seçse bile İstanbul üyeliklerinin buluşmaları
-    // "Senin için" altında kalıyordu. Asıl kusur şehrin uygulanmaması değil,
-    // SÜZGECİN KAPSAMININ kullanıcının göremediği bir duruma (üyeliğinde
-    // yaklaşan buluşma var mı) göre değişmesiydi. Aynı kural az aşağıdaki
-    // ilgi alanı önerisinde de geçerli — iki bölüm tek kuralı paylaşıyor.
-    // Yan kazanç: süzgeç açıkken iki gidiş-dönüş hiç yapılmıyor.
+    // ŞEHİR SEÇİLİYKEN KİŞİSELLEŞTİRME YOK. Eskiden bu şerit `activeCity`'yi
+    // görmezden geliyordu: kullanıcı Ankara'yı seçse bile İstanbul
+    // üyeliklerinin buluşmaları "Senin için" altında kalıyordu. Asıl kusur
+    // şehrin uygulanmaması değil, SÜZGECİN KAPSAMININ kullanıcının göremediği
+    // bir duruma (üyeliğinde yaklaşan buluşma var mı) göre değişmesiydi.
+    //
+    // KAPI NEDEN `hasFilter` DEĞİL: yukarıdaki `eventQuery` YALNIZCA şehri
+    // uyguluyor; `q` ve `category` etkinlik sorgusuna hiç girmiyor. `hasFilter`
+    // ile kapatınca arama yapan kullanıcı kişiselleştirmeyi kaybediyor,
+    // karşılığında hiç daralmamış bir liste görüyordu — saf kayıp. Arama kutusu
+    // zaten "Topluluk ara..." (app/search-box.tsx) ve topluluk ızgarasını
+    // süzüyor; şeridin "topluluklarından" alt başlığı kendi kapsamını yazdığı
+    // için topluluk adı ararken yerinde durması yanıltıcı değil.
+    // Aşağıdaki ilgi alanı önerisi bölümü hâlâ `!hasFilter` kullanıyor — o kapı
+    // main'den geliyor, gevşetmek ayrı bir ürün kararı.
+    // Yan kazanç: şehir seçiliyken bir gidiş-dönüş hiç yapılmıyor.
     let seninIcin: typeof events = []
-    if (!hasFilter && topluluklarim.length > 0) {
+    if (!activeCity && topluluklarim.length > 0) {
       const { data: kisiselRes, error: kisiselHata } = await supabase
         .from('etkinlik_vitrin')
         .select(

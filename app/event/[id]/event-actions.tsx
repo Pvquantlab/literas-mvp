@@ -187,12 +187,21 @@ export default function EventActions({
         </span>
       )}
 
+      {/* role="alert" örtük assertive taşır ve DOM'a girdiği anda okunur,
+          koşullu render sorun değil. */}
       {error && (
-        <p style={{ color: 'var(--coral-deep)', fontSize: '13px', width: '100%', marginTop: '8px' }}>{error}</p>
+        <p role="alert" style={{ color: 'var(--coral-deep)', fontSize: '13px', width: '100%', marginTop: '8px' }}>{error}</p>
       )}
       {uyari && (
-        <p style={{ color: 'var(--ink)', fontSize: '13px', width: '100%', marginTop: '8px' }}>{uyari}</p>
+        <p aria-hidden="true" style={{ color: 'var(--ink)', fontSize: '13px', width: '100%', marginTop: '8px' }}>{uyari}</p>
       )}
+      {/* Bilgilendirme (polite) bölgesi KOŞULSUZ mount'lu olmak zorunda:
+          `{uyari && <p role="status">}` biçiminde bölge içeriğiyle AYNI ANDA
+          DOM'a girer ve çoğu ekran okuyucu polite duyuruyu kaçırır — bölgenin
+          önce var olup sonra DEĞİŞMESİ gerekiyor. Görünür kopya aria-hidden,
+          metin iki kez okunmasın diye. .sr-only position:absolute olduğu için
+          (globals.css:640) esnek satıra hiçbir boşluk eklemiyor. */}
+      <p className="sr-only" role="status" aria-live="polite">{uyari}</p>
     </div>
   )
 }

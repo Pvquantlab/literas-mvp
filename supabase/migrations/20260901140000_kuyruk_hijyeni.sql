@@ -34,12 +34,18 @@ RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp
 AS $function$
 BEGIN
+  -- ÇEVRİM YÖNÜ HAYATİ: metni uuid'ye DEĞİL, uuid'yi metne çeviriyoruz.
+  -- Ters yönde (`(payload->>'event_id')::uuid`) kuyruğa uuid olmayan tek bir
+  -- event_id düşse 22P02 bu trigger'ın İÇİNDE patlar ve `DELETE FROM events`
+  -- ifadesini komple geri alır: tekil iptal, seri_sil, topluluk silme ve
+  -- hesap silme (events CASCADE) dâhil HEPSİ 500 döner. Bu yönde bozuk değer
+  -- yalnızca EŞLEŞMEZ.
+  -- Önceki `payload ? 'event_id'` koruması İŞE YARAMIYORDU: WHERE içindeki
+  -- AND'ler için kısa devre garantisi yok, planlayıcı çevrimi korumadan önce
+  -- koşabilir. Anahtar yoksa ->> zaten NULL döner ve IN eşleşmez.
   DELETE FROM email_outbox o
    WHERE o.sent_at IS NULL
-     -- Anahtar yoksa satır bu etkinliğe ait değildir; `?` kontrolü aynı
-     -- zamanda ->> sonucunun uuid'ye çevrilmesini güvenceye alıyor.
-     AND o.payload ? 'event_id'
-     AND (o.payload->>'event_id')::uuid IN (SELECT s.id FROM silinen s);
+     AND o.payload->>'event_id' IN (SELECT s.id::text FROM silinen s);
   RETURN NULL;
 END
 $function$;
@@ -58,3 +64,14 @@ CREATE TRIGGER events_kuyruk_temizligi
 -- satırları erken siliyor, trigger kalanı topluyor. O fonksiyona bir sonraki
 -- dokunuşta düşürülmeli — tek başına 100 satırlık gövdeyi yeniden yazmak
 -- bu turda taşınacak riskten büyük.
+
+-- Trigger'ın (etkinlik_silinince_kuyrugu_temizle) taradığı ifade indekssizdi
+-- ve email_outbox gönderilmiş satırları HİÇ budamıyor: tarama maliyeti sürekli
+-- büyüyor. Kısmi olduğu için yalnızca BEKLEYEN satırları kapsıyor — satır
+-- gönderildi işaretlenince indeksten düşüyor.
+-- İFADE trigger'ın yüklemiyle BİREBİR aynı olmalı: `::uuid`li hâli eşleşmez.
+-- Ölçüm (300.000 gönderilmiş + az bekleyen, tablo 40 MB):
+--   indekssiz  Trigger events_kuyruk_temizligi: time=43.997
+--   indeksli   Trigger events_kuyruk_temizligi: time=1.794   (indeks 16 kB)
+CREATE INDEX IF NOT EXISTS email_outbox_bekleyen_event_idx
+  ON public.email_outbox ((payload->>'event_id')) WHERE (sent_at IS NULL);

@@ -173,16 +173,32 @@ kendiliğinden çözüleceği için ertelendi.
 
 - **#2 mükerrer üyelik sorgusu — KAPATILDI.** `membershipRes` tek kaynak oldu:
   `.limit(6)` sorgudan kalkıp kenar çubuğunun kendi `.slice(0, 6)`'sına indi,
-  `select`'e `community_id` eklendi ve ikinci sorgu silindi. Böylece kenar
-  çubuğu ile "Senin için" şeridi AYNI kümeden besleniyor — kenar çubuğunda adı
-  geçmeyen bir topluluğun buluşmasının "topluluklarından" altında çıkması artık
-  mümkün değil. `membershipRes`/`rsvpRes` hataları da artık loglanıyor.
-- **#3 şehir süzgeci — KAPATILDI, genelleştirilerek.** Kişisel şerit artık
-  `!hasFilter` kapısının arkasında, yani şehir/kategori/arama üçünü birden
-  görüyor. Asıl kusur şehrin uygulanmaması değil, süzgecin kapsamının
-  kullanıcının göremediği bir duruma göre değişmesiydi. İlgi alanı önerisi
-  bölümü de aynı kuralı kullanıyor — iki bölüm tek kural paylaşıyor.
-  Yan kazanç: süzgeç açıkken iki gidiş-dönüş hiç yapılmıyor.
+  `select`'e `community_id` eklendi ve ikinci sorgu silindi. Kazanç: bir
+  gidiş-dönüş eksildi, kenar çubuğundaki 6 artık kişisel şeridin beslendiği
+  kümenin deterministik ÖNEKİ. `membershipRes`/`rsvpRes` hataları da artık
+  loglanıyor.
+  **DÜZELTME —** ilk yazdığım "artık aynı kümeden besleniyor, adı geçmeyen
+  topluluk çıkamaz" cümlesi YANLIŞTI ve inceleme yakaladı. Kenar çubuğu hâlâ 6
+  ile sınırlı, kişisel şerit TÜM üyeliklerden besleniyor; sorguda `.order()` de
+  yok. 6'dan fazla onaylı üyeliği olan kullanıcıda kenar çubuğunda adı geçmeyen
+  bir topluluğun buluşması "topluluklarından" altında çıkabilir — adı kartın
+  üzerinde yazdığı için "tanımadığım topluluk" değil, "listeyi tam sanmıştım"
+  kusuru. Bu sınır eskiden de vardı, kaldırılmadı. Kapatmak istenirse kenar
+  çubuğuna taşma göstergesi ("+N daha") eklenmeli; `topluluklarim`
+  KIRPILMAMALI — kırpmak kullanıcının gerçek buluşmalarını gizler.
+  (Canlıda en yüksek onaylı üyelik 6, yani eşik tam sınırda: bir katılımla
+  tetiklenir.)
+- **#3 şehir süzgeci — KAPATILDI.** Kişisel şerit artık `!activeCity` kapısının
+  arkasında. Asıl kusur şehrin uygulanmaması değil, süzgecin kapsamının
+  kullanıcının göremediği bir duruma göre değişmesiydi.
+  Kapı BİLİNÇLİ olarak `hasFilter` DEĞİL — bunu ilk denemede yanlış yaptım ve
+  inceleme ölçtü: `eventQuery` yalnızca şehri uyguluyor, `q`/`category`
+  etkinlik sorgusuna hiç girmiyor. `hasFilter` ile kapatmak, arama yapan
+  kullanıcıdan kişiselleştirmeyi alıp karşılığında hiç daralmamış bir liste
+  veriyordu — saf kayıp. Arama kutusu "Topluluk ara…" diyor ve topluluk
+  ızgarasını süzüyor. İlgi alanı önerisi bölümü main'den gelen `!hasFilter`
+  kapısını koruyor; onu gevşetmek ayrı bir ürün kararı.
+  Yan kazanç: şehir seçiliyken bir gidiş-dönüş hiç yapılmıyor.
 - **#1 yerine koyma mı tamamlama mı — KAPATILMADI.** Bu bir ürün kararı,
   kusur değil; kullanıcının vermesi gerekiyor.
 - **#4 boşa giden `seri_kalanlar` RPC'si — KAPATILMADI.** Düzgün kapatmak

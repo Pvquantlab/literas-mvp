@@ -423,6 +423,14 @@ CREATE INDEX IF NOT EXISTS idx_events_series ON public.events USING btree (serie
 -- seri boyu kadar artıyor ve rsvps'te user_id ile BAŞLAYAN hiçbir indeks yoktu.
 CREATE INDEX IF NOT EXISTS idx_rsvps_user ON public.rsvps USING btree (user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_waitlist_promotion_pending ON public.waitlist USING btree (promoted_at) WHERE ((promoted_at IS NOT NULL) AND (promotion_email_sent_at IS NULL));
+
+-- Trigger'ın (etkinlik_silinince_kuyrugu_temizle) taradığı ifade indekssizdi
+-- ve email_outbox gönderilmiş satırları HİÇ budamıyor: tarama maliyeti sürekli
+-- büyüyor. Kısmi olduğu için yalnızca BEKLEYEN satırları kapsıyor.
+-- İFADE trigger'ın yüklemiyle BİREBİR aynı olmalı: `::uuid`li hâli eşleşmez.
+-- Ölçüm (300.000 gönderilmiş + az bekleyen): 43,997 ms -> 1,794 ms, indeks 16 kB.
+CREATE INDEX IF NOT EXISTS email_outbox_bekleyen_event_idx
+  ON public.email_outbox ((payload->>'event_id')) WHERE (sent_at IS NULL);
 CREATE INDEX IF NOT EXISTS locations_parent_idx ON public.locations USING btree (parent_id);
 CREATE INDEX IF NOT EXISTS locations_search_idx ON public.locations USING btree (search_text);
 CREATE INDEX IF NOT EXISTS locations_type_idx ON public.locations USING btree (type);
@@ -1826,10 +1834,18 @@ RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp
 AS $function$
 BEGIN
+  -- ÇEVRİM YÖNÜ HAYATİ: metni uuid'ye DEĞİL, uuid'yi metne çeviriyoruz.
+  -- Ters yönde (`(payload->>'event_id')::uuid`) kuyruğa uuid olmayan tek bir
+  -- event_id düşse 22P02 bu trigger'ın İÇİNDE patlar ve `DELETE FROM events`
+  -- ifadesini komple geri alır: tekil iptal, seri_sil, topluluk silme ve
+  -- hesap silme (events CASCADE) dâhil HEPSİ 500 döner. Bu yönde bozuk değer
+  -- yalnızca EŞLEŞMEZ.
+  -- Önceki `payload ? 'event_id'` koruması İŞE YARAMIYORDU: WHERE içindeki
+  -- AND'ler için kısa devre garantisi yok, planlayıcı çevrimi korumadan önce
+  -- koşabilir. Anahtar yoksa ->> zaten NULL döner ve IN eşleşmez.
   DELETE FROM email_outbox o
    WHERE o.sent_at IS NULL
-     AND o.payload ? 'event_id'
-     AND (o.payload->>'event_id')::uuid IN (SELECT s.id FROM silinen s);
+     AND o.payload->>'event_id' IN (SELECT s.id::text FROM silinen s);
   RETURN NULL;
 END
 $function$;

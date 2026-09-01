@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { frekansEtiketi } from '@/lib/seri'
 import Image from 'next/image'
 import { CategoryCover } from '@/components/category-art'
 
@@ -123,15 +124,15 @@ export default function UpcomingEvents({ events }: { events: EventSummary[] }) {
                       <p style={{ fontSize: 'var(--t-sm)', color: 'var(--muted)' }}>
                         {[ev.community?.name, ev.location].filter(Boolean).join(' · ')}
                       </p>
-                      {/* Seri ibaresi: EventCard'ın .ec-seri rozetiyle aynı
-                          frekans eşlemesi, bu satırın kendi mono stiline
-                          uyarlanmış. Katlanmış sayaç "24" derken liste 2
-                          satır çizip kendi kendini yalanlamasın diye var. */}
+                      {/* Seri ibaresi: frekans etiketi lib/seri.ts'ten —
+                          EventCard ve etkinlik detayıyla TEK KAYNAK, bu
+                          satırın kendi mono stiline uyarlanmış. Katlanmış
+                          sayaç "24" derken liste 2 satır çizip kendi kendini
+                          yalanlamasın diye var. */}
                       {ev.seriKalan != null && ev.seriKalan > 0 && (
                         <span className="mono" style={{ fontSize: 'var(--t-xs)', color: 'var(--ink)' }}>
-                          {ev.frekans === 'haftalik' ? 'haftalık'
-                            : ev.frekans === 'iki_haftalik' ? 'iki haftada bir'
-                            : 'aylık'} · {ev.seriKalan} buluşma
+                          {frekansEtiketi(ev.frekans) ? `${frekansEtiketi(ev.frekans)} · ` : ''}
+                          {ev.seriKalan} buluşma
                         </span>
                       )}
                     </div>
