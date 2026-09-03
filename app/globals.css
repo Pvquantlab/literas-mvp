@@ -1546,3 +1546,14 @@ header, footer, nav {
   .program-sehir, .program-kat { grid-area: meta; font-size: 14px; color: var(--muted); }
   .program-kat { display: none; }  /* darda tek meta: şehir; kategori glifi lejantta zaten var */
 }
+
+/* Geniş ekran: hücre 1900px'e açılırken masa 470px'te sağ kenara yapışık
+   kalıyordu ve hücre boş bir banda dönüşüyordu (1920'de ölçüldü). Masa
+   metinle diyaloğa çekilir, metin bloğu genişler. Hücre tam genişlik kalır:
+   referansın dili bu. */
+@media (min-width: 1600px) {
+  .masa-ciz { right: 9%; height: 132%; top: -16%; }
+  .bolum-kisa .masa-ciz { height: 160%; top: -30%; }
+  .bolum-alt-blok { max-width: 56ch; }
+  .bolum { padding: 26px 32px; }
+}
