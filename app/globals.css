@@ -1528,6 +1528,9 @@ header, footer, nav {
 
 @media (max-width: 760px) {
   .bolum { margin: 8px 8px 0; padding: 18px 16px; min-height: clamp(260px, 38vh, 380px); }
+  /* Kısa hücre mobilde de kısa: bu kural mobil .bolum'dan SONRA gelmeli,
+     yoksa kaskadda ezilir (ölçüldü: 380px kalıyordu). */
+  .bolum-kisa { min-height: clamp(180px, 24vh, 240px); }
   .masa-ciz { height: 112%; top: -6%; right: -22%; }
   .bolum-kisa .masa-ciz { height: 140%; top: -20%; right: -28%; }
   .program-bas { display: none; }

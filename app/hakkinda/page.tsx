@@ -1,22 +1,73 @@
-import Link from "next/link";
+import Link from 'next/link'
+import { RolyefMasa } from '@/components/rolyef'
 
-export const metadata = { title: "Hakkında · literaslab" };
+export const metadata = {
+  title: 'Hakkında',
+  description: 'literaslab nedir, neden var, kim için. Kısa cevap: insanların kendi masalarını kurduğu yer.',
+}
 
+/**
+ * Hakkında — kapanış hücresinin "literaslab nedir →" bağlantısı buraya
+ * geliyor. Eskiden "Yakında hikâye olacak" yer tutucusuydu; bir bağlantıyı
+ * yer tutucuya götürmek sözü tutmamaktır.
+ *
+ * Dil: ana sayfanın afiş dili. Uzun kurumsal anlatı değil; kısa, somut,
+ * kuru. Metafor bir kez daha: masa. Sayfanın tek görseli tam kurulu masa
+ * (kademe 4) — hikâye "masa kuruldu" ile bitiyor.
+ */
 export default function HakkindaPage() {
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 24px 80px" }}>
-      <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase", marginBottom: 8 }}>
-        literaslab
+    <main id="content" className="container-narrow" style={{ paddingTop: 'var(--s-7)', paddingBottom: 'var(--s-8)' }}>
+      <span className="bolum-no" style={{ display: 'block', marginBottom: 12 }}>literaslab · hakkında</span>
+      <h1 className="bolum-baslik" style={{ fontSize: 24 }}>İnsanların kendi masalarını kurduğu yer</h1>
+
+      <div style={{ fontSize: 17, lineHeight: 1.65, color: 'var(--ink)', marginTop: 'var(--s-5)', display: 'grid', gap: 'var(--s-4)', maxWidth: '58ch' }}>
+        <p>
+          Bir şehirde yaşarsın, bir şeyi seversin — kitap, yürüyüş, kahve,
+          fotoğraf — ve onu seven başka insanlarla aynı masaya oturmak
+          istersin. Bunun için bugün ya bir WhatsApp grubu ya bir Excel
+          tablosu ya da pahalı, hantal bir platform var.
+        </p>
+        <p>
+          literaslab bunun yerine geçiyor. Konuyu sen seçersin, masayı biz
+          kurarız: topluluk iki dakikada açılır, buluşma tarih ve yerle
+          duyurulur, kim geliyor kim gelmedi görünür, hatırlatma kendi gider.
+          Ücretsiz. Kategorisi yok — ya da hepsi var: on dört başlık, hepsi
+          eşit.
+        </p>
+        <p>
+          İstanbul'da başladık. Türkçe konuşuyor: "İzmir'de" der, "İzmir'da"
+          demez. Küçük bir şey; bizim için değil.
+        </p>
       </div>
-      <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(32px, 4.5vw, 48px)", fontWeight: 400, lineHeight: 1.15, margin: "4px 0 24px", letterSpacing: "0.5px" }}>
-        Hakkında
-      </h1>
-      <p style={{ fontSize: 17, lineHeight: 1.7, color: "var(--ink)", margin: "0 0 20px" }}>
-        Yakında burada literaslab'ın hikayesi olacak.
-      </p>
-      <p style={{ fontSize: 15, lineHeight: 1.7, color: "var(--muted)", margin: 0 }}>
-        Bu arada <Link href="/kesfet" style={{ color: "var(--ink)", fontWeight: 700 }}>etkinlikleri keşfedebilir</Link> ya da <Link href="/community/new" style={{ color: "var(--ink)", fontWeight: 700 }}>kendi topluluğunu kurabilirsin</Link>.
-      </p>
-    </div>
-  );
+
+      <dl style={{ margin: 'var(--s-7) 0 0', display: 'grid', gap: 10, maxWidth: 420 }}>
+        {[
+          ['N', 'Ne', 'Genel amaçlı topluluk ve etkinlik platformu'],
+          ['K', 'Kim için', 'Bir masa kurmak ya da birine oturmak isteyen herkes'],
+          ['Ü', 'Ücret', 'Yok. Bir gün ücretli etkinlik olursa: düşük, tek kalem, şeffaf'],
+          ['Ş', 'Şehir', 'İstanbul ile başladı; her şehir açık'],
+        ].map(([h, ad, deger]) => (
+          <div key={ad} style={{ display: 'grid', gridTemplateColumns: '20px 110px 1fr', gap: 12, alignItems: 'baseline', background: 'var(--panel)', borderRadius: 'var(--r-md)', padding: '10px 14px' }}>
+            <dt className="bolum-no" style={{ color: 'var(--muted-light)' }}>{h}.</dt>
+            <dd style={{ margin: 0, fontSize: 16 }}>{ad}</dd>
+            <dd style={{ margin: 0, fontSize: 16 }}>{deger}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div style={{ position: 'relative', marginTop: 'var(--s-7)', padding: '28px 24px', background: 'var(--ink)', borderRadius: 'var(--r-md)', overflow: 'hidden', minHeight: 220, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+        <span className="masa-ciz" aria-hidden="true" style={{ color: '#fff', opacity: .26, height: '150%', top: '-24%', right: '-10%' }}>
+          <RolyefMasa asama={4} />
+        </span>
+        <p className="bolum-alt" style={{ color: '#fff', margin: 0, position: 'relative', maxWidth: '40ch' }}>
+          Masa kuruldu. Oturmak ya da kendininkini kurmak sana kalmış.
+        </p>
+        <div className="bolum-eylemler" style={{ position: 'relative' }}>
+          <Link href="/kesfet" className="bolum-eylem dugme" style={{ background: 'var(--paper-cream)', color: 'var(--ink)' }}>Toplulukları gör →</Link>
+          <Link href="/community/new" className="bolum-eylem" style={{ color: 'rgba(255,255,255,.78)' }}>Topluluk kur →</Link>
+        </div>
+      </div>
+    </main>
+  )
 }
