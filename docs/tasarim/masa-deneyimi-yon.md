@@ -77,12 +77,14 @@ Header: hap arama → 4px alan; hap düğmeler → 4px; alt çizgi gider, ayrım
 zemin farkıyla. Footer: "kendi topluluklarını" → "kendi masalarını"
 (metafor tutarlılığı). Token düzeyi; yapı değişmez (her rotada kullanılıyor).
 
-## Çıkarılanlar (Chanel kuralı)
+## Çıkarılanlar (Chanel kuralı) — uygulandı
 
-- kapanıştaki noktalı zemin (`radial-gradient` deseni) — süs
-- kategori kutuları
-- header alt çizgisi ve hap köşeleri
-- topluluk ızgarasının ana sayfadaki kopyası
+- kapanıştaki noktalı zemin ve `ClosingCta` bileşeni (tek kullanım)
+- kategori kutuları: `category-strip.tsx` + `kesfet-category-strip.tsx` silindi
+- header alt çizgisi ve üç hap köşe; keşfet sekmelerinin hapları
+- topluluk ızgarasının ana sayfadaki kopyası (kartlar /kesfet'te)
+- beş sayfada yüklenmeyen `Playfair Display` çağrısı (Georgia'ya düşüyordu)
+- `/hakkinda` yer tutucusu — gerçek sayfa yazıldı
 
 ## Kısıtlar — ihlal edilmez
 

@@ -161,13 +161,16 @@ export default async function KesfetPage({
       {/* Promo bandı — eski hâli #E9F4C2 zemin, #D9E8A6 çizgi, #54702F yıldızdı;
           üçü de Temmuz'un lime paletinden ve sayfanın ilk gördüğün şeyiydi. */}
       <div style={{ background: 'var(--paper-cream)' }}>
+        {/* flexWrap: 375'te etiket + dört satır metin + düğme yan yana
+            sıkışıyordu (ölçüldü). Darda düğme kendi satırına iner. */}
         <div style={{
           maxWidth: '1320px',
           margin: '0 auto',
           padding: '10px 24px',
           display: 'flex',
           alignItems: 'center',
-          gap: '14px',
+          flexWrap: 'wrap',
+          gap: '10px 14px',
         }}>
           <span style={{
             fontFamily: "'IBM Plex Mono', monospace",

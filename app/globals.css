@@ -1545,6 +1545,12 @@ header, footer, nav {
   .program-uye { grid-area: uye; }
   .program-sehir, .program-kat { grid-area: meta; font-size: 14px; color: var(--muted); }
   .program-kat { display: none; }  /* darda tek meta: şehir; kategori glifi lejantta zaten var */
+  /* Lejant darda beş satıra kırılıyordu (375'te ölçüldü): ayraç aralığı ve
+     dolgu sıkılaşır, glif küçülür — satır sayısı düşer, dil aynı kalır. */
+  .lejant { gap: 2px 0; }
+  .lejant li + li::before { margin: 0 8px; }
+  .lejant a { font-size: 13px; gap: 5px; padding: 3px 1px; }
+  .lejant svg { width: 12px; height: 12px; }
 }
 
 /* Geniş ekran: hücre 1900px'e açılırken masa 470px'te sağ kenara yapışık
