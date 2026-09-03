@@ -102,3 +102,17 @@ klavye odağı · dokunma listesindeki rotalara yapısal dokunuş yok.
   ~190px krom. Header her rotada; bu turda yalnızca token düzeyi.
 - **Künye 1. hücresinde sis, rölyefi çamurlaştırıyor** (mobil). Sis imza
   etkileşimi olarak korunuyor; tavan ayarı ayrı bir ölçüm işi.
+
+## Doğrulama defteri (01.09.2026)
+
+| ne | nasıl | sonuç |
+|---|---|---|
+| kontrast, 18 çift | hesaplandı (WCAG formülü) | hepsi ≥4.5; en düşük 4.55 (ikincil bağlantı, mavi zemin; .78 ile 4.33 çıkıp DÜŞMÜŞTÜ, 81%'e çekildi) |
+| gövde ≥16px, başlık 24px | DOM ölçümü (masaüstü + 375) | 16 / 24 |
+| yatay taşma (375) | `scrollWidth > innerWidth` | yok |
+| kademeli çizim aktif | `animationName`/`animationTimeline` | `masa-cizgi` / `view()` |
+| reduced-motion | YAPISAL: `stroke-dasharray` yalnız `no-preference` bloğunda; kademe gizleme `@supports` dışında | son kare tam masa |
+| klavye odağı | YAPISAL: tüm yeni eylemler native `<a href>`, `outline:none` yok, global `:focus-visible` | **elle Tab turu yapılmadı** — sentetik Tab pane odaksızken odağı taşımıyor |
+| sabit hex | grep | yeni kodda yok (`#fff` → `--paper-cream`) |
+| hydration hatası | portal diff okundu | yalnızca `sis.tsx` canvas'ı, `main`'de de var, bileşenlerimden değil |
+| typecheck / lint / build | koşuldu | temiz / 87-0 / geçti |

@@ -57,15 +57,15 @@ export default function HakkindaPage() {
       </dl>
 
       <div style={{ position: 'relative', marginTop: 'var(--s-7)', padding: '28px 24px', background: 'var(--ink)', borderRadius: 'var(--r-md)', overflow: 'hidden', minHeight: 220, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-        <span className="masa-ciz" aria-hidden="true" style={{ color: '#fff', opacity: .26, height: '150%', top: '-24%', right: '-10%' }}>
+        <span className="masa-ciz" aria-hidden="true" style={{ color: 'var(--paper-cream)', opacity: .26, height: '150%', top: '-24%', right: '-10%' }}>
           <RolyefMasa asama={4} />
         </span>
-        <p className="bolum-alt" style={{ color: '#fff', margin: 0, position: 'relative', maxWidth: '40ch' }}>
+        <p className="bolum-alt" style={{ color: 'var(--paper-cream)', margin: 0, position: 'relative', maxWidth: '40ch' }}>
           Masa kuruldu. Oturmak ya da kendininkini kurmak sana kalmış.
         </p>
         <div className="bolum-eylemler" style={{ position: 'relative' }}>
           <Link href="/kesfet" className="bolum-eylem dugme" style={{ background: 'var(--paper-cream)', color: 'var(--ink)' }}>Toplulukları gör →</Link>
-          <Link href="/community/new" className="bolum-eylem" style={{ color: 'rgba(255,255,255,.78)' }}>Topluluk kur →</Link>
+          <Link href="/community/new" className="bolum-eylem" style={{ color: 'color-mix(in srgb, var(--paper-cream) 81%, transparent)' }}>Topluluk kur →</Link>
         </div>
       </div>
     </main>

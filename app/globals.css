@@ -1356,7 +1356,7 @@ header, footer, nav {
   justify-content: space-between;
 }
 .bolum-koyu { background: var(--ink); }          /* kapanış: tek dolu mavi alan */
-.bolum-koyu .bolum-no, .bolum-koyu .bolum-baslik, .bolum-koyu .bolum-alt { color: #fff; }
+.bolum-koyu .bolum-no, .bolum-koyu .bolum-baslik, .bolum-koyu .bolum-alt { color: var(--paper-cream); }
 
 .bolum-no {
   position: relative; z-index: 1;
@@ -1391,8 +1391,8 @@ header, footer, nav {
   text-transform: uppercase;
   color: var(--ink);
 }
-.bolum-koyu .bolum-eylem { color: #fff; }
-.bolum-koyu .bolum-eylem.ikincil { color: rgba(255,255,255,.78); }
+.bolum-koyu .bolum-eylem { color: var(--paper-cream); }
+.bolum-koyu .bolum-eylem.ikincil { color: color-mix(in srgb, var(--paper-cream) 81%, transparent); }
 /* Birincil eylem düğmesi: sayfanın tek gerçek çağrısı sessiz bir mono
    bağlantı olamaz. Hap değil 4px; gölge yok; zemin farkıyla ayrılır. */
 .bolum-eylem.dugme {
@@ -1400,12 +1400,12 @@ header, footer, nav {
   padding: 12px 18px;
   border-radius: var(--r-md);
   background: var(--ink);
-  color: #fff;
+  color: var(--paper-cream);
   transition: background .18s var(--ease), transform .18s var(--ease);
 }
-.bolum-eylem.dugme:hover { background: var(--ink-hover); color: #fff; transform: translateY(-1px); }
+.bolum-eylem.dugme:hover { background: var(--ink-hover); color: var(--paper-cream); transform: translateY(-1px); }
 .bolum-koyu .bolum-eylem.dugme { background: var(--paper-cream); color: var(--ink); }
-.bolum-koyu .bolum-eylem.dugme:hover { background: #fff; color: var(--ink); }
+.bolum-koyu .bolum-eylem.dugme:hover { background: var(--paper-cream); color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .bolum-eylem.dugme, .bolum-eylem.dugme:hover { transform: none; transition: none; } }
 
 /* --- Çizilen masa ----------------------------------------------------------
@@ -1424,7 +1424,7 @@ header, footer, nav {
   opacity: .20;
   pointer-events: none;
 }
-.bolum-koyu .masa-ciz { color: #fff; opacity: .26; }
+.bolum-koyu .masa-ciz { color: var(--paper-cream); opacity: .26; }
 /* Kısa hücre: boş durum bir bölüm değil, bir cümle. */
 .bolum-kisa { min-height: clamp(200px, 26vh, 260px); }
 .bolum-kisa .masa-ciz { height: 150%; top: -25%; }
