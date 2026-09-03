@@ -1342,7 +1342,13 @@ header, footer, nav {
    474-948px; burada clamp ile ekrana oranlı. */
 .bolum {
   position: relative;
-  overflow: hidden;
+  /* overflow: CLIP, hidden DEĞİL. `hidden` spec'e göre kaydırma kabı
+     oluşturur ve view() çizelgelerinin kaydırıcısı olabilir; `clip` kırpar
+     ama kap oluşturmaz — doğru araç bu. DÜRÜSTLÜK NOTU: çizimin hiç
+     çalışmamasının asıl sebebi bu DEĞİLDİ (clip'e geçince de 1px'te
+     kaldı, ölçüldü); sebep anonim view()'in SVG çocuklarında çözülmemesi.
+     Bkz. .masa-ciz'deki adlı çizelge. */
+  overflow: clip;
   margin: 8px 8px 0;
   /* Referansın hücreleri yüksek çünkü içlerini DEV bir rölyef dolduruyor.
      Boş yüksek hücre "editoryal" değil "bitmemiş" okunur (ölçüldü: 460px x4
@@ -1392,6 +1398,9 @@ header, footer, nav {
   color: var(--ink);
 }
 .bolum-koyu .bolum-eylem { color: var(--paper-cream); }
+/* Koyu hücrede global :focus-visible halkası (--ink) zeminle aynı renk —
+   görünmez. Krem halka; kontrast 6.08. */
+.bolum-koyu :focus-visible { outline-color: var(--paper-cream); }
 .bolum-koyu .bolum-eylem.ikincil { color: color-mix(in srgb, var(--paper-cream) 81%, transparent); }
 /* Birincil eylem düğmesi: sayfanın tek gerçek çağrısı sessiz bir mono
    bağlantı olamaz. Hap değil 4px; gölge yok; zemin farkıyla ayrılır. */
@@ -1447,11 +1456,18 @@ header, footer, nav {
        %49'a ulasiyordu, orta kaplar (%85) hicbir ekranda cizilmiyordu.
        "Kapanista tam masa" iddiasi bos kaliyordu (hesaplandi). Gruplar
        ayni pencere icinde kademeli: kenar once, orta son. */
+    /* ÇİZELGE HTML SARMALAYICIDA, ADLA BAĞLI. Anonim `view()` doğrudan SVG
+       circle/ellipse üzerinde ÇÖZÜLMÜYOR: Chrome SVG çocukları için görünüm
+       çizelgesi hesaplamıyor, animasyon hiç ilerlemiyordu (ölçüldü: hücre
+       tam görünürken dashoffset 1px'te kalıyordu; adlı çizelgeyle 0px).
+       `getAnimations()` bu tür animasyonları raporlamıyor — .reveal'de de 0
+       döndürdü — güvenilir ölçüt dashoffset. */
+    .masa-ciz { view-timeline: --masa block; }
     .masa-ciz circle, .masa-ciz ellipse {
       stroke-dasharray: 1;
       stroke-dashoffset: 1;
       animation: masa-cizgi linear both;
-      animation-timeline: view();
+      animation-timeline: --masa;
       animation-range: entry 0% entry 70%;
     }
     .masa-ciz .rm-tabak  circle { animation-range: entry 10% entry 80%; }
@@ -1459,6 +1475,14 @@ header, footer, nav {
     .masa-ciz .rm-orta   ellipse { animation-range: entry 30% entry 100%; }
     @keyframes masa-cizgi { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
   }
+}
+
+/* overflow: clip desteklenmeyen tarayıcı (eski Safari): hidden'a düş VE
+   çizimi kapat — yoksa view() kaydırıcı olarak hücreyi alır ve masa
+   dashoffset:1'de GÖRÜNMEZ kalır. Statik tam masa, eksik masadan iyidir. */
+@supports not (overflow: clip) {
+  .bolum { overflow: hidden; }
+  .masa-ciz circle, .masa-ciz ellipse { animation: none !important; stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
 }
 
 /* --- Lejant: kategori indeksi ------------------------------------------------
@@ -1475,7 +1499,7 @@ header, footer, nav {
 }
 .lejant li { display: inline-flex; align-items: center; }
 .lejant li + li::before {
-  content: '·';
+  content: '·' / '';   /* alternatif metin boş: ayraç ekran okuyucuya gitmez */
   margin: 0 12px;
   color: var(--muted-light);
 }

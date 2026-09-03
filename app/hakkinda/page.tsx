@@ -49,7 +49,7 @@ export default function HakkindaPage() {
           ['Ş', 'Şehir', 'İstanbul ile başladı; her şehir açık'],
         ].map(([h, ad, deger]) => (
           <div key={ad} style={{ display: 'grid', gridTemplateColumns: '20px 110px 1fr', gap: 12, alignItems: 'baseline', background: 'var(--panel)', borderRadius: 'var(--r-md)', padding: '10px 14px' }}>
-            <dt className="bolum-no" style={{ color: 'var(--muted-light)' }}>{h}.</dt>
+            <dt className="bolum-no" style={{ color: 'var(--muted)' }}>{h}.</dt>
             <dd style={{ margin: 0, fontSize: 16 }}>{ad}</dd>
             <dd style={{ margin: 0, fontSize: 16 }}>{deger}</dd>
           </div>

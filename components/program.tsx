@@ -51,7 +51,7 @@ export default function Program({ topluluklar }: { topluluklar: CommunitySummary
                   {kat && <Glif slug={kat.slug} />}
                   {kat?.label ?? '—'}
                 </span>
-                <span className="program-uye" aria-label={`${uye} üye`}>{uye}</span>
+                <span className="program-uye">{uye}<span className="sr-only"> üye</span></span>
               </Link>
             </li>
           )
