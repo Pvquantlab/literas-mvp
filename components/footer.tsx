@@ -35,7 +35,7 @@ export default function Footer() {
               maxWidth: '240px',
             }}
           >
-            İnsanların kendi topluluklarını kurduğu yer. Herkese açık.
+            İnsanların kendi masalarını kurduğu yer. Herkese açık.
           </p>
         </div>
 

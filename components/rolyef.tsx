@@ -46,35 +46,51 @@ function Tarama({
  *  YUKARIDAN görünüyor: simetrik olduğu için ortalanmış dev logotype'ın
  *  arkasına oturuyor, ve kurulu bir masa anında okunuyor. Önceki yandan
  *  görünüş o kırpımda ne olduğu belirsiz bir davul gibi duruyordu. */
-export function RolyefMasa({ className, style }: Props) {
+export function RolyefMasa({ className, style, asama }: Props & { asama?: 1 | 2 | 3 | 4 }) {
+  // KADEMELER — masa metaforu sayfa boyunca KURULUR. Aynı çizim, dört
+  // katman; `asama` verilirse CSS (.masa-ciz) yalnızca o kademeye kadar
+  // olan grupları gösterir ve kaydırmayla çizer. Verilmezse eskisi gibi
+  // tam çizim: hiçbir mevcut kullanım değişmedi.
+  //   1 kenar   — boş masa
+  //   2 tabak   — yerler kuruluyor
+  //   3 fincan  — oturuldu
+  //   4 orta    — paylaşılan kaplar; masa tam
+  // pathLength="1": çizgi uzunluğu normalleşir, CSS'te dashoffset 1->0 ile
+  // her şekil aynı sürede çizilir (uzun çember, kısa fincan fark etmez).
+  const pl = { pathLength: 1 }
   return (
-    <svg viewBox="0 0 200 200" className={className} style={style} aria-hidden="true">
+    <svg viewBox="0 0 200 200" className={className} style={style} aria-hidden="true" data-asama={asama}>
       <g {...ortak}>
-        {/* masa kenarı */}
-        <circle cx="100" cy="100" r="92" />
-        <circle cx="100" cy="100" r="86" opacity=".55" />
-        {/* çevresinde kurulum: tabak + fincan */}
-        <circle cx="100.0" cy="38.0" r="15" />
-        <circle cx="100.0" cy="38.0" r="9.5" opacity=".7" />
-        <circle cx="115.9" cy="21.6" r="6.5" />
-        <circle cx="153.7" cy="69.0" r="15" />
-        <circle cx="153.7" cy="69.0" r="9.5" opacity=".7" />
-        <circle cx="175.8" cy="74.6" r="6.5" />
-        <circle cx="153.7" cy="131.0" r="15" />
-        <circle cx="153.7" cy="131.0" r="9.5" opacity=".7" />
-        <circle cx="160.0" cy="153.0" r="6.5" />
-        <circle cx="100.0" cy="162.0" r="15" />
-        <circle cx="100.0" cy="162.0" r="9.5" opacity=".7" />
-        <circle cx="84.1" cy="178.4" r="6.5" />
-        <circle cx="46.3" cy="131.0" r="15" />
-        <circle cx="46.3" cy="131.0" r="9.5" opacity=".7" />
-        <circle cx="24.2" cy="125.4" r="6.5" />
-        <circle cx="46.3" cy="69.0" r="15" />
-        <circle cx="46.3" cy="69.0" r="9.5" opacity=".7" />
-        <circle cx="40.0" cy="47.0" r="6.5" />
-        {/* ortada paylaşılan iki kap */}
-        <ellipse cx="100" cy="100" rx="24" ry="24" />
-        <ellipse cx="100" cy="100" rx="15" ry="15" opacity=".6" />
+        <g className="rm-kenar">
+          <circle cx="100" cy="100" r="92" {...pl} />
+          <circle cx="100" cy="100" r="86" opacity=".55" {...pl} />
+        </g>
+        <g className="rm-tabak">
+          <circle cx="100.0" cy="38.0" r="15" {...pl} />
+          <circle cx="100.0" cy="38.0" r="9.5" opacity=".7" {...pl} />
+          <circle cx="153.7" cy="69.0" r="15" {...pl} />
+          <circle cx="153.7" cy="69.0" r="9.5" opacity=".7" {...pl} />
+          <circle cx="153.7" cy="131.0" r="15" {...pl} />
+          <circle cx="153.7" cy="131.0" r="9.5" opacity=".7" {...pl} />
+          <circle cx="100.0" cy="162.0" r="15" {...pl} />
+          <circle cx="100.0" cy="162.0" r="9.5" opacity=".7" {...pl} />
+          <circle cx="46.3" cy="131.0" r="15" {...pl} />
+          <circle cx="46.3" cy="131.0" r="9.5" opacity=".7" {...pl} />
+          <circle cx="46.3" cy="69.0" r="15" {...pl} />
+          <circle cx="46.3" cy="69.0" r="9.5" opacity=".7" {...pl} />
+        </g>
+        <g className="rm-fincan">
+          <circle cx="115.9" cy="21.6" r="6.5" {...pl} />
+          <circle cx="175.8" cy="74.6" r="6.5" {...pl} />
+          <circle cx="160.0" cy="153.0" r="6.5" {...pl} />
+          <circle cx="84.1" cy="178.4" r="6.5" {...pl} />
+          <circle cx="24.2" cy="125.4" r="6.5" {...pl} />
+          <circle cx="40.0" cy="47.0" r="6.5" {...pl} />
+        </g>
+        <g className="rm-orta">
+          <ellipse cx="100" cy="100" rx="24" ry="24" {...pl} />
+          <ellipse cx="100" cy="100" rx="15" ry="15" opacity=".6" {...pl} />
+        </g>
       </g>
     </svg>
   )

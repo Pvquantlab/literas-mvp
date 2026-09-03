@@ -42,8 +42,8 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
 
   return (
     <header style={{
-      background: 'var(--paper)',
-      borderBottom: '1px solid var(--border)',
+      // DNA: çerçeve yok, ayrım zemin farkıyla. Kabuk sayfadan bir ton açık.
+      background: 'var(--paper-cream)',
       position: 'sticky',
       top: 0,
       zIndex: 40,
@@ -77,9 +77,10 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
             minWidth: '220px',
             display: 'flex',
             alignItems: 'center',
-            border: '1px solid var(--border-mid)',
-            borderRadius: '999px',
-            background: 'var(--paper-cream)',
+            // Hap ve çerçeve gitti: sitenin baskın köşesi 4px, çerçeve taşıyan
+            // sıfır eleman. Alan kabuktan bir ton koyu zeminle ayrılıyor.
+            borderRadius: 'var(--r-md)',
+            background: 'var(--paper-soft)',
             padding: '3px 3px 3px 16px',
           }}
         >
@@ -168,8 +169,9 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
                   fontSize: '13.5px',
                   fontWeight: 600,
                   padding: '8px 16px',
-                  borderRadius: '999px',
-                  border: '1px solid var(--border-mid)',
+                  // DNA: hap ve çerçeve yok; ayrım zemin farkıyla.
+                  borderRadius: 'var(--r-md)',
+                  background: 'var(--paper-soft)',
                   color: 'var(--ink)',
                   whiteSpace: 'nowrap',
                 }}
@@ -217,7 +219,7 @@ export default function Header({ user, profileName, profileAvatar }: Props) {
                     background: 'transparent',
                     cursor: 'pointer',
                     padding: '3px',
-                    borderRadius: '999px',
+                    borderRadius: '50%',   // içindeki avatar daire; sarmalayıcı da daire
                   }}
                 >
                   {profileAvatar ? (
