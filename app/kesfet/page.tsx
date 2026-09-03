@@ -4,7 +4,7 @@ import EventCard from '@/components/event-card'
 import CommunityCard from '@/components/community-card'
 import KesfetTabs from './kesfet-tabs'
 import Lejant from '@/components/lejant'
-import { CATEGORIES, byValue } from '@/lib/categories'
+import { CATEGORIES } from '@/lib/categories'
 
 export const dynamic = 'force-dynamic'
 
@@ -236,7 +236,10 @@ export default async function KesfetPage({
           yine aksanlı değeri yazıyor — sunucu süzgeci değişmedi. */}
       <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '24px 24px 0' }}>
         <Lejant
-          activeSlug={byValue(activeCategory)?.slug ?? null}
+          // BIREBIR eşleşme, byValue DEĞİL: sunucu süzgeci `.eq('category', activeCategory)`
+          // ile ham değeri arıyor. byValue alias'ı da çözüyor ('yuruyus' -> doga) ve
+          // lejantta "Doğa"yı aktif gösterirken sonuç boş kalıyordu.
+          activeSlug={CATEGORIES.find((c) => c.value === activeCategory)?.slug ?? null}
           hrefFor={(slug) => {
             const p = new URLSearchParams()
             p.set('tab', activeTab)

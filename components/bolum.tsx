@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 import { RolyefMasa } from '@/components/rolyef'
 
 /**
@@ -25,10 +26,11 @@ export default function Bolum({
 }: {
   /** Roma rakamı: 'I' … 'V' */
   no: string
-  baslik: string
+  /** Rakam iceriyorsa <span className="sayi"> ile sar: Marcellus'ta 1/I ayrilmaz. */
+  baslik: ReactNode
   /** Masanın kademesi: 1 boş … 4 tam */
   asama: 1 | 2 | 3 | 4
-  alt?: string
+  alt?: ReactNode
   eylemler?: Eylem[]
   /** Kapanış: tek dolu mavi alan (künyedeki davet hücresiyle aynı rol). */
   koyu?: boolean

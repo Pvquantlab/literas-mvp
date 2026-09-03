@@ -804,7 +804,7 @@ export default async function HomePage({
           ? (cityLocative ? `${cityLocative} bu hafta masada` : 'Bu hafta masada')
           : 'Masa boş'}
         alt={eventsWithSeri.length > 0
-          ? `${yaklasanToplam} yaklaşan buluşma. Birine otur.`
+          ? <><span className="sayi">{yaklasanToplam}</span> yaklaşan buluşma. Birine otur.</>
           : (cityLocative
               ? `${cityLocative} henüz yaklaşan buluşma yok. İlk masayı kuran sen ol.`
               : 'Henüz yaklaşan buluşma yok. İlk masayı kuran sen ol.')}
@@ -826,7 +826,7 @@ export default async function HomePage({
         no="III"
         asama={2}
         baslik={communities.length > 0
-          ? `${communities.length} masa${cityLocative ? `, ${cityLocative}` : ''}`
+          ? <><span className="sayi">{communities.length}</span> masa{cityLocative ? `, ${cityLocative}` : ''}</>
           : 'Henüz masa yok'}
         alt={communities.length > 0
           ? 'Her biri bir konu, bir şehir, birkaç kişiyle başlamış. Katıl ya da kendininkini kur.'

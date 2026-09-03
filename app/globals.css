@@ -1441,16 +1441,22 @@ header, footer, nav {
    animation-range: hücre ekrana girerken başlar, %70'inde biter. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
+    /* ARALIK entry 0% -> entry 100%: cizim hucre TAMAMEN gorunur olunca
+       biter. Onceki `cover 70%` sayfanin son hucresinde ERISILEMEZDI —
+       altinda yalnizca 329px footer var; 720px'te en fazla %65, 1080'de
+       %49'a ulasiyordu, orta kaplar (%85) hicbir ekranda cizilmiyordu.
+       "Kapanista tam masa" iddiasi bos kaliyordu (hesaplandi). Gruplar
+       ayni pencere icinde kademeli: kenar once, orta son. */
     .masa-ciz circle, .masa-ciz ellipse {
       stroke-dasharray: 1;
       stroke-dashoffset: 1;
       animation: masa-cizgi linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 70%;
+      animation-range: entry 0% entry 70%;
     }
-    .masa-ciz .rm-tabak  circle { animation-range: entry 15% cover 75%; }
-    .masa-ciz .rm-fincan circle { animation-range: entry 30% cover 80%; }
-    .masa-ciz .rm-orta   ellipse { animation-range: entry 45% cover 85%; }
+    .masa-ciz .rm-tabak  circle { animation-range: entry 10% entry 80%; }
+    .masa-ciz .rm-fincan circle { animation-range: entry 20% entry 90%; }
+    .masa-ciz .rm-orta   ellipse { animation-range: entry 30% entry 100%; }
     @keyframes masa-cizgi { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
   }
 }
