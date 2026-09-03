@@ -14,19 +14,25 @@ export default function Lejant({
   activeSlug,
   activeCity,
   query,
+  hrefFor,
 }: {
+  /** ASCII slug (lib/categories `slug`). Keşfet aksanlı değer tutuyor;
+   *  çağıran taraf `byValue(...)?.slug` ile çevirip verir. */
   activeSlug: string | null
   activeCity?: string | null
   query?: string | null
+  /** Bağlantı sözleşmesi çağırana ait: ana sayfa `?category=slug`,
+   *  keşfet `?tab=&kategori=<aksanlı değer>`. Verilmezse ana sayfa. */
+  hrefFor?: (slug: string | null) => string
 }) {
-  const href = (slug: string | null) => {
+  const href = hrefFor ?? ((slug: string | null) => {
     const p = new URLSearchParams()
     if (slug) p.set('category', slug)
     if (activeCity) p.set('city', activeCity)
     if (query) p.set('q', query)
     const s = p.toString()
     return s ? `/?${s}` : '/'
-  }
+  })
 
   return (
     <nav aria-label="Kategoriler">
