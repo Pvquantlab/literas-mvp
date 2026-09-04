@@ -207,9 +207,8 @@ function details(slug: string, hi: string, dk: string): React.ReactNode {
  * buydu. Kategori kimliği zaten ŞEKİL ve ETİKET ile taşınıyor; renk oraya
  * ikinci bir iş yüklemiyordu, sadece bağırıyordu.
  *
- * Kategori rengi kaldırılmadı, yeri değişti: etkinlik kartlarının kapak
- * zeminlerinde (event-card.tsx, cat.colors) yaşamaya devam ediyor — orada
- * gerçekten yön buldurma işi yapıyor, burada yapmıyordu.
+ * Kategori rengi TAMAMEN kaldırıldı (05.09.2026): etkinlik kartı parıltısı
+ * ve kapak elipsi de mürekkep. Kimlik şekil + etiket; palet tek kromatik renk.
  */
 const INK_RAMP: [string, string, string] = ['var(--obj-hi)', 'var(--obj-mid)', 'var(--obj-dk)']
 
@@ -361,7 +360,7 @@ export function CategoryCover({ value, w = 400, h = 240, scale, className }: Cov
       <rect width={w} height={h} fill={cat ? `url(#ci-bg-${cat.slug})` : 'url(#ci-bg-none)'} />
       {cat && (
         <>
-          <ellipse cx={w * 0.24} cy={h * 0.16} rx={w * 0.6} ry={h * 0.5} fill={cat.colors[0]} opacity=".22" />
+          <ellipse cx={w * 0.24} cy={h * 0.16} rx={w * 0.6} ry={h * 0.5} fill={INK_RAMP[0]} opacity=".22" />
           <g transform={`translate(${ox} ${oy}) scale(${sc})`}>
             <use href={`#ci-icon-${cat.slug}`} width="100" height="100" x="0" y="0" />
           </g>

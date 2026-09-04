@@ -62,7 +62,7 @@ export default function ReviewButtons({ communityId, communityName }: { communit
             padding: '8px 14px',
             borderRadius: '999px',
             background: 'transparent',
-            color: 'var(--coral-deep, #b04330)',
+            color: 'var(--coral-deep)',
             border: '1.5px solid rgba(176, 67, 48, 0.3)',
             fontSize: '13px',
             cursor: 'pointer',
@@ -96,7 +96,7 @@ export default function ReviewButtons({ communityId, communityName }: { communit
               style={{
                 padding: '6px 14px',
                 borderRadius: '999px',
-                background: 'var(--coral-deep, #b04330)',
+                background: 'var(--coral-deep)',
                 color: 'white',
                 border: 'none',
                 fontSize: '12.5px',
@@ -125,7 +125,7 @@ export default function ReviewButtons({ communityId, communityName }: { communit
       )}
 
       {error && (
-        <p style={{ color: 'var(--coral-deep, #b04330)', fontSize: '12.5px', marginTop: '8px' }}>
+        <p style={{ color: 'var(--coral-deep)', fontSize: '12.5px', marginTop: '8px' }}>
           {error}
         </p>
       )}

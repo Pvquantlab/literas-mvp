@@ -107,6 +107,7 @@ kullanıcıya profil satırı onunla açılıyor; hiçbir migration'da yoktu,
    harf aralığı POZİTİF, mono yalnız etiket/veri için. Ayrım renkle değil zemin
    tonu ve tipografiyle kurulur.
    Kategori başına renk atama YOK — `CATS` dizisindeki 28 renk (soft/ink)
+   ve `lib/categories.ts`'teki `colors`/`gradient` üçlüleri (05.09.2026)
    bu yüzden silindi.
    Sabit hex yazma; `var(--…)` kullan. Marka rengi gerektiren istisnalar
    (WhatsApp gibi) da paletin diline çekildi.

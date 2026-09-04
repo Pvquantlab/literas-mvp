@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 
-const PILL_COLORS = [
-  { bg: "#D7E9FB", ink: "#2A5B8F" },
-  { bg: "#FFCFC5", ink: "#B04330" },
-  { bg: "#E9F6AC", ink: "#4B6B00" },
-  { bg: "#FFE9A8", ink: "#8A5A00" },
-  { bg: "#F0D7FB", ink: "#6B2A8F" },
-];
-
+// Çipler tek stil: beyaz kilit yüzeyi + mürekkep. Kategori/çip başına renk yok (palet tek kromatik).
 export default function InterestPicker({
   defaultValue,
   suggested,
@@ -48,8 +41,7 @@ export default function InterestPicker({
           </p>
         ) : (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {selected.map((interest, i) => {
-              const color = PILL_COLORS[i % PILL_COLORS.length];
+            {selected.map((interest) => {
               return (
                 <span key={interest} style={{
                   display: "inline-flex",
@@ -57,8 +49,8 @@ export default function InterestPicker({
                   gap: 8,
                   padding: "8px 14px",
                   borderRadius: 999,
-                  background: color.bg,
-                  color: color.ink,
+                  background: "var(--paper-white)",
+                  color: "var(--ink)",
                   fontSize: 13.5,
                   fontWeight: 600,
                 }}>
@@ -68,7 +60,7 @@ export default function InterestPicker({
                     onClick={() => remove(interest)}
                     style={{
                       background: "none", border: "none", cursor: "pointer",
-                      color: color.ink, fontSize: 14, padding: 0, lineHeight: 1,
+                      color: "var(--ink)", fontSize: 14, padding: 0, lineHeight: 1,
                       fontWeight: 500,
                     }}
                     aria-label={`${interest} kaldır`}

@@ -220,20 +220,20 @@ export async function PATCH(
 
       const htmlBody = `
         <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 2rem;">
-          <p style="font-style: italic; color: #B8541A;">No. 0001</p>
-          <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+          <p style="font-style: italic; color: #0755BB;">No. 0001</p>
+          <h1 style="color: #0755BB; font-weight: 500; font-size: 1.5rem;">
             Etkinlikte değişiklik var
           </h1>
-          <p style="color: #1F2A24;">
+          <p style="color: #16160F;">
             Katıldığın <em>${safeTitle}</em> etkinliğinde şu değişiklikler yapıldı:
           </p>
-          <ul style="color: #1F2A24; padding-left: 20px;">
+          <ul style="color: #16160F; padding-left: 20px;">
             ${changesListHtml}
           </ul>
-          <p style="color: #1F2A24;">
+          <p style="color: #16160F;">
             Güncel bilgi: <strong>${formatDateTr(updatedEvent.event_date)}</strong>, ${safeLocation}
           </p>
-          <p style="font-style: italic; color: #1F2A24; opacity: 0.6; margin-top: 2rem;">
+          <p style="font-style: italic; color: #16160F; opacity: 0.6; margin-top: 2rem;">
             literas
           </p>
         </div>
@@ -339,17 +339,17 @@ export async function DELETE(
 
     const htmlBody = `
       <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 2rem;">
-        <p style="font-style: italic; color: #B8541A;">No. 0001</p>
-        <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+        <p style="font-style: italic; color: #0755BB;">No. 0001</p>
+        <h1 style="color: #0755BB; font-weight: 500; font-size: 1.5rem;">
           Etkinlik iptal edildi
         </h1>
-        <p style="color: #1F2A24;">
+        <p style="color: #16160F;">
           Katıldığın <em>${safeTitle}</em> (${eventDateStr}) etkinliği iptal edildi.
         </p>
-        <p style="color: #1F2A24;">
+        <p style="color: #16160F;">
           Bir sonrakinde görüşmek üzere.
         </p>
-        <p style="font-style: italic; color: #1F2A24; opacity: 0.6; margin-top: 2rem;">
+        <p style="font-style: italic; color: #16160F; opacity: 0.6; margin-top: 2rem;">
           literas
         </p>
       </div>

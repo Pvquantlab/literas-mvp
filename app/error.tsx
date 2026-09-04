@@ -23,7 +23,7 @@ export default function Error({
     }}>
       <p style={{
         fontFamily: "'IBM Plex Mono', monospace",
-        color: 'var(--coral-deep, #B84330)',
+        color: 'var(--coral-deep)',
         fontSize: '13px',
         marginBottom: '12px',
         letterSpacing: '0.05em',

@@ -175,7 +175,7 @@ export default function KonumStep() {
       </button>
 
       {geoError && (
-        <p style={{ fontSize: '12.5px', color: 'var(--coral-deep, #b04330)', marginTop: '-8px', marginBottom: '16px' }}>
+        <p style={{ fontSize: '12.5px', color: 'var(--coral-deep)', marginTop: '-8px', marginBottom: '16px' }}>
           {geoError}
         </p>
       )}
@@ -250,7 +250,7 @@ export default function KonumStep() {
                 top: 'calc(100% + 4px)',
                 left: 0,
                 right: 0,
-                background: 'var(--paper-cream, #FFFDF6)',
+                background: 'var(--paper-cream)',
                 border: '1.5px solid var(--border)',
                 borderRadius: '12px',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
@@ -336,7 +336,7 @@ export default function KonumStep() {
           padding: '14px 16px',
           borderRadius: '12px',
           background: mode === 'online' ? 'var(--ink)' : 'transparent',
-          color: mode === 'online' ? 'var(--paper-cream, #FFFDF6)' : 'var(--ink)',
+          color: mode === 'online' ? 'var(--paper-cream)' : 'var(--ink)',
           border: mode === 'online' ? '1.5px solid var(--ink)' : '1.5px solid var(--border)',
           fontSize: '14px',
           fontWeight: 600,
