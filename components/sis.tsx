@@ -464,9 +464,11 @@ export function SisMotoru() {
       {/* Künye: sis HÜCRELERE oturur, ızgaraya değil. Eskiden tek tuval bütün
           #sis-hero ızgarasını kaplıyordu; sis 8px boşluklara ve beyaz davet
           hücresine de biniyordu (canlıda ölçüldü, 05.09.2026). Beyaz kilit
-          paneli sissiz; iki greige hücre yoğun. */}
-      <SisKatmani hedefId="sis-hucre-1" tavan={0.9} />
-      <SisKatmani hedefId="sis-hucre-2" tavan={0.9} />
+          paneli sissiz. Tavan 0.75: 0.9'da kitap rölyefi ve başlık sisin
+          altında boğuk okunuyordu (canlıda bakıldı); metin zaten okunur,
+          rölyef biraz daha belirsin. */}
+      <SisKatmani hedefId="sis-hucre-1" tavan={0.75} />
+      <SisKatmani hedefId="sis-hucre-2" tavan={0.75} />
       {/* Logotype hücresi: tavan DAHA DÜŞÜK. Maske birkaç saniyede tavana
           doluyor; 0.9 olsaydı fare hiç oynamadığında marka adı kalıcı
           olarak sisin altında kalırdı. 0.55'te sis açıkça görünüyor ama
