@@ -1323,3 +1323,281 @@ header, footer, nav {
   font-family: var(--font-mono), monospace;
   font-variant-numeric: tabular-nums;
 }
+
+/* ==========================================================================
+   MASA DENEYİMİ — bölüm hücreleri, çizilen masa, lejant, program.
+   docs/tasarim/masa-deneyimi-yon.md. globals.css'in SONUNA eklenir.
+
+   TEK FİKİR: masa kaydırdıkça kurulur. Aynı RolyefMasa, dört kademe; her
+   bölüm ayracı bir kademe ileri gider. Cesaret buraya harcandı, geri kalan
+   her şey sessiz. Hareket kütüphanesiz: CSS scroll-driven animation
+   (deponun mevcut deyimi, bkz. .reveal). Desteklenmeyen tarayıcı ve
+   prefers-reduced-motion: SON KARE, yani çizilmiş masa — içerik asla eksik
+   kalmaz.
+   ========================================================================== */
+
+/* --- Bölüm hücresi -------------------------------------------------------
+   Künye ızgarasının hücre dilinin dikey uzantısı: içerik üste/alta yaslı,
+   ortası boş, hücreyi dolduran rölyef. Referansın ölçülen hücre boyları
+   474-948px; burada clamp ile ekrana oranlı. */
+.bolum {
+  position: relative;
+  /* overflow: CLIP, hidden DEĞİL. `hidden` spec'e göre kaydırma kabı
+     oluşturur ve view() çizelgelerinin kaydırıcısı olabilir; `clip` kırpar
+     ama kap oluşturmaz — doğru araç bu. DÜRÜSTLÜK NOTU: çizimin hiç
+     çalışmamasının asıl sebebi bu DEĞİLDİ (clip'e geçince de 1px'te
+     kaldı, ölçüldü); sebep anonim view()'in SVG çocuklarında çözülmemesi.
+     Bkz. .masa-ciz'deki adlı çizelge. */
+  overflow: clip;
+  margin: 8px 8px 0;
+  /* Referansın hücreleri yüksek çünkü içlerini DEV bir rölyef dolduruyor.
+     Boş yüksek hücre "editoryal" değil "bitmemiş" okunur (ölçüldü: 460px x4
+     ve masa zar zor görünüyordu). Hücre kısa, masa büyük. */
+  min-height: clamp(260px, 34vh, 380px);
+  background: var(--paper-cream);
+  border-radius: var(--r-md);
+  /* SOL RAY: hücre tam genişlik, içerik .container (1200 ortalı). Dolgu
+     .container'ın sol kenarına bağlanır ki başlık ile altındaki program
+     aynı düşey çizgide dursun (ölçüldü: 1440'ta 112px, 1920'de 344px kayma).
+     Hücre 8px marjlı: %100 zaten W-16'dır, dolgu (W-16-1200)/2 + 24 ve
+     hücre-içi sol = 8 + o = (W-1200)/2 + 24 = .container'ın solu. (-8px
+     EKLENMEZ: ilk denemede eklendi ve her genişlikte 8px kaydı, hesaplandı.)
+     Dar ekranda taban 16: 8 + 16 = 24 = .container dolgusu. */
+  padding: 22px max(var(--s-4), calc((100% - var(--w-page)) / 2 + var(--s-5)));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.bolum-koyu { background: var(--ink); }          /* kapanış: açılış davetiyle aynı mavi (refren) */
+.bolum-koyu .bolum-no, .bolum-koyu .bolum-baslik, .bolum-koyu .bolum-alt { color: var(--paper-cream); }
+
+.bolum-no {
+  position: relative; z-index: 1;
+  font: 400 10px var(--font-mono), monospace;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.bolum-alt-blok { position: relative; z-index: 1; max-width: 42ch; }
+/* DNA: en büyük metin 24px, ağırlık 400, aralık .04em, BÜYÜK HARF, serif. */
+.bolum-baslik {
+  margin: 0;
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.bolum-alt {
+  margin: 10px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.bolum-eylemler { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 18px; }
+.bolum-eylem {
+  font: 400 11px var(--font-mono), monospace;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.bolum-koyu .bolum-eylem { color: var(--paper-cream); }
+/* Koyu hücrede global :focus-visible halkası (--ink) zeminle aynı renk —
+   görünmez. Krem halka; kontrast 6.08. */
+.bolum-koyu :focus-visible { outline-color: var(--paper-cream); }
+.bolum-koyu .bolum-eylem.ikincil { color: color-mix(in srgb, var(--paper-cream) 81%, transparent); }
+/* Birincil eylem düğmesi: sayfanın tek gerçek çağrısı sessiz bir mono
+   bağlantı olamaz. Hap değil 4px; gölge yok; zemin farkıyla ayrılır. */
+.bolum-eylem.dugme {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 12px 18px;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--paper-cream);
+  transition: background .18s var(--ease), transform .18s var(--ease);
+}
+.bolum-eylem.dugme:hover { background: var(--ink-hover); color: var(--paper-cream); transform: translateY(-1px); }
+.bolum-koyu .bolum-eylem.dugme { background: var(--paper-cream); color: var(--ink); }
+.bolum-koyu .bolum-eylem.dugme:hover { background: var(--paper-cream); color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .bolum-eylem.dugme, .bolum-eylem.dugme:hover { transform: none; transition: none; } }
+
+/* --- Çizilen masa ----------------------------------------------------------
+   Kademe görünürlüğü: data-asama=N ise N'den büyük gruplar hiç çizilmez.
+   Böylece I'de boş masa, V'te tam masa. */
+.masa-ciz {
+  position: absolute;
+  /* Hücre yüksekliğinin %124'ü: masa hücreyi taşarak doldurur, kenarlardan
+     kırpılır — referansın "hücreye taşacak kadar büyük rölyef" ilkesi.
+     Sağa yaslı: sol alt başlığa yer kalır. */
+  top: -12%;
+  right: -4%;
+  height: 124%;
+  aspect-ratio: 1;
+  color: var(--ink);
+  opacity: .20;
+  pointer-events: none;
+}
+.bolum-koyu .masa-ciz { color: var(--paper-cream); opacity: .26; }
+/* Kısa hücre: boş durum bir bölüm değil, bir cümle. */
+.bolum-kisa { min-height: clamp(200px, 26vh, 260px); }
+.bolum-kisa .masa-ciz { height: 150%; top: -25%; }
+.masa-ciz svg { width: 100%; height: 100%; display: block; }
+.masa-ciz svg[data-asama="1"] .rm-tabak,
+.masa-ciz svg[data-asama="1"] .rm-fincan,
+.masa-ciz svg[data-asama="1"] .rm-orta,
+.masa-ciz svg[data-asama="2"] .rm-fincan,
+.masa-ciz svg[data-asama="2"] .rm-orta,
+.masa-ciz svg[data-asama="3"] .rm-orta { display: none; }
+
+/* Kaydırmayla çizim. pathLength="1" sayesinde her şekil 0->1 aynı sürede
+   çizilir. Gruplar kademe sırasıyla, hafif gecikmeyle: kenar önce, orta son.
+   animation-range: hücre ekrana girerken başlar, %70'inde biter. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* ARALIK entry 0% -> entry 100%: cizim hucre TAMAMEN gorunur olunca
+       biter. Onceki `cover 70%` sayfanin son hucresinde ERISILEMEZDI —
+       altinda yalnizca 329px footer var; 720px'te en fazla %65, 1080'de
+       %49'a ulasiyordu, orta kaplar (%85) hicbir ekranda cizilmiyordu.
+       "Kapanista tam masa" iddiasi bos kaliyordu (hesaplandi). Gruplar
+       ayni pencere icinde kademeli: kenar once, orta son. */
+    /* ÇİZELGE HTML SARMALAYICIDA, ADLA BAĞLI. Anonim `view()` doğrudan SVG
+       circle/ellipse üzerinde ÇÖZÜLMÜYOR: Chrome SVG çocukları için görünüm
+       çizelgesi hesaplamıyor, animasyon hiç ilerlemiyordu (ölçüldü: hücre
+       tam görünürken dashoffset 1px'te kalıyordu; adlı çizelgeyle 0px).
+       `getAnimations()` bu tür animasyonları raporlamıyor — .reveal'de de 0
+       döndürdü — güvenilir ölçüt dashoffset. */
+    .masa-ciz { view-timeline: --masa block; }
+    .masa-ciz circle, .masa-ciz ellipse {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: masa-cizgi linear both;
+      animation-timeline: --masa;
+      animation-range: entry 0% entry 70%;
+    }
+    .masa-ciz .rm-tabak  circle { animation-range: entry 10% entry 80%; }
+    .masa-ciz .rm-fincan circle { animation-range: entry 20% entry 90%; }
+    .masa-ciz .rm-orta   ellipse { animation-range: entry 30% entry 100%; }
+    @keyframes masa-cizgi { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  }
+}
+
+/* overflow: clip desteklenmeyen tarayıcı (eski Safari): hidden'a düş VE
+   çizimi kapat — yoksa view() kaydırıcı olarak hücreyi alır ve masa
+   dashoffset:1'de GÖRÜNMEZ kalır. Statik tam masa, eksik masadan iyidir. */
+@supports not (overflow: clip) {
+  .bolum, .bolum-koyu { overflow: hidden; }
+  .masa-ciz circle, .masa-ciz ellipse { animation: none !important; stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
+}
+
+/* --- Lejant: kategori indeksi ------------------------------------------------
+   14 kutu yerine program lejantı: düz glif + etiket, nokta ile ayrılmış,
+   sarar. Kimlik şekilde kalıyor, kutu gidiyor. */
+.lejant {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 0;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.lejant li { display: inline-flex; align-items: center; }
+.lejant li + li::before {
+  content: '·' / '';   /* alternatif metin boş: ayraç ekran okuyucuya gitmez */
+  margin: 0 12px;
+  color: var(--muted-light);
+}
+.lejant a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--muted);
+  padding: 4px 2px;
+  border-radius: var(--r-sm);
+  transition: color .15s var(--ease);
+}
+.lejant a:hover { color: var(--ink); }
+.lejant a[aria-current="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1.5px; }
+.lejant svg { width: 14px; height: 14px; flex: 0 0 auto; }
+.lejant .ci-body { fill: currentColor; }
+
+/* --- Program: topluluk listesi ----------------------------------------------
+   Kart ızgarası DEĞİL. .hw-row hap satırı dilinin uzantısı: rakam · ad ·
+   şehir · kategori · üye. Kartlar /kesfet'te kalır (afiş ≠ katalog). */
+.program { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.program-satir {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) 64px;
+  gap: var(--s-4);
+  align-items: baseline;
+  background: var(--panel);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: background .15s var(--ease);
+}
+.program-satir:hover { background: var(--paper-cream); }
+.program-satir:hover .program-ad { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+.program-no { font-family: var(--font-serif), Georgia, serif; font-size: 14px; color: var(--muted); }
+.program-ad { font-family: var(--font-serif), Georgia, serif; font-size: 17px; letter-spacing: .02em; line-height: 1.25; min-width: 0; overflow-wrap: anywhere; }
+.program-sehir, .program-kat { font-size: 16px; color: var(--ink); min-width: 0; }
+.program-kat { display: inline-flex; align-items: center; gap: 8px; }
+.program-kat svg { width: 14px; height: 14px; flex: 0 0 auto; }
+.program-kat .ci-body { fill: currentColor; }
+.program-uye { font-family: var(--font-mono), monospace; font-variant-numeric: tabular-nums; font-size: 14px; color: var(--ink); text-align: right; }
+.program-bas {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) 64px;
+  gap: var(--s-4);
+  padding: 0 16px 8px;
+  font: 400 10px var(--font-mono), monospace;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.program-bas span:last-child { text-align: right; }
+
+@media (max-width: 760px) {
+  /* Yatay 8: 8 marj + 8 dolgu = 16 = mobil .container dolgusu (aynı ray). */
+  .bolum { margin: 8px 8px 0; padding: 18px var(--s-2); min-height: clamp(260px, 38vh, 380px); }
+  /* Kısa hücre mobilde de kısa: bu kural mobil .bolum'dan SONRA gelmeli,
+     yoksa kaskadda ezilir (ölçüldü: 380px kalıyordu). */
+  .bolum-kisa { min-height: clamp(180px, 24vh, 240px); }
+  .masa-ciz { height: 112%; top: -6%; right: -22%; }
+  .bolum-kisa .masa-ciz { height: 140%; top: -20%; right: -28%; }
+  .program-bas { display: none; }
+  .program-satir {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    grid-template-areas: "no ad uye" "no meta meta";
+    gap: 4px var(--s-3);
+    padding: 12px;
+  }
+  .program-no { grid-area: no; }
+  .program-ad { grid-area: ad; }
+  .program-uye { grid-area: uye; }
+  .program-sehir, .program-kat { grid-area: meta; font-size: 14px; color: var(--muted); }
+  .program-kat { display: none; }  /* darda tek meta: şehir; kategori glifi lejantta zaten var */
+  /* Lejant darda beş satıra kırılıyordu (375'te ölçüldü): ayraç aralığı ve
+     dolgu sıkılaşır, glif küçülür — satır sayısı düşer, dil aynı kalır. */
+  .lejant { gap: 2px 0; }
+  .lejant li + li::before { margin: 0 8px; }
+  .lejant a { font-size: 13px; gap: 5px; padding: 3px 1px; }
+  .lejant svg { width: 12px; height: 12px; }
+}
+
+/* Geniş ekran: hücre 1900px'e açılırken masa 470px'te sağ kenara yapışık
+   kalıyordu ve hücre boş bir banda dönüşüyordu (1920'de ölçüldü). Masa
+   metinle diyaloğa çekilir, metin bloğu genişler. Hücre tam genişlik kalır:
+   referansın dili bu. */
+@media (min-width: 1600px) {
+  .masa-ciz { right: 9%; height: 132%; top: -16%; }
+  .bolum-kisa .masa-ciz { height: 160%; top: -30%; }
+  .bolum-alt-blok { max-width: 56ch; }
+  .bolum { padding: 26px max(var(--s-4), calc((100% - var(--w-page)) / 2 + var(--s-5))); }
+}

@@ -66,5 +66,5 @@ function ContactCard({ title, desc, contact, href }: { title: string; desc: stri
 }
 
 const pageStyle: React.CSSProperties = { maxWidth: 720, margin: "0 auto", padding: "40px 24px 80px" };
-const h1Style: React.CSSProperties = { fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(32px, 4.5vw, 48px)", fontWeight: 400, lineHeight: 1.15, margin: "4px 0 18px", letterSpacing: "0.5px" };
+const h1Style: React.CSSProperties = { fontFamily: "var(--font-serif), Georgia, serif", fontSize: "clamp(32px, 4.5vw, 48px)", fontWeight: 400, lineHeight: 1.15, margin: "4px 0 18px", letterSpacing: "0.5px" };
 const leadStyle: React.CSSProperties = { fontSize: 16, lineHeight: 1.6, color: "var(--ink)", margin: 0, maxWidth: "58ch" };

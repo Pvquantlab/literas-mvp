@@ -3,36 +3,12 @@ import Link from 'next/link'
 import EventCard from '@/components/event-card'
 import CommunityCard from '@/components/community-card'
 import KesfetTabs from './kesfet-tabs'
-import KesfetCategoryStrip from './kesfet-category-strip'
+import Lejant from '@/components/lejant'
+import { CATEGORIES } from '@/lib/categories'
 
 export const dynamic = 'force-dynamic'
 
 const PAGE_SIZE = 12
-
-/**
- * Kategori adlari. RENKLER KALDIRILDI: her kategoriye bir `soft` pastel ve bir
- * `ink` vurgu rengi atanmisti -- 14 kategori x 2 = 28 sabit renk, yesilden
- * mora dagilmis. Olculen DNA tek vurgu rengi soyluyor; ayrim renkle degil
- * zemin tonu ve tipografiyle kuruluyor. `ink` zaten olu koddu (serit
- * lib/categories.ts'e gecmisti), `soft` yalnizca topluluk kart kapaginda
- * kullaniliyordu ve o kart artik ortak bilesene devredildi.
- */
-const CATS = [
-  { n: 'Kitap',      slug: 'kitap' },
-  { n: 'Doğa',       slug: 'doğa' },
-  { n: 'Müzik',      slug: 'müzik' },
-  { n: 'Lezzet',     slug: 'lezzet' },
-  { n: 'Dil',        slug: 'dil' },
-  { n: 'Spor',       slug: 'spor' },
-  { n: 'Sanat',      slug: 'sanat' },
-  { n: 'Oyun',       slug: 'oyun' },
-  { n: 'Tech',       slug: 'tech' },
-  { n: 'Sinema',     slug: 'sinema' },
-  { n: 'Fotoğraf',   slug: 'fotoğraf' },
-  { n: 'Gönüllülük', slug: 'gönüllülük' },
-  { n: 'Kariyer',    slug: 'kariyer' },
-  { n: 'Sosyal',     slug: 'sosyal' },
-]
 
 // Şehir karşılaştırması için: Türkçe harfleri ASCII'ye indir, küçült.
 // DB'deki communities.city_key sütunuyla birebir aynı mantık.
@@ -185,13 +161,16 @@ export default async function KesfetPage({
       {/* Promo bandı — eski hâli #E9F4C2 zemin, #D9E8A6 çizgi, #54702F yıldızdı;
           üçü de Temmuz'un lime paletinden ve sayfanın ilk gördüğün şeyiydi. */}
       <div style={{ background: 'var(--paper-cream)' }}>
+        {/* flexWrap: 375'te etiket + dört satır metin + düğme yan yana
+            sıkışıyordu (ölçüldü). Darda düğme kendi satırına iner. */}
         <div style={{
           maxWidth: '1320px',
           margin: '0 auto',
           padding: '10px 24px',
           display: 'flex',
           alignItems: 'center',
-          gap: '14px',
+          flexWrap: 'wrap',
+          gap: '10px 14px',
         }}>
           <span style={{
             fontFamily: "'IBM Plex Mono', monospace",
@@ -251,14 +230,25 @@ export default async function KesfetPage({
         </h1>
       </div>
 
-      {/* Kategori şeridi */}
+      {/* Kategori lejantı — ana sayfayla AYNI dil (kutusuz glif + etiket).
+          Sözleşme keşfetin kendisi: ?tab=&kategori=<aksanlı DB değeri>.
+          Aktif kategori aksanlı geldiği için slug'a çevriliyor; bağlantı
+          yine aksanlı değeri yazıyor — sunucu süzgeci değişmedi. */}
       <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '24px 24px 0' }}>
-        <KesfetCategoryStrip
-          cats={CATS}
-          activeTab={activeTab}
-          activeCategory={activeCategory}
-          query={params.q ?? null}
-          city={city}
+        <Lejant
+          // BIREBIR eşleşme, byValue DEĞİL: sunucu süzgeci `.eq('category', activeCategory)`
+          // ile ham değeri arıyor. byValue alias'ı da çözüyor ('yuruyus' -> doga) ve
+          // lejantta "Doğa"yı aktif gösterirken sonuç boş kalıyordu.
+          activeSlug={CATEGORIES.find((c) => c.value === activeCategory)?.slug ?? null}
+          hrefFor={(slug) => {
+            const p = new URLSearchParams()
+            p.set('tab', activeTab)
+            const deger = slug ? CATEGORIES.find((c) => c.slug === slug)?.value : null
+            if (deger) p.set('kategori', deger)
+            if (params.q) p.set('q', params.q)
+            if (city) p.set('city', city)
+            return `/kesfet?${p.toString()}`
+          }}
         />
       </div>
 
@@ -287,13 +277,17 @@ export default async function KesfetPage({
               )}
             </>
           ) : (
-            <p style={{ color: 'var(--muted)', fontSize: '15px', padding: '40px 0' }}>
-              {searchQuery
-                ? `"${searchQuery}" için sonuç bulunamadı.`
-                : activeCategory
-                ? 'Bu kategoride yaklaşan etkinlik yok.'
-                : 'Yaklaşan etkinlik yok.'}
-            </p>
+            // Boş durum bir yön göstermelidir, bir ruh hâli değil.
+            <div className="empty-state" style={{ marginTop: '24px' }}>
+              <p>
+                {searchQuery
+                  ? `"${searchQuery}" için sonuç bulunamadı.`
+                  : activeCategory
+                  ? 'Bu kategoride yaklaşan buluşma yok. İlkini sen planla.'
+                  : 'Yaklaşan buluşma yok. Masa boş; ilkini sen planla.'}
+              </p>
+              <Link href="/event/new" className="btn-primary btn-sm">Etkinlik oluştur</Link>
+            </div>
           )
         ) : (
           communities.length > 0 ? (
@@ -329,13 +323,16 @@ export default async function KesfetPage({
               )}
             </>
           ) : (
-            <p style={{ color: 'var(--muted)', fontSize: '15px', padding: '40px 0' }}>
-              {searchQuery
-                ? `"${searchQuery}" için sonuç bulunamadı.`
-                : activeCategory
-                ? 'Bu kategoride topluluk yok.'
-                : 'Henüz topluluk yok.'}
-            </p>
+            <div className="empty-state" style={{ marginTop: '24px' }}>
+              <p>
+                {searchQuery
+                  ? `"${searchQuery}" için sonuç bulunamadı.`
+                  : activeCategory
+                  ? 'Bu kategoride henüz masa yok. İlkini sen kur.'
+                  : 'Henüz masa yok. İlkini sen kur.'}
+              </p>
+              <Link href="/community/new" className="btn-primary btn-sm">Topluluk kur</Link>
+            </div>
           )
         )}
 

@@ -5,9 +5,10 @@ import { DevLogotype } from '@/components/kunye'
 import { RolyefKap, RolyefMasa, RolyefKahve, RolyefKitap, RolyefSehir } from '@/components/rolyef'
 import { formatDayMonthShort } from '@/lib/date'
 import { bulunmaHali } from '@/lib/turkce'
-import CategoryStrip from './category-strip'
 import HowItWorks from '@/components/how-it-works'
-import ClosingCta from '@/components/closing-cta'
+import Bolum from '@/components/bolum'
+import Program from '@/components/program'
+import Lejant from '@/components/lejant'
 import CommunityCard, { type CommunitySummary } from '@/components/community-card'
 import UpcomingEvents, { type EventSummary } from '@/components/upcoming-events'
 import EventCard from '@/components/event-card'
@@ -605,6 +606,14 @@ export default async function HomePage({
     )
   }
 
+  // II. bölüm başlığı zaman iddiası taşıyor; sorgu haftayla sınırlı değil.
+  // Hepsi yedi gün içindeyse "bu hafta", değilse "yakında". Sorguya .lte
+  // eklemek istenmedi: bölüm çoğu hafta boşalır, "Masa boş" yanlış tetiklenir.
+  // Date.now() react-hooks 'impure during render' kuralına takılıyor; dosyadaki
+  // mevcut kalıp new Date() (etkinlik sorgusu) — aynısı.
+  const yediGun = new Date().getTime() + 7 * 864e5
+  const hepsiBuHafta = eventsWithSeri.length > 0 && eventsWithSeri.every((e) => new Date(e.event_date).getTime() <= yediGun)
+
   /* =================================================================
      MİSAFİR
      ================================================================= */
@@ -784,37 +793,63 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* ---- Kategori çipleri ---- */}
-      <section className="container section-tight" style={{ paddingBlock: 'var(--s-4)' }}>
-        <CategoryStrip activeSlug={activeSlug} activeCity={activeCity} query={params.q ?? null} />
+      {/* ---- Lejant: kategori indeksi ----
+           14 kare kutu "uygulama ikon satırı" gibi okunuyordu; afişte
+           kategoriler bir lejanttır. Aynı şekiller, kutusuz. */}
+      <section className="container" style={{ paddingBlock: 'var(--s-5) var(--s-4)' }}>
+        <Lejant activeSlug={activeSlug} activeCity={activeCity} query={params.q ?? null} />
       </section>
 
-      {/* ---- Yaklaşan etkinlikler: sayfanın asıl işi ---- */}
-      <section id="etkinlikler" className="container section">
-        <SectionHead
-          title={
-            cityLocative
-              ? <><span className="highlight-yellow">{activeCity}</span>{cityLocative.slice(activeCity!.length)} yaklaşanlar</>
-              : <><span className="highlight-yellow">Yaklaşan</span> etkinlikler</>
-          }
-          href="/kesfet"
-          linkLabel="Tüm etkinlikler"
-        />
-        <UpcomingEvents events={eventsWithSeri} />
-      </section>
+      {/* ---- II · BU HAFTA MASADA ----
+           Masa kademesi 1: yalnız kenar. Etkinlik yoksa gri kutu yerine
+           boş masanın kendisi konuşur — dürüst ve metaforla aynı cümlede. */}
+      <Bolum
+        id="etkinlikler"
+        no="II"
+        asama={1}
+        kisa={eventsWithSeri.length === 0}
+        baslik={eventsWithSeri.length > 0
+          ? (cityLocative ? `${cityLocative} ${hepsiBuHafta ? 'bu hafta' : 'yakında'} masada` : (hepsiBuHafta ? 'Bu hafta masada' : 'Yakında masada'))
+          : 'Masa boş'}
+        alt={eventsWithSeri.length > 0
+          ? <><span className="sayi">{yaklasanToplam}</span> yaklaşan buluşma. Birine otur.</>
+          : (cityLocative
+              ? `${cityLocative} henüz yaklaşan buluşma yok. İlk masayı kuran sen ol.`
+              : 'Henüz yaklaşan buluşma yok. İlk masayı kuran sen ol.')}
+        eylemler={eventsWithSeri.length > 0
+          ? [{ href: '/kesfet', etiket: 'Tüm etkinlikler' }]
+          : [{ href: '/event/new', etiket: 'Etkinlik oluştur' }, { href: '/kesfet', etiket: 'Toplulukları gör', ikincil: true }]}
+      />
+      {eventsWithSeri.length > 0 && (
+        <section className="container section" aria-labelledby="etkinlikler-baslik" style={{ paddingTop: 'var(--s-6)' }}>
+          <UpcomingEvents events={eventsWithSeri} />
+        </section>
+      )}
 
-      {/* ---- Topluluklar ---- */}
-      <section id="topluluklar" className="container section" style={{ paddingTop: 0 }}>
-        <SectionHead title="Topluluklar" />
+      {/* ---- III · MASALAR ----
+           Masa kademesi 2: tabaklar geliyor. Kart ızgarası değil PROGRAM:
+           afiş dilinde satırlar. Kartlar /kesfet'te (afiş ≠ katalog). */}
+      <Bolum
+        id="topluluklar"
+        no="III"
+        asama={2}
+        baslik={communities.length > 0
+          ? (communities.length < 24
+              ? <><span className="sayi">{communities.length}</span> masa{cityLocative ? `, ${cityLocative}` : ''}</>
+              : `Masalar${cityLocative ? `, ${cityLocative}` : ''}`)   // sorgu .limit(24): kırpılmış sayı basılmaz
+          : 'Henüz masa yok'}
+        alt={communities.length > 0
+          ? 'Her biri bir konu, bir şehir, birkaç kişiyle başlamış. Katıl ya da kendininkini kur.'
+          : 'İlk masayı sen kur; gerisi gelir.'}
+        eylemler={[{ href: '/kesfet?tab=topluluklar', etiket: 'Tümünü gör' }]}   // 'Topluluk kur' bir kaydırma sonra V'te düğme; refren üçten ikiye
+      />
+      <section className="container" aria-labelledby="topluluklar-baslik" style={{ paddingTop: 'var(--s-6)', paddingBottom: 'var(--s-6)' }}>
         <div className="row" style={{ gap: 'var(--s-3)', marginBottom: 'var(--s-5)', flexWrap: 'wrap' }}>
           <SearchBox initialQuery={params.q ?? ''} />
           <CityFilter cities={cities} activeCity={activeCity ?? ''} />
         </div>
-
         {communities.length > 0 ? (
-          <div className="grid-communities">
-            {communities.map((c) => <CommunityCard key={c.id} community={c} />)}
-          </div>
+          <Program topluluklar={communities} />
         ) : (
           <div className="empty-state">
             <p>{hasFilter ? 'Bu filtreye uygun topluluk yok.' : 'Henüz topluluk yok.'}</p>
@@ -823,16 +858,28 @@ export default async function HomePage({
         )}
       </section>
 
-      {/* ---- Nasıl çalışır ---- */}
-      <section className="container section" style={{ paddingTop: 0 }}>
-        <SectionHead title="Nasıl çalışır" />
+      {/* ---- IV · NASIL OTURULUR ---- Masa kademesi 3: fincanlar. */}
+      <Bolum id="nasil" no="IV" asama={3} baslik="Nasıl oturulur" alt="Üç adım. Üçüncüsü kahvenin işi." />
+      <section className="container" aria-labelledby="nasil-baslik" style={{ paddingTop: 'var(--s-6)', paddingBottom: 'var(--s-6)' }}>
         <HowItWorks />
       </section>
 
-      {/* ---- Kapanış: dokunan çizgiler.
-           Eski lacivert bandın yerine geçti — ikisi de topluluk kurmaya
-           çağırıyordu, iki CTA üst üste geliyordu. --- */}
-      <ClosingCta />
+      {/* ---- V · MASAYI SEN KUR ----
+           Masa kademesi 4: tam kurulu, tam opak — sayfanın son sözü.
+           Künyedeki davet hücresiyle AYNI mavi: açılış ve kapanış refren. Eski
+           ortalanmış kapanış ve noktalı zemin gitti; bölüm dilinin kendisi
+           kapanış oldu. */}
+      <div style={{ paddingBottom: 8 }}>
+        <Bolum
+          id="kur"
+          no="V"
+          asama={4}
+          koyu
+          baslik="Masayı sen kur"
+          alt="Konu senden, masa bizden. İki dakikada kurulur, ilk buluşmayı bu hafta yapabilirsin."
+          eylemler={[{ href: '/community/new', etiket: 'Topluluk kur', dugme: true }, { href: '/hakkinda', etiket: 'literaslab nedir', ikincil: true }]}
+        />
+      </div>
 
     </main>
   )

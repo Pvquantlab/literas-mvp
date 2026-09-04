@@ -1,4 +1,4 @@
-import { RolyefMasa, RolyefKap } from '@/components/rolyef'
+import { RolyefKahve, RolyefKap } from '@/components/rolyef'
 
 /**
  * "Nasıl çalışır" — referansın "What you should bring" listesinin dili.
@@ -25,17 +25,19 @@ const STEPS: Step[] = [
 export default function HowItWorks() {
   return (
     <div className="hw">
-      <ol className="hw-list">
+      <ol className="hw-list" role="list">
         {STEPS.map((s) => (
           <li key={s.no} className="hw-row reveal">
-            <span className="hw-no">{s.no}</span>
+            <span className="hw-no" aria-hidden="true">{s.no}</span>
             <span className="hw-title">{s.title}</span>
             <span className="hw-body">{s.body}</span>
           </li>
         ))}
       </ol>
 
-      <RolyefKap cizim={RolyefMasa} konum="sag-alt" olcek={0.5} opaklik={0.1} />
+      {/* Kahve, masa DEĞİL: tam masa ilk kez kapanışta (V) görünmeli; hücrenin
+          kendi metni de "gerisi kahvenin işi". */}
+      <RolyefKap cizim={RolyefKahve} konum="sag-alt" olcek={0.5} opaklik={0.1} />
 
       <style>{`
         .hw {

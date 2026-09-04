@@ -473,6 +473,15 @@ alıyor, katılımcı listesi canlı, QR ile giriş alınabiliyor.
       eşleme gerektiriyordu; bedeli konusuz toplulukların görünmemesi),
       taksonomi birleştirme, mesafe/konum eşleştirmesi, keşfet yüzeyi.
 - [ ] (Talebi kanıtlanırsa) kategori derinlik modülleri
+- [x] **Ana sayfa sanat yönetimi turu — "masa kurulur"** (01.09.2026)
+      Yol haritası maddesi değil, `docs/tasarim/sanat-yonetimi-brief.md`'nin
+      uygulaması. Tek fikir: masa kaydırdıkça kurulur (RolyefMasa dört kademe,
+      CSS scroll-driven, kütüphanesiz, reduced-motion'da son kare). Misafir
+      ana sayfası beş bölüm: künye → boş masa / bu hafta → masalar (PROGRAM
+      listesi, kart ızgarası değil) → nasıl oturulur → masayı sen kur.
+      Kategori kutuları lejant oldu (ana sayfa + keşfet, keşfetin kendi
+      `?kategori=` sözleşmesiyle). /hakkinda yazıldı. Karar defteri ve
+      doğrulama tablosu: `docs/tasarim/masa-deneyimi-yon.md`.
 
 ---
 
