@@ -1359,8 +1359,11 @@ header, footer, nav {
   /* SOL RAY: hücre tam genişlik, içerik .container (1200 ortalı). Dolgu
      .container'ın sol kenarına bağlanır ki başlık ile altındaki program
      aynı düşey çizgide dursun (ölçüldü: 1440'ta 112px, 1920'de 344px kayma).
-     (100% - w-page)/2 + s-5 - 8px(hücre marjı). */
-  padding: 22px max(24px, calc((100% - var(--w-page)) / 2 + var(--s-5) - 8px));
+     Hücre 8px marjlı: %100 zaten W-16'dır, dolgu (W-16-1200)/2 + 24 ve
+     hücre-içi sol = 8 + o = (W-1200)/2 + 24 = .container'ın solu. (-8px
+     EKLENMEZ: ilk denemede eklendi ve her genişlikte 8px kaydı, hesaplandı.)
+     Dar ekranda taban 16: 8 + 16 = 24 = .container dolgusu. */
+  padding: 22px max(var(--s-4), calc((100% - var(--w-page)) / 2 + var(--s-5)));
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1561,7 +1564,8 @@ header, footer, nav {
 .program-bas span:last-child { text-align: right; }
 
 @media (max-width: 760px) {
-  .bolum { margin: 8px 8px 0; padding: 18px 16px; min-height: clamp(260px, 38vh, 380px); }
+  /* Yatay 8: 8 marj + 8 dolgu = 16 = mobil .container dolgusu (aynı ray). */
+  .bolum { margin: 8px 8px 0; padding: 18px var(--s-2); min-height: clamp(260px, 38vh, 380px); }
   /* Kısa hücre mobilde de kısa: bu kural mobil .bolum'dan SONRA gelmeli,
      yoksa kaskadda ezilir (ölçüldü: 380px kalıyordu). */
   .bolum-kisa { min-height: clamp(180px, 24vh, 240px); }
@@ -1595,5 +1599,5 @@ header, footer, nav {
   .masa-ciz { right: 9%; height: 132%; top: -16%; }
   .bolum-kisa .masa-ciz { height: 160%; top: -30%; }
   .bolum-alt-blok { max-width: 56ch; }
-  .bolum { padding: 26px max(32px, calc((100% - var(--w-page)) / 2 + var(--s-5) - 8px)); }
+  .bolum { padding: 26px max(var(--s-4), calc((100% - var(--w-page)) / 2 + var(--s-5))); }
 }
