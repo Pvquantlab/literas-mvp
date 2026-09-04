@@ -139,13 +139,10 @@ export function SisKatmani({
 
     // YALNIZCA CANLI AĞAÇTAKİ, YERLEŞMİŞ ELEMANA BAĞLAN.
     //
-    // Bu koşul şart: React sayfayı AKIŞLA (streaming) gönderiyor ve içeriği
-    // önce gizli bir kutuda tutup sonra canlı ağaca taşıyor. Canvas'ı o
-    // taşınmadan önce oraya eklediğimde React'in takası bozuluyordu --
-    // hata FIRLAMIYOR, içerik sessizce hiç yerleşmiyor ve sayfa
-    // "yükleniyor..."da kalıyordu. Ana sayfa ve /kesfet kilitleniyordu.
-    // offsetParent + gerçek boyut, elemanın canlı ve yerleşmiş olduğunun
-    // yeterli göstergesi.
+    // Artık tuval hedefin İÇİNE eklenmiyor (bkz. kur: #sis-host), yani
+    // React'in takasını bozma riski kalktı. Bu kontrol yine de gerekli:
+    // hedefin ÖLÇÜLEBİLİR olması lazım — akıştaki gizli kopyanın rect'i
+    // 0x0'dır, ona oturulmaz. offsetParent + gerçek boyut yeterli gösterge.
     const uygunHedef = (): HTMLElement | null => {
       for (const e of Array.from(document.querySelectorAll<HTMLElement>('#' + CSS.escape(hedefId)))) {
         const r = e.getBoundingClientRect()
@@ -197,17 +194,40 @@ export function SisKatmani({
     }
 
     function kur(kutu: HTMLElement): () => void {
+    // EV SAHİBİ: layout.tsx'teki #sis-host. Tuval HEDEFİN İÇİNE EKLENMEZ —
+    // hedef React'in yönettiği bir alt ağaç ve içine eklenen her çocuk
+    // hydration karşılaştırmasında "sunucu HTML'inde yok" diye yakalanıyordu
+    // (portal diff'i: `- <canvas>`); React ağacı çöpe atıp yeniden
+    // üretiyordu. `load` beklemek ve offsetParent kontrolü bunu engellemedi
+    // (ölçüldü). Ev sahibi React tarafından çocuksuz render edilir; effect'te
+    // eklenen çocuk asla karşılaştırılmaz. Ev sahibi yoksa (başka bir layout)
+    // hiçbir şey yapılmaz.
+    const ev = document.getElementById('sis-host')
+    if (!ev) return () => {}
     const cv = document.createElement('canvas')
     cv.setAttribute('aria-hidden', 'true')
     Object.assign(cv.style, {
-      position: 'absolute', inset: '0', width: '100%', height: '100%',
-      display: 'block', zIndex: '2',
+      position: 'absolute', display: 'block',
+      // Hücrenin köşesi (kunyeHucre.borderRadius = 4). Eskiden hücrenin
+      // overflow:hidden'ı kırpıyordu; artık dışarıda olduğumuz için kendimiz.
+      borderRadius: '4px',
       // Altındaki bağlantılar tıklanabilir kalsın.
       pointerEvents: 'none',
     } as CSSStyleDeclaration)
-    kutu.appendChild(cv)
+    ev.appendChild(cv)
     const ctx = cv.getContext('2d')
     if (!ctx) { cv.remove(); return () => {} }
+
+    /** Tuvali hedefin üstüne BELGE koordinatlarıyla oturtur. Belgeye göre
+     *  absolute olduğu için kaydırmayla birlikte hareket eder; yalnızca
+     *  yerleşim değişince (boyut, yeniden akış) çağrılmalı. */
+    function konumla(): void {
+      const r = kutu.getBoundingClientRect()
+      cv.style.top = `${Math.round(r.top + window.scrollY)}px`
+      cv.style.left = `${Math.round(r.left + window.scrollX)}px`
+      cv.style.width = `${Math.round(r.width)}px`
+      cv.style.height = `${Math.round(r.height)}px`
+    }
 
     const azMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -237,6 +257,7 @@ export function SisKatmani({
       if (gw < 8 || gy < 8) return false
       g = gw
       y = gy
+      konumla()
       cv!.width = Math.round(g * dpr)
       cv!.height = Math.round(y * dpr)
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -353,9 +374,12 @@ export function SisKatmani({
     }, { threshold: 0 })
     io.observe(cv)
 
-    // Konteyner izleniyor: boyutu o belirliyor.
+    // Konteyner izleniyor: boyutu o belirliyor; boyutla() konumu da yeniler.
     const ro = new ResizeObserver(() => { boyutla() })
     ro.observe(kutu)
+    // Hedefin boyutu değişmese de üstündeki içerik akabilir (ör. yüklenen
+    // görsel) — belge koordinatı kayar. Pencere yeniden boyutlanınca konumla.
+    window.addEventListener('resize', konumla, { passive: true })
 
     window.addEventListener('pointermove', isaretci as EventListener, { passive: true })
     window.addEventListener('touchmove', isaretci as EventListener, { passive: true })
@@ -365,6 +389,7 @@ export function SisKatmani({
     return () => {
       if (rafId) cancelAnimationFrame(rafId)
       io.disconnect(); ro.disconnect()
+      window.removeEventListener('resize', konumla)
       window.removeEventListener('pointermove', isaretci as EventListener)
       window.removeEventListener('touchmove', isaretci as EventListener)
       cv.remove()

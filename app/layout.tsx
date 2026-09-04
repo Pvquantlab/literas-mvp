@@ -132,17 +132,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {children}
 
         <Footer />
+        {/* SİS EV SAHİBİ. Tuvaller React'in yönettiği hücrelerin İÇİNE değil,
+            buraya ekleniyor. React bu div'i çocuksuz render eder; effect'te
+            eklenen çocuk hydration karşılaştırmasına girmez. Eski yol (hücre
+            içine appendChild) her misafir açılışında "Hydration failed"
+            üretiyordu (portal diff'i: `- <canvas>`), React ağacı çöpe atıp
+            istemcide yeniden üretiyordu; `load` beklemek ve offsetParent
+            kontrolü bunu ENGELLEMİYORDU (ölçüldü, 01.09.2026).
+            Konumlandırma belge koordinatlarında: div body'nin ilk çocuğu
+            olarak sol-üstte sıfır boyutlu durur, tuvaller absolute olarak
+            hedef hücrenin rect'ine oturur ve kaydırmayla birlikte hareket
+            eder. z-index 2 (header 40'ın altında), pointer-events none. */}
+        <div
+          id="sis-host"
+          aria-hidden="true"
+          style={{ position: 'absolute', top: 0, left: 0, width: 0, height: 0, overflow: 'visible', zIndex: 2, pointerEvents: 'none' }}
+        />
         {/* Sis: katmanlar hedeflerine id ile tutunur (#sis-logotype,
-            #sis-hero). Ana sayfa dışındaki rotalarda hiçbir şey yapmaz.
-
-            GEÇMİŞ: bir tur kapatılmıştı çünkü ana sayfa "yükleniyor..."da
-            kilitleniyordu. İki gerçek sebep bulunup düzeltildi:
-              · sis kodunda null maskeye yazma (globalCompositeOperation)
-              · service worker'ın artık var olmayan eski parçayı servis
-                etmesi -- yani o null hatasının düzeltilmemiş sürümünü
-            Katman ayrıca akış (streaming) bitmeden DOM'a hiç dokunmuyor:
-            window load bekleniyor ve yalnızca yerleşmiş, görünür hedefe
-            bağlanıyor. */}
+            #sis-hero). Ana sayfa dışındaki rotalarda hiçbir şey yapmaz. */}
         <SisMotoru />
         <RegisterSW />
       </body>
