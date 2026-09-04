@@ -226,12 +226,23 @@ export function SisKatmani({
      *  absolute olduğu için kaydırmayla birlikte hareket eder. Kesir
      *  YUVARLANMAZ: hücre kenarı .5px'e düşerse yuvarlanmış tuval hücrenin
      *  dışına taşar ve kâğıt üstünde ince bir sis şeridi bırakır. */
+    let sonKonum = ''
+    let sonOpaklik = ''
     function konumla(): void {
       const r = kutu.getBoundingClientRect()
-      cv.style.top = `${r.top + window.scrollY}px`
-      cv.style.left = `${r.left + window.scrollX}px`
-      cv.style.width = `${r.width}px`
-      cv.style.height = `${r.height}px`
+      // Her karede çağrılabilir (bkz. kare): yalnız değişince yazılır.
+      const k = `${r.top + window.scrollY}|${r.left + window.scrollX}|${r.width}|${r.height}`
+      if (k !== sonKonum) {
+        sonKonum = k
+        cv.style.top = `${r.top + window.scrollY}px`
+        cv.style.left = `${r.left + window.scrollX}px`
+        cv.style.width = `${r.width}px`
+        cv.style.height = `${r.height}px`
+      }
+      // Hedef .reveal ile beliriyor (opacity 0→1, translateY 20px→0):
+      // tuval hedefle birlikte belirsin, hedef görünmezken sis yüzmesin.
+      const o = getComputedStyle(kutu).opacity
+      if (o !== sonOpaklik) { sonOpaklik = o; cv.style.opacity = o }
     }
 
     const azMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -316,6 +327,9 @@ export function SisKatmani({
         if (boyutla() === 'gecersiz') { rafId = requestAnimationFrame(kare); return }
       }
       x = (x + 0.18) % g
+      // Hedef kaydırma animasyonuyla yer değiştirebilir (.reveal translateY);
+      // ResizeObserver dönüşümü görmez. Kare başına bir rect okuması ucuz.
+      konumla()
       // Sis yavaşça geri kapanıyor
       mctx!.globalCompositeOperation = 'source-over'
       mctx!.fillStyle = 'rgba(0,0,0,0.012)'
@@ -447,8 +461,12 @@ export function SisKatmani({
 export function SisMotoru() {
   return (
     <>
-      {/* Künye ızgarası: yoğun. Referansın kendi düzeni de bu. */}
-      <SisKatmani hedefId="sis-hero" tavan={0.9} />
+      {/* Künye: sis HÜCRELERE oturur, ızgaraya değil. Eskiden tek tuval bütün
+          #sis-hero ızgarasını kaplıyordu; sis 8px boşluklara ve beyaz davet
+          hücresine de biniyordu (canlıda ölçüldü, 05.09.2026). Beyaz kilit
+          paneli sissiz; iki greige hücre yoğun. */}
+      <SisKatmani hedefId="sis-hucre-1" tavan={0.9} />
+      <SisKatmani hedefId="sis-hucre-2" tavan={0.9} />
       {/* Logotype hücresi: tavan DAHA DÜŞÜK. Maske birkaç saniyede tavana
           doluyor; 0.9 olsaydı fare hiç oynamadığında marka adı kalıcı
           olarak sisin altında kalırdı. 0.55'te sis açıkça görünüyor ama

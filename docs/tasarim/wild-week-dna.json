@@ -160,7 +160,7 @@
   },
   "_sis_efekti": {
     "durum": "UYGULANDI VE DOĞRULANDI (2026-08-29)",
-    "nerede": "#sis-hero (tavan 0.9) ve #sis-logotype (tavan 0.55)",
+    "nerede": "#sis-hucre-1 ve #sis-hucre-2 (tavan 0.9) ve #sis-logotype (tavan 0.55). 05.09.2026: eskiden tek tuval bütün #sis-hero ızgarasını kaplıyordu; sis 8px boşluklara ve beyaz davet hücresine biniyordu (canlıda ölçüldü). Artık hücre başına tuval; beyaz kilit paneli sissiz. Tuval konumu ve opaklığı her karede hedefe eşitlenir (.reveal dönüşümü için).",
     "dosya": "components/sis.tsx",
     "dogrulama": "Kullanıcı kendi tarayıcısında baktı: fare gezdirince dağılıp yavaşça geri kapanan bulut dokusu. Yani gerçek fBm dokusu üretiliyor, bozuk 2x2 gerilmesi değil.",
     "neden_tavanlar_farkli": "Maske birkaç saniyede tavana doluyor. Logotype hücresinde 0.9 olsaydı fare hiç oynamadığında marka adı kalıcı olarak sisin altında kalırdı.",
