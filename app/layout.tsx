@@ -149,7 +149,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           style={{ position: 'absolute', top: 0, left: 0, width: 0, height: 0, overflow: 'visible', zIndex: 2, pointerEvents: 'none' }}
         />
         {/* Sis: katmanlar hedeflerine id ile tutunur (#sis-logotype,
-            #sis-hero). Hedef yoksa tuval de yok; hedef giderse (rota geçişi)
+            #sis-hucre-1, #sis-hucre-2). Hedef yoksa tuval de yok; hedef giderse (rota geçişi)
             tuval sökülür. */}
         <SisMotoru />
         <RegisterSW />

@@ -667,8 +667,10 @@ export default async function HomePage({
           padding: 8,
         }}
       >
-        {/* Hücre 1: içerik ALTA yaslı, üstü bilerek boş */}
+        {/* Hücre 1: içerik ALTA yaslı, üstü bilerek boş. Sis hedefi (sis.tsx):
+            sis hücreye oturur, ızgaranın boşluklarına ve beyaz hücreye taşmaz. */}
         <div
+          id="sis-hucre-1"
           className="reveal"
           style={{
             ...kunyeHucre,
@@ -714,7 +716,7 @@ export default async function HomePage({
 
         {/* Hücre 2: GERÇEKLER — referansın "THE FACTS" bloğu, tek harfli
             alan etiketleriyle. */}
-        <div className="reveal" style={{ ...kunyeHucre, minHeight: 380, position: 'relative', overflow: 'hidden' }}>
+        <div id="sis-hucre-2" className="reveal" style={{ ...kunyeHucre, minHeight: 380, position: 'relative', overflow: 'hidden' }}>
           <RolyefKap cizim={RolyefSehir} konum="sag-alt" olcek={1.0} opaklik={0.12} />
           {/* İÇ PANEL. Referansın "The Facts" kutusu kartın İÇİNDE ikinci bir
               yüzey: #E8E8E8, 4px köşe, 24px dolgu (394x394 ölçüldü). Çift
