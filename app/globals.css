@@ -944,7 +944,7 @@ p, .seats-label {
    ========================================================================== */
 
 :root {
-  --seat-empty: #D5D1C5;
+  --seat-empty: var(--paper-soft);   /* sıcak ton kalktı; ara tonla aynı */
 }
 
 .seats { display: flex; flex-direction: column; gap: 9px; }
@@ -991,7 +991,7 @@ p, .seats-label {
 /* Karta gelince boş sandalyeler ısınır: "burası senin olabilir".
    Sitedeki tek mikro-etkileşim — o yüzden anlam taşıyor. */
 .chair-empty polygon { transition: fill .24s var(--ease); }
-.cc-link:hover .chair-empty polygon { fill: #C7BFA8; }
+.cc-link:hover .chair-empty polygon { fill: var(--paper); }
 
 @media (prefers-reduced-motion: reduce) {
   .chair-empty polygon { transition: none; }

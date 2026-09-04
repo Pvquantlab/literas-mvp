@@ -34,9 +34,9 @@ const SITE = SITE_URL
 function mailShell(inner: string): string {
   return `
     <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 2rem;">
-      <p style="font-style: italic; color: #B8541A;">No. 0001</p>
+      <p style="font-style: italic; color: #0755BB;">No. 0001</p>
       ${inner}
-      <p style="font-style: italic; color: #1F2A24; opacity: 0.6; margin-top: 2rem;">
+      <p style="font-style: italic; color: #16160F; opacity: 0.6; margin-top: 2rem;">
         literas
       </p>
     </div>
@@ -55,18 +55,18 @@ function buildMail(template: string, payload: any): { subject: string; html: str
     return {
       subject: `Yarın: ${payload.title}`,
       html: mailShell(`
-        <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+        <h1 style="color: #0755BB; font-weight: 500; font-size: 1.5rem;">
           Yarın: ${safeTitle}
         </h1>
-        <p style="color: #1F2A24;">
+        <p style="color: #16160F;">
           Katıldığın <em>${safeTitle}</em> etkinliği yaklaşıyor.
         </p>
-        <p style="color: #1F2A24;">
+        <p style="color: #16160F;">
           <strong>${dateStr}</strong>${safeLocation ? ` &middot; ${safeLocation}` : ''}
         </p>
-        ${safeCommunity ? `<p style="color: #1F2A24; opacity: 0.75;">${safeCommunity}</p>` : ''}
-        <p style="color: #1F2A24;">
-          <a href="${icsUrl}" style="color: #B8541A;">Takvimine ekle</a>
+        ${safeCommunity ? `<p style="color: #16160F; opacity: 0.75;">${safeCommunity}</p>` : ''}
+        <p style="color: #16160F;">
+          <a href="${icsUrl}" style="color: #0755BB;">Takvimine ekle</a>
         </p>
       `),
     }
@@ -82,22 +82,22 @@ function buildMail(template: string, payload: any): { subject: string; html: str
     return {
       subject: `Yerin hazır: ${payload.title}`,
       html: mailShell(`
-        <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+        <h1 style="color: #0755BB; font-weight: 500; font-size: 1.5rem;">
           Yerin hazır: ${safeTitle}
         </h1>
-        <p style="color: #1F2A24;">
+        <p style="color: #16160F;">
           Bekleme listesindeydin. Bir kişi katılımını iptal etti ve
           <em>${safeTitle}</em> etkinliğine kaydın yapıldı.
         </p>
-        <p style="color: #1F2A24;">
+        <p style="color: #16160F;">
           <strong>${dateStr}</strong>${safeLocation ? ` &middot; ${safeLocation}` : ''}
         </p>
-        <p style="color: #1F2A24;">
-          <a href="${icsUrl}" style="color: #B8541A;">Takvimine ekle</a>
+        <p style="color: #16160F;">
+          <a href="${icsUrl}" style="color: #0755BB;">Takvimine ekle</a>
           &middot;
-          <a href="${eventUrl}" style="color: #B8541A;">Etkinliğe git</a>
+          <a href="${eventUrl}" style="color: #0755BB;">Etkinliğe git</a>
         </p>
-        <p style="color: #1F2A24; opacity: 0.75; font-size: 0.95rem;">
+        <p style="color: #16160F; opacity: 0.75; font-size: 0.95rem;">
           Gelemeyeceksen etkinlik sayfasından katılımını iptal edebilirsin;
           yerin bekleme listesindeki bir sonraki kişiye geçer.
         </p>
@@ -113,14 +113,14 @@ function buildMail(template: string, payload: any): { subject: string; html: str
     return {
       subject: `${payload.requester_name ?? 'Biri'} topluluğuna katılmak istiyor`,
       html: mailShell(`
-        <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+        <h1 style="color: #0755BB; font-weight: 500; font-size: 1.5rem;">
           yeni bir üyelik isteği
         </h1>
-        <p style="color: #1F2A24;">
+        <p style="color: #16160F;">
           <em>${safeRequester}</em>, <strong>${safeCommunity}</strong> topluluğuna katılmak istiyor.
         </p>
-        <p style="color: #1F2A24;">
-          <a href="${communityUrl}" style="color: #B8541A;">Onaylamak ya da reddetmek için topluluğa dön</a>
+        <p style="color: #16160F;">
+          <a href="${communityUrl}" style="color: #0755BB;">Onaylamak ya da reddetmek için topluluğa dön</a>
         </p>
       `),
     }
@@ -139,16 +139,16 @@ function buildMail(template: string, payload: any): { subject: string; html: str
     return {
       subject: `${payload.title ?? 'Seri'} — ${adet} buluşma güncellendi`,
       html: mailShell(`
-        <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+        <h1 style="color: #0755BB; font-weight: 500; font-size: 1.5rem;">
           seride değişiklik var
         </h1>
-        <p style="color: #1F2A24;">
+        <p style="color: #16160F;">
           Katıldığın <em>${safeTitle}</em> serisinde <strong>${adet}</strong>
           buluşma güncellendi.
         </p>
-        <p style="color: #1F2A24;">Güncel yer: ${safeLocation}</p>
-        <p style="color: #1F2A24;">
-          <a href="${communityUrl}" style="color: #B8541A;">${safeCommunity} sayfasında hepsini gör</a>
+        <p style="color: #16160F;">Güncel yer: ${safeLocation}</p>
+        <p style="color: #16160F;">
+          <a href="${communityUrl}" style="color: #0755BB;">${safeCommunity} sayfasında hepsini gör</a>
         </p>
       `),
     }
@@ -164,15 +164,15 @@ function buildMail(template: string, payload: any): { subject: string; html: str
     return {
       subject: `${payload.title ?? 'Seri'} — kalan buluşmalar iptal edildi`,
       html: mailShell(`
-        <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+        <h1 style="color: #0755BB; font-weight: 500; font-size: 1.5rem;">
           seri iptal edildi
         </h1>
-        <p style="color: #1F2A24;">
+        <p style="color: #16160F;">
           Katıldığın <em>${safeTitle}</em> serisinde kalan
           <strong>${adet}</strong> buluşma iptal edildi.
         </p>
-        <p style="color: #1F2A24;">
-          <a href="${communityUrl}" style="color: #B8541A;">${safeCommunity} sayfasına dön</a>
+        <p style="color: #16160F;">
+          <a href="${communityUrl}" style="color: #0755BB;">${safeCommunity} sayfasına dön</a>
         </p>
       `),
     }

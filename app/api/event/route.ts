@@ -121,17 +121,17 @@ export async function POST(req: Request) {
           subject: `${title} — ${seri.uretilen} buluşmalık yeni bir seri`,
           html: `
       <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 2rem;">
-        <p style="font-style: italic; color: #B8541A;">No. 0001</p>
-        <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">${safeTitle}</h1>
-        <p style="color: #1F2A24;">
+        <p style="font-style: italic; color: #0755BB;">No. 0001</p>
+        <h1 style="color: #0755BB; font-weight: 500; font-size: 1.5rem;">${safeTitle}</h1>
+        <p style="color: #16160F;">
           ${sikligi ? escapeHtml(sikligi) + ' tekrarlanan ' : ''}<strong>${seri.uretilen}</strong> buluşma.
           İlki: ${ilkTarih}
         </p>
-        <p style="color: #1F2A24;">${safeLocation}</p>
-        <p style="color: #1F2A24;">
-          <a href="${SITE_URL}/event/${seri.ilk_event_id}" style="color: #1F4A3D;">İlk buluşmaya git</a>
+        <p style="color: #16160F;">${safeLocation}</p>
+        <p style="color: #16160F;">
+          <a href="${SITE_URL}/event/${seri.ilk_event_id}" style="color: #0755BB;">İlk buluşmaya git</a>
         </p>
-        <p style="font-style: italic; color: #1F2A24; opacity: 0.6;">literas</p>
+        <p style="font-style: italic; color: #16160F; opacity: 0.6;">literas</p>
       </div>
     `,
         },
@@ -210,19 +210,19 @@ export async function POST(req: Request) {
 
     const htmlBody = `
       <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 2rem;">
-        <p style="font-style: italic; color: #B8541A;">No. 0001</p>
-        <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+        <p style="font-style: italic; color: #0755BB;">No. 0001</p>
+        <h1 style="color: #0755BB; font-weight: 500; font-size: 1.5rem;">
           ${safeTitle}
         </h1>
-        <p style="color: #1F2A24; opacity: 0.75; font-size: 0.95rem;">
+        <p style="color: #16160F; opacity: 0.75; font-size: 0.95rem;">
           ${safeCommunity} · ${eventDateStr}
         </p>
-        ${safeLocation ? `<p style="color: #1F2A24;">${safeLocation}</p>` : ''}
-        ${safeDescription ? `<p style="color: #1F2A24;">${safeDescription}</p>` : ''}
-        <p style="font-style: italic; color: #1F2A24; opacity: 0.6; margin-top: 2rem;">
+        ${safeLocation ? `<p style="color: #16160F;">${safeLocation}</p>` : ''}
+        ${safeDescription ? `<p style="color: #16160F;">${safeDescription}</p>` : ''}
+        <p style="font-style: italic; color: #16160F; opacity: 0.6; margin-top: 2rem;">
           <em>${safeOrganizer}</em> düzenliyor
         </p>
-        <p style="font-style: italic; color: #1F2A24; opacity: 0.6;">
+        <p style="font-style: italic; color: #16160F; opacity: 0.6;">
           literas
         </p>
       </div>

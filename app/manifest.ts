@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Kitap kulübü, yürüyüş, dil pratiği. Topluluk burada başlar.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#F5F1E8',
-    theme_color: '#1E3A2B',
+    background_color: '#CBCBCB',    // --paper (zemin); manifest CSS değişkeni okuyamaz, globals ile senkron
+    theme_color: '#0755BB',    // --ink; layout.tsx viewport.themeColor ile aynı
     lang: 'tr',
     icons: [
       { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },

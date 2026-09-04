@@ -150,15 +150,15 @@ export async function POST(
         subject: `${community.name} — hoş geldin`,
         html: `
           <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 2rem;">
-            <p style="font-style: italic; color: #B8541A;">No. 0001</p>
-            <h1 style="color: #1F4A3D; font-weight: 500; font-size: 1.5rem;">
+            <p style="font-style: italic; color: #0755BB;">No. 0001</p>
+            <h1 style="color: #0755BB; font-weight: 500; font-size: 1.5rem;">
               hoş geldin ${safeMemberName}
             </h1>
-            <p style="color: #1F2A24;">
+            <p style="color: #16160F;">
               <em>${safeCommunityName}</em> topluluğuna kabul edildin.
               Etkinliklerden haberdar olacaksın.
             </p>
-            <p style="font-style: italic; color: #1F2A24; opacity: 0.6; margin-top: 2rem;">
+            <p style="font-style: italic; color: #16160F; opacity: 0.6; margin-top: 2rem;">
               literas
             </p>
           </div>

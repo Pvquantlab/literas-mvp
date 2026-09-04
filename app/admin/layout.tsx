@@ -26,7 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div>
       <div style={{
         background: 'var(--ink)',
-        color: 'var(--paper-cream, #FFFDF6)',
+        color: 'var(--paper-cream)',
         padding: '10px 24px',
         fontFamily: "'IBM Plex Mono', monospace",
         fontSize: '12.5px',

@@ -85,14 +85,12 @@ export default function EventCard({ event, showCommunityName = true, seriKalan, 
   })}`
   const weekday = trLower(fmt(event.event_date, { weekday: 'long' }))
 
-  const c1 = cat?.colors[0] ?? 'var(--ink-hover)'
-  const c2 = cat?.colors[1] ?? 'var(--ink)'
 
   return (
     <Link href={`/event/${event.id}`} className="ec-link">
       <article className="ec">
         <div className="ec-stage">
-          <span className="ec-glow" style={{ background: c2 }} />
+          <span className="ec-glow" style={{ background: 'var(--ink)' }} />
 
           {event.cover_image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -111,11 +109,11 @@ export default function EventCard({ event, showCommunityName = true, seriKalan, 
                     <stop offset="100%" stopColor="var(--card-art-4)" />
                   </linearGradient>
                 </defs>
-                {/* kaide halkası — kategorinin rengini alır */}
+                {/* kaide halkası — mürekkep; kategori başına renk yok */}
                 <polygon
                   points="100,58 168,90 168,104 100,136 32,104 32,90"
                   fill="none"
-                  stroke={c2}
+                  stroke="var(--ink)"
                   strokeWidth="3"
                   opacity=".5"
                 />
