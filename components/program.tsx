@@ -15,7 +15,8 @@ import type { CommunitySummary } from '@/components/community-card'
  * Kategori işareti: kart kapaklarındaki AYNI şekil kütüphanesi (SHAPES),
  * düz ve currentColor — üçüncü bir kimlik dili doğmasın.
  */
-const ROMA = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']
+// Ana sayfa sorgusu .limit(24): dizi oraya kadar. Ötesi mono rakam (yedek).
+const ROMA = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI','XXII','XXIII','XXIV']
 
 function Glif({ slug }: { slug: string }) {
   const sekil = SHAPES[slug]
@@ -37,14 +38,15 @@ export default function Program({ topluluklar }: { topluluklar: CommunitySummary
         <span>Konu</span>
         <span>Üye</span>
       </div>
-      <ol className="program">
+      <ol className="program" role="list">
         {topluluklar.map((c, i) => {
           const kat = byValue(c.category)
           const uye = c.member_count ?? 0
           return (
             <li key={c.id} className="reveal">
               <Link href={`/community/${c.id}`} className="program-satir">
-                <span className="program-no">{ROMA[i] ?? String(i + 1)}</span>
+                {/* aria-hidden: <ol> zaten numaralı; iki kez sayı okunmasın */}
+                <span className="program-no" aria-hidden="true">{ROMA[i] ?? <span className="sayi">{i + 1}</span>}</span>
                 <span className="program-ad">{c.name}</span>
                 <span className="program-sehir">{bulunmaHali(c.city) ?? '—'}</span>
                 <span className="program-kat">

@@ -56,7 +56,9 @@ export default function HakkindaPage() {
         ))}
       </dl>
 
-      <div style={{ position: 'relative', marginTop: 'var(--s-7)', padding: '28px 24px', background: 'var(--ink)', borderRadius: 'var(--r-md)', overflow: 'hidden', minHeight: 220, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+      {/* bolum-koyu: koyu zeminde odak halkasi krem olsun (ana sayfa V ile ayni
+          kural); overflow clip: hidden kaydirma kabi olur, view() oraya baglanir. */}
+      <div className="bolum-koyu" style={{ position: 'relative', marginTop: 'var(--s-7)', padding: '28px 24px', background: 'var(--ink)', borderRadius: 'var(--r-md)', overflow: 'clip', minHeight: 220, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
         <span className="masa-ciz" aria-hidden="true" style={{ color: 'var(--paper-cream)', opacity: .26, height: '150%', top: '-24%', right: '-10%' }}>
           <RolyefMasa asama={4} />
         </span>

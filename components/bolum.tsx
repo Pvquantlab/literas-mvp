@@ -32,7 +32,7 @@ export default function Bolum({
   asama: 1 | 2 | 3 | 4
   alt?: ReactNode
   eylemler?: Eylem[]
-  /** Kapanış: tek dolu mavi alan (künyedeki davet hücresiyle aynı rol). */
+  /** Kapanış: künyedeki davet hücresiyle AYNI mavi — açılış ve kapanış refren. */
   koyu?: boolean
   /** Boş durum: bir bölüm değil, bir cümle — kısa hücre. */
   kisa?: boolean

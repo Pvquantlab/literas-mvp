@@ -28,7 +28,7 @@ masa — aynı gravür dili, aynı yukarıdan bakış — biraz daha çizilir:
 | bölüm | masa hâli | anlam |
 |---|---|---|
 | I · logotype | soluk çember, hayalet | "burada bir masa var" |
-| II · bu hafta masada | boş masa, yalnız kenar | henüz kimse oturmadı (0 etkinlik dürüstçe) |
+| II · bu hafta / yakında masada | boş masa, yalnız kenar | henüz kimse oturmadı (0 etkinlik dürüstçe); başlık zaman iddiasını veriye göre seçer |
 | III · masalar (topluluklar) | tabaklar geliyor | masalar kuruluyor |
 | IV · nasıl oturulur | fincanlar | oturmak kolay |
 | V · masayı sen kur | tam kurulu, tam opak | son söz: sen |
@@ -52,7 +52,7 @@ Cesaret tek yere harcanıyor: bu. Geri kalan her şey sessizleşir.
 
     I    Logotype hücresi                      (var, dokunma)
          Künye üçlüsü                          (var, ritim)
-    II   BU HAFTA MASADA — yaklaşan etkinlikler
+    II   BU HAFTA / YAKINDA MASADA — yaklaşan etkinlikler
            dolu → mevcut tarih omurgası (UpcomingEvents)
            boş  → boş masa ayracı + tek dürüst cümle + eylem
     III  MASALAR — topluluk PROGRAMI
@@ -109,12 +109,14 @@ klavye odağı · dokunma listesindeki rotalara yapısal dokunuş yok.
 
 | ne | nasıl | sonuç |
 |---|---|---|
-| kontrast, 18 çift | hesaplandı (WCAG formülü) | hepsi ≥4.5; en düşük 4.55 (ikincil bağlantı, mavi zemin; .78 ile 4.33 çıkıp DÜŞMÜŞTÜ, 81%'e çekildi) |
+| kontrast, 21 çift | hesaplandı (WCAG formülü) | hepsi ≥4.5. /hakkinda: dt --muted/--panel 7.93, alt paper-cream/ink 6.08, ikincil %81 → 4.55. DÜŞENLER: krem@78% 4.33 ve --muted-light 10px 4.14 — ikisi düzeltildi |
 | gövde ≥16px, başlık 24px | DOM ölçümü (masaüstü + 375) | 16 / 24 |
 | yatay taşma (375) | `scrollWidth > innerWidth` | yok |
-| kademeli çizim aktif | `animationName`/`animationTimeline` | `masa-cizgi` / `view()` |
+| kademeli çizim GERÇEKTEN akıyor | 1280×720'de `strokeDashoffset` okundu: hücre III tam görünürken kenar+tabak 1px→0px; sayfa sonunda #kur rm-orta 0px. `getAnimations()` sahte sinyal (.reveal'de de 0). Anonim `view()` SVG çocuklarında çözülmüyor → adlı `view-timeline: --masa` HTML sarmalayıcıda | çizim tamam; son tamamlanıyor |
 | reduced-motion | YAPISAL: `stroke-dasharray` yalnız `no-preference` bloğunda; kademe gizleme `@supports` dışında | son kare tam masa |
-| klavye odağı | YAPISAL: tüm yeni eylemler native `<a href>`, `outline:none` yok, global `:focus-visible` | **elle Tab turu yapılmadı** — sentetik Tab pane odaksızken odağı taşımıyor |
+| klavye odağı | YAPISAL: native `<a href>`, `outline:none` yok. Koyu zeminde global halka (--ink) 1.00:1 idi → `.bolum-koyu :focus-visible` krem (6.08); ana sayfa V + /hakkinda kapanış | **elle Tab turu yapılmadı** — sentetik Tab odağı taşımıyor |
 | sabit hex | grep | yeni kodda yok (`#fff` → `--paper-cream`) |
 | hydration hatası | portal diff okundu | yalnızca `sis.tsx` canvas'ı, `main`'de de var, bileşenlerimden değil |
 | typecheck / lint / build | koşuldu | temiz / 87-0 / geçti |
+| masa yalnız I hayalet + 4 ayraç + V tam | `grep -rn RolyefMasa app components` → bolum.tsx, hakkinda, page.tsx künye; how-it-works artık Kahve | "ilk kez tam" anı V'e ait |
+| başlık ve içerik aynı sol ray | `.bolum` dolgusu `(100% - w-page)/2 + s-5 - 8px`'e bağlı; 1440/1920 ölçümü sırada | uygulandı |

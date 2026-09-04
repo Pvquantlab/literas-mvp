@@ -606,6 +606,14 @@ export default async function HomePage({
     )
   }
 
+  // II. bölüm başlığı zaman iddiası taşıyor; sorgu haftayla sınırlı değil.
+  // Hepsi yedi gün içindeyse "bu hafta", değilse "yakında". Sorguya .lte
+  // eklemek istenmedi: bölüm çoğu hafta boşalır, "Masa boş" yanlış tetiklenir.
+  // Date.now() react-hooks 'impure during render' kuralına takılıyor; dosyadaki
+  // mevcut kalıp new Date() (etkinlik sorgusu) — aynısı.
+  const yediGun = new Date().getTime() + 7 * 864e5
+  const hepsiBuHafta = eventsWithSeri.length > 0 && eventsWithSeri.every((e) => new Date(e.event_date).getTime() <= yediGun)
+
   /* =================================================================
      MİSAFİR
      ================================================================= */
@@ -801,7 +809,7 @@ export default async function HomePage({
         asama={1}
         kisa={eventsWithSeri.length === 0}
         baslik={eventsWithSeri.length > 0
-          ? (cityLocative ? `${cityLocative} bu hafta masada` : 'Bu hafta masada')
+          ? (cityLocative ? `${cityLocative} ${hepsiBuHafta ? 'bu hafta' : 'yakında'} masada` : (hepsiBuHafta ? 'Bu hafta masada' : 'Yakında masada'))
           : 'Masa boş'}
         alt={eventsWithSeri.length > 0
           ? <><span className="sayi">{yaklasanToplam}</span> yaklaşan buluşma. Birine otur.</>
@@ -813,7 +821,7 @@ export default async function HomePage({
           : [{ href: '/event/new', etiket: 'Etkinlik oluştur' }, { href: '/kesfet', etiket: 'Toplulukları gör', ikincil: true }]}
       />
       {eventsWithSeri.length > 0 && (
-        <section className="container section" aria-label="Yaklaşan etkinlikler" style={{ paddingTop: 'var(--s-6)' }}>
+        <section className="container section" aria-labelledby="etkinlikler-baslik" style={{ paddingTop: 'var(--s-6)' }}>
           <UpcomingEvents events={eventsWithSeri} />
         </section>
       )}
@@ -826,14 +834,16 @@ export default async function HomePage({
         no="III"
         asama={2}
         baslik={communities.length > 0
-          ? <><span className="sayi">{communities.length}</span> masa{cityLocative ? `, ${cityLocative}` : ''}</>
+          ? (communities.length < 24
+              ? <><span className="sayi">{communities.length}</span> masa{cityLocative ? `, ${cityLocative}` : ''}</>
+              : `Masalar${cityLocative ? `, ${cityLocative}` : ''}`)   // sorgu .limit(24): kırpılmış sayı basılmaz
           : 'Henüz masa yok'}
         alt={communities.length > 0
           ? 'Her biri bir konu, bir şehir, birkaç kişiyle başlamış. Katıl ya da kendininkini kur.'
           : 'İlk masayı sen kur; gerisi gelir.'}
-        eylemler={[{ href: '/kesfet?tab=topluluklar', etiket: 'Tümünü gör' }, { href: '/community/new', etiket: 'Topluluk kur', ikincil: true }]}
+        eylemler={[{ href: '/kesfet?tab=topluluklar', etiket: 'Tümünü gör' }]}   // 'Topluluk kur' bir kaydırma sonra V'te düğme; refren üçten ikiye
       />
-      <section className="container" aria-label="Topluluk programı" style={{ paddingTop: 'var(--s-6)', paddingBottom: 'var(--s-6)' }}>
+      <section className="container" aria-labelledby="topluluklar-baslik" style={{ paddingTop: 'var(--s-6)', paddingBottom: 'var(--s-6)' }}>
         <div className="row" style={{ gap: 'var(--s-3)', marginBottom: 'var(--s-5)', flexWrap: 'wrap' }}>
           <SearchBox initialQuery={params.q ?? ''} />
           <CityFilter cities={cities} activeCity={activeCity ?? ''} />
@@ -850,13 +860,13 @@ export default async function HomePage({
 
       {/* ---- IV · NASIL OTURULUR ---- Masa kademesi 3: fincanlar. */}
       <Bolum id="nasil" no="IV" asama={3} baslik="Nasıl oturulur" alt="Üç adım. Üçüncüsü kahvenin işi." />
-      <section className="container" aria-label="Nasıl çalışır" style={{ paddingTop: 'var(--s-6)', paddingBottom: 'var(--s-6)' }}>
+      <section className="container" aria-labelledby="nasil-baslik" style={{ paddingTop: 'var(--s-6)', paddingBottom: 'var(--s-6)' }}>
         <HowItWorks />
       </section>
 
       {/* ---- V · MASAYI SEN KUR ----
            Masa kademesi 4: tam kurulu, tam opak — sayfanın son sözü.
-           Tek dolu mavi alan (künyedeki davet hücresiyle aynı rol). Eski
+           Künyedeki davet hücresiyle AYNI mavi: açılış ve kapanış refren. Eski
            ortalanmış kapanış ve noktalı zemin gitti; bölüm dilinin kendisi
            kapanış oldu. */}
       <div style={{ paddingBottom: 8 }}>

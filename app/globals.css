@@ -1356,12 +1356,16 @@ header, footer, nav {
   min-height: clamp(260px, 34vh, 380px);
   background: var(--paper-cream);
   border-radius: var(--r-md);
-  padding: 22px 24px;
+  /* SOL RAY: hücre tam genişlik, içerik .container (1200 ortalı). Dolgu
+     .container'ın sol kenarına bağlanır ki başlık ile altındaki program
+     aynı düşey çizgide dursun (ölçüldü: 1440'ta 112px, 1920'de 344px kayma).
+     (100% - w-page)/2 + s-5 - 8px(hücre marjı). */
+  padding: 22px max(24px, calc((100% - var(--w-page)) / 2 + var(--s-5) - 8px));
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
-.bolum-koyu { background: var(--ink); }          /* kapanış: tek dolu mavi alan */
+.bolum-koyu { background: var(--ink); }          /* kapanış: açılış davetiyle aynı mavi (refren) */
 .bolum-koyu .bolum-no, .bolum-koyu .bolum-baslik, .bolum-koyu .bolum-alt { color: var(--paper-cream); }
 
 .bolum-no {
@@ -1481,7 +1485,7 @@ header, footer, nav {
    çizimi kapat — yoksa view() kaydırıcı olarak hücreyi alır ve masa
    dashoffset:1'de GÖRÜNMEZ kalır. Statik tam masa, eksik masadan iyidir. */
 @supports not (overflow: clip) {
-  .bolum { overflow: hidden; }
+  .bolum, .bolum-koyu { overflow: hidden; }
   .masa-ciz circle, .masa-ciz ellipse { animation: none !important; stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
 }
 
@@ -1591,5 +1595,5 @@ header, footer, nav {
   .masa-ciz { right: 9%; height: 132%; top: -16%; }
   .bolum-kisa .masa-ciz { height: 160%; top: -30%; }
   .bolum-alt-blok { max-width: 56ch; }
-  .bolum { padding: 26px 32px; }
+  .bolum { padding: 26px max(32px, calc((100% - var(--w-page)) / 2 + var(--s-5) - 8px)); }
 }
