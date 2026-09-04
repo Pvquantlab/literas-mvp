@@ -189,7 +189,7 @@ export default function KonumStep() {
             gap: '8px',
             padding: '10px 14px',
             borderRadius: '999px',
-            background: 'var(--lime, #D6FF3F)',
+            background: 'var(--lime)',
             color: 'var(--ink)',
             fontWeight: 600,
             fontSize: '14px',

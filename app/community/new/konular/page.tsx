@@ -227,7 +227,7 @@ export default function KonularStep() {
                   gap: '6px',
                   padding: '7px 12px',
                   borderRadius: '999px',
-                  background: 'var(--lime, #D6FF3F)',
+                  background: 'var(--lime)',
                   color: 'var(--ink)',
                   border: 'none',
                   fontSize: '13.5px',

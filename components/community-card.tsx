@@ -146,7 +146,7 @@ export default function CommunityCard({
           position:relative; display:flex; flex-direction:column; height:100%;
           padding:16px; border-radius:4px;
           background:var(--paper-cream, #FFF);
-          border:1px solid var(--border, #E8E5DD);
+          border:1px solid var(--border);
           
           transition:transform .4s var(--ease, cubic-bezier(.2,.8,.3,1)), box-shadow .4s ease;
         }
@@ -180,23 +180,23 @@ export default function CommunityCard({
         .cm-title {
           font-weight:400; letter-spacing:.02em;
           font-size:21px; line-height:1.2;
-          color:var(--ink, #0755BB); margin:0;
+          color:var(--ink); margin:0;
         }
         .cm-meta {
           font-family:var(--font-mono), monospace; font-size:12px;
-          color:var(--muted, #5C5744); margin:5px 0 0;
+          color:var(--muted); margin:5px 0 0;
         }
         .cm-hero {
           display:flex; align-items:baseline; justify-content:space-between;
           gap:10px; margin-top:14px; flex-wrap:wrap;
         }
-        .cm-count { font-family:var(--font-mono), monospace; font-size:12px; color:var(--muted, #5C5744); }
+        .cm-count { font-family:var(--font-mono), monospace; font-size:12px; color:var(--muted); }
         .cm-count b {
           font-family:var(--font-mono), monospace; font-variant-numeric:tabular-nums;
           font-size:32px; font-weight:400; line-height:1; letter-spacing:.01em;
-          color:var(--ink, #0755BB); margin-right:5px;
+          color:var(--ink); margin-right:5px;
         }
-        .cm-founder { font-family:var(--font-mono), monospace; font-size:12px; color:var(--muted, #5C5744); }
+        .cm-founder { font-family:var(--font-mono), monospace; font-size:12px; color:var(--muted); }
         .cm-live {
           display:inline-flex; align-items:center; gap:7px;
           font-family:var(--font-mono), monospace; font-size:11px;
@@ -211,13 +211,13 @@ export default function CommunityCard({
           font-family:var(--font-sans), system-ui, sans-serif;   /* dokunulan nesne */
           font-weight:600; font-size:13px; padding:9px 18px;
           border-radius:var(--r-pill, 999px);
-          background:var(--lime, #C7D7F2); color:var(--ink, #0755BB);
+          background:var(--lime); color:var(--ink);
           box-shadow:none;
           transition:transform .3s ease; white-space:nowrap;
         }
         .cm-go.ghost {
-          background:transparent; color:var(--ink, #0755BB);
-          border:1px solid var(--ink, #0755BB); box-shadow:none;
+          background:transparent; color:var(--ink);
+          border:1px solid var(--ink); box-shadow:none;
         }
         .cm-link:hover .cm-go { transform:translateY(-2px); }
         @media (prefers-reduced-motion: reduce) {

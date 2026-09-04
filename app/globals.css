@@ -18,28 +18,22 @@
   --ink-deep: #043B85;
   --night: #16160F;          /* gövde metni — sıcak siyah */
 
-  /* Zemin: sayfa SICAK greige, kartlar ondan AÇIK.
+  /* Zemin ve paneller referanstan BİRE BİR (üçüncü ölçüm 05.09.2026,
+     kullanıcı kararı): zemin beton grisi, panel greige, iç panel açık gri,
+     kilit paneli beyaz. Önceki sıcak/krem sapması geri alındı.
+     Katman sırası referansla aynı: zemin < panel < iç panel < beyaz.
      Kartlar gölgeyle değil, zeminden yükselerek ayrılıyor.
-     Soğuk lavanta-beyaz yerine sıcak nötr: gözü yormayan şey bu. */
-  --paper: #DCDBD5;
-  --paper-cream: #F1F0EA;
-  --paper-soft: #E5E3DC;
+     AA KURALI: küçük mürekkep metin ZEMİNE DEĞMEZ, panele oturur
+     (mürekkep zeminde 4.28, panelde 5.00). Zemine değen küçük etiket --muted. */
+  --paper: #CBCBCB;          /* zemin — referansın body'si, boyalı alanın %48'i */
+  --paper-cream: #DCDBD5;    /* panel — header, kartlar, .bolum, footer */
+  --paper-soft: #D4D4D1;     /* ara ton — hover, avatar zemini, mürekkep üstü metin (4.67) */
+  --paper-white: #FFFFFF;    /* kilit paneli — referansın THE FACTS kutusu; davet hücresi, V, eylem zemini */
 
-  /* İÇ PANEL — referansın "müze etiketi" katmanı.
-     Ölçüm: week.wild.plus'ta #E8E8E8 zeminli 20 eleman var; "The Facts"
-     kutusu (394x394, 24px dolgu) ve "I Passport" tipi hap satırları.
-     Kartın İÇİNDE ikinci bir yüzey; çift çerçeve hissini bu veriyor ve
-     bende hiç yoktu. Ayrım gölgeyle değil bu katmanla kuruluyor.
-
-     İKİ BİLİNÇLİ SAPMA:
-     1. Ölçülen değer #E8E8E8, soğuk gri. Paletimiz baştan sona sıcak greige;
-        soğuk gri araya yabancı düşüyordu. Aynı açıklıkta sıcak karşılığı.
-     2. Referansta panel EN AÇIK katman, çünkü kartları saydam (zeminle aynı).
-        Bizim kartlarımız metin taşıyor ve zeminden ayrılmaları gerekiyor, o
-        yüzden bir katman fazlamız var: zemin -> kart -> panel. Panel burada
-        ilerlemiyor, İÇERİ ÇÖKÜYOR. Çift çerçeve etkisi iki yönde de çalışır;
-        önemli olan iç içe iki yüzey olması. */
-  --panel: #E9E7E0;
+  /* İÇ PANEL — referansın "müze etiketi" katmanı: ölçülen #E8E8E8 (19 eleman;
+     'The Facts' kutusu ve hap satırları). Bizde form alanları, program
+     satırları, rozetler. Önceki sıcak sapma (#E9E7E0) geri alındı. */
+  --panel: #E8E8E8;
 
   /* Referansın --blue-soft'u: rgba(7,85,187,.32), 11 elemanda kullanılıyor.
      BİZDE METİN İÇİN KULLANILAMAZ: bu alfa zeminlerimizde 1.61-1.67:1
@@ -54,7 +48,7 @@
      (Luma deseni). %78 ≈ eski #48587D (7.08:1 korunur),
      %58 ≈ eski #707E9E (4.28:1 korunur, yalnız 15px+ metin). */
   --muted: color-mix(in srgb, var(--night) 78%, transparent);
-  --muted-light: color-mix(in srgb, var(--night) 58%, transparent);
+  --muted-light: color-mix(in srgb, var(--night) 66%, transparent);  /* %58 yeni zeminlerde AA altındaydı (3.8–4.4); %66 zeminde 4.69 */
   /* Çizgiler mürekkebin soluk hali — Wild Week'in ızgara çizgisi deseni.
      Nötr griden farkı: çizgi de paletin parçası, yabancı bir renk değil. */
   --border: rgba(7, 85, 187, 0.22);
@@ -67,12 +61,12 @@
      DİKKAT: --lime AÇIK kalmak ZORUNDA. Kod bu zeminlerin üstüne
      `color: var(--ink)` koyuyor (9+ ayarlar sayfası). Mürekkep yapılırsa
      mürekkep üstüne mürekkep gelir ve metin görünmez olur. */
-  --lime: #C7D7F2;           /* mürekkebin açık tonu — birincil eylem zemini */
-  --lime-soft: #DCE6F8;
-  --lime-press: #AFC6EA;
+  --lime: #FFFFFF;           /* eylem zemini BEYAZ — referansta açık mavi yok, kilit yüzeyi beyaz */
+  --lime-soft: #E8E8E8;
+  --lime-press: #DCDBD5;
   --coral: #0755BB;          /* vurgu etiketleri de mürekkep */
   --coral-deep: #A62B22;     /* TEK işlevsel kırmızı: yıkıcı eylem */
-  --yellow-highlight: #E9E7DF;
+  --yellow-highlight: #E8E8E8;
 
   /* --- Degrade durakları ---
      Beş renkli gökkuşağı yerine dar bir mürekkep rampası: degrade
@@ -176,7 +170,7 @@
 
   /* --- Legacy: eski sayfalar kırılmasın --- */
   --seal: var(--coral);
-  --seal-soft: #DCE6F8;
+  --seal-soft: #E8E8E8;
   --seal-deep: #043B85;
 }
 
@@ -230,7 +224,7 @@ a:hover { color: var(--ink-hover); }
 
 button { font-family: inherit; cursor: pointer; border: none; background: none; }
 
-::selection { background: var(--lime); color: var(--ink); }
+::selection { background: var(--ink); color: var(--paper-white); }  /* eylem zemini beyaz oldu; beyaz panelde seçim görünsün */
 
 /* Klavye odağı her yerde görünür. */
 :focus-visible {
@@ -259,7 +253,7 @@ input, textarea, select {
   padding: 11px 16px;
   border: 1.5px solid var(--border-mid);
   border-radius: var(--r-md);   /* 999px pill değil — form alanı gibi görünsün */
-  background: var(--paper-cream);
+  background: var(--panel);     /* form alanı = iç panel; panel zeminli kartta görünür kalır */
   width: 100%;
   color: var(--ink);
   font-weight: 400;             /* 500 ağırlık girdi metnini sahte-kalın yapıyordu */
@@ -296,6 +290,12 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   margin: 0 auto;
   padding: var(--s-6) var(--s-5);
 }
+
+/* SAYFA PANELİ — metin ağırlıklı sayfaların gövdesi (hakkında, gizlilik,
+   koşullar, SSS, iletişim, kurallar, giriş/kayıt). Referansın grameri: metin
+   zeminde değil hücrede yaşar. AA: mürekkep zeminde 4.28, panelde 5.00.
+   Kenar boşluğu üstte 8px — ana sayfa hücreleriyle aynı ızgara aralığı. */
+.sayfa-panel { background: var(--paper-cream); border-radius: var(--r-md); }
 .section { padding-block: var(--s-8); }
 .section-tight { padding-block: var(--s-6); }
 
@@ -697,7 +697,7 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
 }
 
 .auth-card {
-  background: var(--paper-cream);
+  background: var(--paper-white);   /* kilit yüzeyi: sayfa paneli (greige) içinde beyaz kart */
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: var(--s-6) var(--s-6);
@@ -714,7 +714,7 @@ input.input-pill { border-radius: var(--r-pill); padding-left: 20px; }
   top: 3px; left: 3px;
   width: 18px; height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--paper-white);
   transition: transform .2s var(--ease);
   box-shadow: 0 1px 3px rgba(0,0,0,.15);
 }
@@ -1368,8 +1368,10 @@ header, footer, nav {
   flex-direction: column;
   justify-content: space-between;
 }
-.bolum-koyu { background: var(--ink); }          /* kapanış: açılış davetiyle aynı mavi (refren) */
-.bolum-koyu .bolum-no, .bolum-koyu .bolum-baslik, .bolum-koyu .bolum-alt { color: var(--paper-cream); }
+/* Vurgu hücresi: referansın BEYAZ kilit paneli (THE FACTS). Künyedeki davet
+   hücresiyle aynı beyaz — açılış ve kapanış refren. Metin mürekkep kalır,
+   odak halkası ve düğme varsayılan hâliyle çalışır. */
+.bolum-vurgu { background: var(--paper-white); }
 
 .bolum-no {
   position: relative; z-index: 1;
@@ -1404,11 +1406,6 @@ header, footer, nav {
   text-transform: uppercase;
   color: var(--ink);
 }
-.bolum-koyu .bolum-eylem { color: var(--paper-cream); }
-/* Koyu hücrede global :focus-visible halkası (--ink) zeminle aynı renk —
-   görünmez. Krem halka; kontrast 6.08. */
-.bolum-koyu :focus-visible { outline-color: var(--paper-cream); }
-.bolum-koyu .bolum-eylem.ikincil { color: color-mix(in srgb, var(--paper-cream) 81%, transparent); }
 /* Birincil eylem düğmesi: sayfanın tek gerçek çağrısı sessiz bir mono
    bağlantı olamaz. Hap değil 4px; gölge yok; zemin farkıyla ayrılır. */
 .bolum-eylem.dugme {
@@ -1416,12 +1413,10 @@ header, footer, nav {
   padding: 12px 18px;
   border-radius: var(--r-md);
   background: var(--ink);
-  color: var(--paper-cream);
+  color: var(--paper-white);   /* referans: mürekkep dolgu üstünde beyaz metin (217 düğüm) */
   transition: background .18s var(--ease), transform .18s var(--ease);
 }
-.bolum-eylem.dugme:hover { background: var(--ink-hover); color: var(--paper-cream); transform: translateY(-1px); }
-.bolum-koyu .bolum-eylem.dugme { background: var(--paper-cream); color: var(--ink); }
-.bolum-koyu .bolum-eylem.dugme:hover { background: var(--paper-cream); color: var(--ink); }
+.bolum-eylem.dugme:hover { background: var(--ink-hover); color: var(--paper-white); transform: translateY(-1px); }
 @media (prefers-reduced-motion: reduce) { .bolum-eylem.dugme, .bolum-eylem.dugme:hover { transform: none; transition: none; } }
 
 /* --- Çizilen masa ----------------------------------------------------------
@@ -1440,7 +1435,6 @@ header, footer, nav {
   opacity: .20;
   pointer-events: none;
 }
-.bolum-koyu .masa-ciz { color: var(--paper-cream); opacity: .26; }
 /* Kısa hücre: boş durum bir bölüm değil, bir cümle. */
 .bolum-kisa { min-height: clamp(200px, 26vh, 260px); }
 .bolum-kisa .masa-ciz { height: 150%; top: -25%; }
@@ -1488,7 +1482,7 @@ header, footer, nav {
    çizimi kapat — yoksa view() kaydırıcı olarak hücreyi alır ve masa
    dashoffset:1'de GÖRÜNMEZ kalır. Statik tam masa, eksik masadan iyidir. */
 @supports not (overflow: clip) {
-  .bolum, .bolum-koyu { overflow: hidden; }
+  .bolum { overflow: hidden; }
   .masa-ciz circle, .masa-ciz ellipse { animation: none !important; stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
 }
 
@@ -1500,7 +1494,10 @@ header, footer, nav {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 0;
-  padding: 0;
+  /* Panel şeridi: mürekkep etiket zemine değmez (zeminde 4.28, panelde 5.00). */
+  padding: 10px 14px;
+  background: var(--paper-cream);
+  border-radius: var(--r-md);
   margin: 0;
   list-style: none;
 }
@@ -1542,7 +1539,7 @@ header, footer, nav {
   color: var(--ink);
   transition: background .15s var(--ease);
 }
-.program-satir:hover { background: var(--paper-cream); }
+.program-satir:hover { background: var(--paper-white); }
 .program-satir:hover .program-ad { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
 .program-no { font-family: var(--font-serif), Georgia, serif; font-size: 14px; color: var(--muted); }
 .program-ad { font-family: var(--font-serif), Georgia, serif; font-size: 17px; letter-spacing: .02em; line-height: 1.25; min-width: 0; overflow-wrap: anywhere; }
@@ -1586,6 +1583,7 @@ header, footer, nav {
   /* Lejant darda beş satıra kırılıyordu (375'te ölçüldü): ayraç aralığı ve
      dolgu sıkılaşır, glif küçülür — satır sayısı düşer, dil aynı kalır. */
   .lejant { gap: 2px 0; }
+  .lejant { padding: 8px 10px; }
   .lejant li + li::before { margin: 0 8px; }
   .lejant a { font-size: 13px; gap: 5px; padding: 3px 1px; }
   .lejant svg { width: 12px; height: 12px; }

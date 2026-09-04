@@ -227,7 +227,7 @@ export default function ReportButton(props: Props) {
                             cursor: 'pointer',
                             background:
                               reason === r.value
-                                ? 'var(--lime-soft, rgba(214, 255, 63, 0.2))'
+                                ? 'var(--lime-soft)'
                                 : 'transparent',
                             fontSize: '14px',
                             color: 'var(--ink)',

@@ -20,7 +20,7 @@ export default function Bolum({
   asama,
   alt,
   eylemler,
-  koyu = false,
+  vurgu = false,
   kisa = false,
   id,
 }: {
@@ -32,13 +32,13 @@ export default function Bolum({
   asama: 1 | 2 | 3 | 4
   alt?: ReactNode
   eylemler?: Eylem[]
-  /** Kapanış: künyedeki davet hücresiyle AYNI mavi — açılış ve kapanış refren. */
-  koyu?: boolean
+  /** Vurgu: referansın BEYAZ kilit paneli — künyedeki davet hücresiyle aynı beyaz, açılış ve kapanış refren. */
+  vurgu?: boolean
   /** Boş durum: bir bölüm değil, bir cümle — kısa hücre. */
   kisa?: boolean
   id?: string
 }) {
-  const sinif = ['bolum', koyu && 'bolum-koyu', kisa && 'bolum-kisa'].filter(Boolean).join(' ')
+  const sinif = ['bolum', vurgu && 'bolum-vurgu', kisa && 'bolum-kisa'].filter(Boolean).join(' ')
   return (
     <section id={id} className={sinif} aria-labelledby={id ? `${id}-baslik` : undefined}>
       <span className="bolum-no">{no}</span>

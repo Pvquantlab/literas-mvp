@@ -8,13 +8,13 @@ import 'leaflet/dist/leaflet.css'
 /**
  * Harita iğnesi. Eski hâli #C8EB4B lime + #1E3A2B koyu yeşildi — ikisi de
  * Temmuz paletinden kalmıştı ve sitede başka hiçbir yerde kullanılmıyor.
- * Leaflet ikonu ham HTML dizesi olarak istediği için burada CSS değişkeni
- * geçmiyor; değerler --paper-cream ve --ink'in kendisi.
+ * divIcon'un html dizesi DOM'a giriyor; SVG özniteliğinde var() çözülür
+ * (logo.tsx aynı deseni kullanır). Gövde beyaz kilit yüzeyi, kontur mürekkep.
  */
 const PIN_SVG = `
 <svg width="38" height="47" viewBox="0 0 38 47" xmlns="http://www.w3.org/2000/svg">
-  <path d="M19 46 C19 46 33.8 26.6 33.8 17 A14.8 14.8 0 1 0 4.2 17 C4.2 26.6 19 46 19 46 Z" fill="#F1F0EA" stroke="#0755BB" stroke-width="2.4" stroke-linejoin="round"/>
-  <circle cx="19" cy="17" r="5.6" fill="#0755BB"/>
+  <path d="M19 46 C19 46 33.8 26.6 33.8 17 A14.8 14.8 0 1 0 4.2 17 C4.2 26.6 19 46 19 46 Z" fill="var(--paper-white)" stroke="var(--ink)" stroke-width="2.4" stroke-linejoin="round"/>
+  <circle cx="19" cy="17" r="5.6" fill="var(--ink)"/>
 </svg>`
 
 const icon = L.divIcon({
@@ -131,7 +131,7 @@ export default function EventMap(props: { location: string; city?: string }) {
         .leaflet-control-zoom a:first-child {
           border-bottom: 1px solid var(--border) !important;
         }
-        .leaflet-control-zoom a:hover { background: #FFFFFF; }
+        .leaflet-control-zoom a:hover { background: var(--paper-white); }
         .leaflet-control-attribution {
           background: rgba(255,255,255,.72) !important;
           font-family: 'IBM Plex Mono', monospace;

@@ -100,8 +100,10 @@ kullanıcıya profil satırı onunla açılıyor; hiçbir migration'da yoktu,
 4. Yeni tablo/kolon = migration dosyası + RLS politikası + gerekli index. İstisnasız.
 5. Hata mesajları Türkçe: `{ error: 'Giriş yapmalısın' }` gibi kısa ve net.
 6. Tasarım dili `docs/tasarim/wild-week-dna.json`'dan gelir ve ÖLÇÜLMÜŞTÜR —
-   göz kararı değiştirme. Özeti: tek vurgu rengi `--ink` (#0755BB), zeminler
-   sıcak greige, köşe 4px, **gölge yok, çerçeve yok**, başlık ağırlığı 400 ve
+   göz kararı değiştirme. Özeti: tek vurgu rengi `--ink` (#0755BB); zemin beton
+   grisi `#CBCBCB`, paneller greige `#DCDBD5`, iç panel `#E8E8E8`, kilit paneli
+   beyaz (05.09.2026 üçüncü ölçüm, referansla bire bir); küçük mürekkep metin
+   zemine değmez, panele oturur (AA: zeminde 4.28, panelde 5.00); köşe 4px, **gölge yok, çerçeve yok**, başlık ağırlığı 400 ve
    harf aralığı POZİTİF, mono yalnız etiket/veri için. Ayrım renkle değil zemin
    tonu ve tipografiyle kurulur.
    Kategori başına renk atama YOK — `CATS` dizisindeki 28 renk (soft/ink)

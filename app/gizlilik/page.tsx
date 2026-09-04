@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function GizlilikPage() {
   return (
-    <main style={{ maxWidth: '760px', margin: '0 auto', padding: '48px 24px 80px' }}>
+    <main className="sayfa-panel" style={{ maxWidth: '760px', margin: '8px auto 0', padding: '48px 24px 80px' }}>
       <Link
         href="/"
         style={{
