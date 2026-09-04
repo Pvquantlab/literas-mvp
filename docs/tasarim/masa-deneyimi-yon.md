@@ -119,4 +119,4 @@ klavye odağı · dokunma listesindeki rotalara yapısal dokunuş yok.
 | hydration hatası | portal diff okundu | yalnızca `sis.tsx` canvas'ı, `main`'de de var, bileşenlerimden değil |
 | typecheck / lint / build | koşuldu | temiz / 87-0 / geçti |
 | masa yalnız I hayalet + 4 ayraç + V tam | `grep -rn RolyefMasa app components` → bolum.tsx, hakkinda, page.tsx künye; how-it-works artık Kahve | "ilk kez tam" anı V'e ait |
-| başlık ve içerik aynı sol ray | `.bolum` dolgusu `(100% - w-page)/2 + s-5 - 8px`'e bağlı; 1440/1920 ölçümü sırada | uygulandı |
+| başlık ve içerik aynı sol ray | CSS'ten TÜRETİLDİ: iki ifade aynı `(W−1200)/2 + 24`'e çözülür; 375…1920'de fark ≤8px (yalnız 1024'te, .container 24 vs .bolum 8+24). Tarayıcı ölçümü YAPILAMADI: gizli sekmede `#content` 0×0 (React akış commit'i ertelenir) | uygulandı; elle bakılmalı |
