@@ -94,12 +94,31 @@ klavye odağı · dokunma listesindeki rotalara yapısal dokunuş yok.
 
 ## Bulunan, bu turda dokunulmayan
 
-- **Hydration uyumsuzluğu `main`'de var** (bayat önbellek DEĞİL: 23 Turbopack
-  parçası, 0 webpack, SW yok). Sebep `components/sis.tsx`: `SisKatmani`
-  `#sis-hero`'ya `<canvas>`'ı hydration bitmeden ekliyor, React kendi
-  çizmediği çocuğu buluyor. Dosya bu akış tuzağını uzun uzun belgeliyor ve
-  "dikkatli" kapsamda; bu turun işi değil. Yeni bölüm hücreleri sis hedefi
-  değil (id ile bağlanıyor), etkilenmiyor.
+- ~~Hydration uyumsuzluğu `main`'de var~~ → **KAPATILDI (sis turu,
+  01–05.09.2026, `bakim/sis-hydration`).** Sebep `sis.tsx`'in tuvali React'in
+  yönettiği hücrelerin İÇİNE eklemesiydi; `load` beklemek ve `offsetParent`
+  kontrolü engellemiyordu. Fix: layout kabuğunda React'in çocuksuz render
+  ettiği `#sis-host`; tuval oraya eklenir ve hedefin üstüne belge
+  koordinatlarıyla oturur (kaydırmayla birlikte hareket eder; köşe yarıçapı
+  hedefin hesaplanmış değerinden okunur: künye 4px, ızgara 0).
+  İLK KESİMİN KUSURU (inceleme + ölçüm, 05.09.2026): `esitle()` bekçisi
+  hedefin İÇİNDE canvas arıyordu; tuval taşındığı için hep boş dönüyor, her
+  DOM mutasyonunda yık-kur yapıyor ve gözlemci kendi ev sahibindeki
+  mutasyonla kendini tetikliyordu → sonsuz mikro-görev döngüsü, misafir ana
+  sayfası DONUYORDU (headless Chrome/CDP: `1+1` üç kez 8 s cevapsız,
+  `/kesfet` 30 ms). Gizli panelde görülen "zaman aşımı" bunu maskelemişti.
+  Düzeltme: bekçi hedef kimliğine bakar; gözlemci `#sis-host` içi kayıtları
+  yutar; hedef gidince (rota geçişi, üye dalı) tuval sökülür; reduced-motion
+  yolu da yerleşimi izler; `ResizeObserver` border-box izler (içerik kutusu,
+  `vw` dolgusunun bir kare geç güncellenmesini kaçırıyordu: tampon 240px
+  kalırken hedef 194px'ti); `load` beklenmez; kesirli rect yuvarlanmaz.
+  KANIT (headless Chrome + CDP, 05.09.2026): `main`'de konsolda "Hydration
+  failed" VAR, dalda YOK. Dalda ana iş parçacığı 1–11 ms; iki tuval hedef
+  rect'ine 0 px farkla oturur ve arka tampon rect'e eşit (1280→820→1280,
+  iki hareket modunda); fare-sil merkez alfa 79→18; `/`→`/kesfet` geçişinde
+  `#sis-host` boş, dönüşte yeniden 2 tuval; SSR'de `#sis-host` çocuksuz.
+  Not: konsolda Next'in `scroll-behavior: smooth` uyarısı var (`html`'de
+  tanımlı, `main`'den geliyor, bu turun dışı).
 - **Mobilde kabuk iki satır** (logo+düğmeler, hap arama): içerikten önce
   ~190px krom. Header her rotada; bu turda yalnızca token düzeyi.
 - **Künye 1. hücresinde sis, rölyefi çamurlaştırıyor** (mobil). Sis imza
@@ -120,3 +139,23 @@ klavye odağı · dokunma listesindeki rotalara yapısal dokunuş yok.
 | typecheck / lint / build | koşuldu | temiz / 87-0 / geçti |
 | masa yalnız I hayalet + 4 ayraç + V tam | `grep -rn RolyefMasa app components` → bolum.tsx, hakkinda, page.tsx künye; how-it-works artık Kahve | "ilk kez tam" anı V'e ait |
 | başlık ve içerik aynı sol ray | CSS'ten TÜRETİLDİ: sentezin `−8px`'li formülü her genişlikte 8px kaydırıyordu (hesaplandı); düzeltilmiş ifadeyle 375…1920'de fark **0px** (768'de .container 24, .bolum 8+16=24). Tarayıcı ölçümü YAPILAMADI: gizli sekmede `#content` 0×0 (React akış commit'i ertelenir) | uygulandı; elle bakılmalı |
+
+## Doğrulama defteri (05.09.2026, sis)
+
+Araç: headless Google Chrome + DevTools Protocol (Node betiği, `Runtime.evaluate`
+zaman aşımlı). Tarayıcı paneli gizliyken her çağrı zaman aşımına düştüğü için
+tercih edildi; donmuş sayfayı gizli panelden ayırt etmenin tek yolu buydu.
+
+| ne | nasıl | sonuç |
+|---|---|---|
+| donma (fix öncesi, 9480e52) | `/`'de `1+1` ×3, 8 s zaman aşımı; `/kesfet` kontrol | `/` üçü de cevapsız, `/kesfet` 30 ms → sonsuz MutationObserver döngüsü |
+| donma (fix sonrası) | aynı yoklama, yükleme + geçiş + dönüş boyunca | 1–11 ms |
+| `main` kontrolü | aynı yoklama, `git checkout main` | cevap veriyor; `#sis-hero canvas` 1/1; konsolda **Hydration failed** |
+| hydration (dal) | `Runtime.consoleAPICalled` + `exceptionThrown`, gezinmeden önce açık | hata yok |
+| tuval ↔ hedef rect | iki hedef için top/left/width/height farkı | 0 px |
+| arka tampon ↔ rect | `cv.width/height` vs `round(rect×dpr)`; 1280→820→1280 | 0 (border-box fix'ten önce logotype 240 vs 194) |
+| köşe | `getComputedStyle(hedef).borderRadius` vs tuval | 0px / 0px, 4px / 4px |
+| fare-sil | 6 sentetik `pointermove` merkeze, 300 ms | maks alfa 79 → 18 |
+| rota geçişi | `a[href^="/kesfet"]` tıkla → say → logo tıkla → say | 0 tuval → 2 tuval, parite 0 |
+| reduced-motion | `Emulation.setEmulatedMedia` reduce | 2 tuval, çizili (alfa 103/63), daraltmada parite ve tampon 0 |
+| typecheck / lint / build | koşuldu | bkz. commit |

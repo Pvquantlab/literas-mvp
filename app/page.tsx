@@ -753,28 +753,28 @@ export default async function HomePage({
         </div>
 
         {/* Hücre 3: davet. Referansın karşılama paragrafı BÜYÜK HARF. */}
-        {/* Referansta karşılama paragrafı MAVİ SÜTUN üstünde beyaz metin —
-            ekranda tek dolu mavi alan o. Aynı rol burada. */}
+        {/* Referansta kilit bilgi paneli BEYAZ (THE FACTS kutusu, boyalı alanın
+            %5.6'sı) — sayfadaki tek beyaz yüzey. Aynı rol burada; mavi yalnız
+            metin ve düğme ölçeğinde kalır (referansta dolu mavi %1.2). */}
         <div
           className="reveal"
           style={{
             ...kunyeHucre,
             minHeight: 380,
             justifyContent: 'center',
-            background: 'var(--ink)',
+            background: 'var(--paper-white)',
             position: 'relative',
             overflow: 'hidden',
           }}
         >
-          {/* Mavi zeminde rölyef BEYAZ. */}
-          <RolyefKap cizim={RolyefKahve} konum="sag-alt" olcek={1.0} opaklik={0.18} renk="#fff" />
+          <RolyefKap cizim={RolyefKahve} konum="sag-alt" olcek={1.0} opaklik={0.18} />
           <p
             style={{
               fontSize: 16,
               lineHeight: 1.55,
               letterSpacing: '.03em',
               textTransform: 'uppercase',
-              color: '#fff',
+              color: 'var(--ink)',
               margin: 0,
             }}
           >
@@ -783,10 +783,10 @@ export default async function HomePage({
             olabilir.
           </p>
           <div style={{ display: 'flex', gap: 20, marginTop: 26, flexWrap: 'wrap' }}>
-            <Link href="#etkinlikler" style={{ ...kunyeEtiket, fontSize: 11, color: '#fff' }}>
+            <Link href="#etkinlikler" style={{ ...kunyeEtiket, fontSize: 11 }}>
               Etkinlikleri gör →
             </Link>
-            <Link href="/community/new" style={{ ...kunyeEtiket, fontSize: 11, color: 'rgba(255,255,255,.72)' }}>
+            <Link href="/community/new" style={{ ...kunyeEtiket, fontSize: 11, color: 'var(--muted)' }}>
               Topluluk kur →
             </Link>
           </div>
@@ -874,7 +874,7 @@ export default async function HomePage({
           id="kur"
           no="V"
           asama={4}
-          koyu
+          vurgu
           baslik="Masayı sen kur"
           alt="Konu senden, masa bizden. İki dakikada kurulur, ilk buluşmayı bu hafta yapabilirsin."
           eylemler={[{ href: '/community/new', etiket: 'Topluluk kur', dugme: true }, { href: '/hakkinda', etiket: 'literaslab nedir', ikincil: true }]}

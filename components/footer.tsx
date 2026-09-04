@@ -3,7 +3,9 @@ import Logo from '@/components/logo'
 
 export default function Footer() {
   return (
-    <footer style={{ background: 'var(--ink)', marginTop: '64px', padding: '0 24px' }}>
+    /* Greige panel (referansta koyu ya da mavi footer yok): metin mürekkep ve
+       --muted, çizgi ve halkalar --border. */
+    <footer style={{ background: 'var(--paper-cream)', marginTop: '64px', padding: '0 24px' }}>
       <div
         style={{
           maxWidth: '1240px',
@@ -24,13 +26,13 @@ export default function Footer() {
               textDecoration: 'none',
             }}
           >
-            <Logo size={34} fontSize={23} tone="plain" color="var(--paper-soft)" />
+            <Logo size={34} fontSize={23} tone="plain" color="var(--ink)" />
           </Link>
          <p
             style={{
               fontSize: '14px',
               lineHeight: 1.6,
-              color: 'rgba(250, 244, 232, .6)',
+              color: 'var(--muted)',
               margin: '14px 0 0',
               maxWidth: '240px',
             }}
@@ -68,7 +70,7 @@ export default function Footer() {
             style={{
               fontSize: '14px',
               fontWeight: 700,
-              color: 'var(--paper-soft)',
+              color: 'var(--ink)',
               marginBottom: '14px',
             }}
           >
@@ -99,13 +101,13 @@ export default function Footer() {
       <div
         style={{
           maxWidth: '1240px',
-          borderTop: '1px solid rgba(250, 244, 232, .18)',
+          borderTop: '1px solid var(--border)',
           margin: '44px auto 0',
           padding: '20px 0 26px',
           textAlign: 'center',
           fontFamily: "'IBM Plex Mono', monospace",
           fontSize: '12.5px',
-          color: 'rgba(250, 244, 232, .55)',
+          color: 'var(--muted)',
         }}
       >
         © 2026 literaslab · çevrimiçi başlar, çevrimdışı buluşur
@@ -121,7 +123,7 @@ function FooterColumn({ title, children }: { title: string; children: React.Reac
         style={{
           fontSize: '14px',
           fontWeight: 700,
-          color: 'var(--paper-soft)',
+          color: 'var(--ink)',
           marginBottom: '14px',
         }}
       >
@@ -139,7 +141,7 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
       style={{
         display: 'block',
         fontSize: '14px',
-        color: 'rgba(250, 244, 232, .65)',
+        color: 'var(--muted)',
         textDecoration: 'none',
         marginBottom: '10px',
         transition: 'color 0.15s ease',
@@ -167,10 +169,10 @@ function SocialIcon({
         width: '38px',
         height: '38px',
         borderRadius: '50%',
-        border: '1.5px solid rgba(250, 244, 232, .4)',
+        border: '1.5px solid var(--border-mid)',
         display: 'grid',
         placeItems: 'center',
-        color: 'var(--paper-soft)',
+        color: 'var(--ink)',
         transition: 'all 0.15s ease',
       }}
     >

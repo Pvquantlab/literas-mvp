@@ -125,7 +125,7 @@ export default function AciklamaStep() {
           style={{
             padding: '20px',
             borderRadius: '14px',
-            background: 'var(--lime, #D6FF3F)',
+            background: 'var(--lime)',
             color: 'var(--ink)',
           }}
         >

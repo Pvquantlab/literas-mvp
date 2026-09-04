@@ -30,7 +30,7 @@ export default function SifremiUnuttumPage() {
   }
 
   return (
-    <main style={{ maxWidth: '440px', margin: '0 auto', padding: '56px 24px 80px' }}>
+    <main className="sayfa-panel" style={{ maxWidth: '440px', margin: '8px auto 0', padding: '56px 24px 80px' }}>
       <div style={{ textAlign: 'center', marginBottom: '10px' }}>
         <h1 className="serif" style={{
           fontSize: 'clamp(28px, 4vw, 38px)',

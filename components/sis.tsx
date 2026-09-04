@@ -116,7 +116,7 @@ export function SisKatmani({
   hedefId,
   tavan = 0.9,
 }: {
-  /** Canvas'ın ekleneceği elemanın id'si. Yoksa hiçbir şey yapılmaz. */
+  /** Tuvalin üstüne oturacağı elemanın id'si. Yoksa hiçbir şey yapılmaz. */
   hedefId: string
   /** Sisin en yoğun hâli. */
   tavan?: number
@@ -124,28 +124,25 @@ export function SisKatmani({
   const yogunlukTavani = tavan
 
   useEffect(() => {
+    // EV SAHİBİ: layout.tsx'teki #sis-host. Tuval HEDEFİN İÇİNE EKLENMEZ —
+    // hedef React'in yönettiği bir alt ağaç ve içine eklenen her çocuk
+    // hydration karşılaştırmasında "sunucu HTML'inde yok" diye yakalanıyordu
+    // (portal diff'i: `- <canvas>`); React ağacı çöpe atıp yeniden
+    // üretiyordu. `load` beklemek ve offsetParent kontrolü bunu engellemedi
+    // (ölçüldü). Ev sahibi React tarafından çocuksuz render edilir; effect'te
+    // eklenen çocuk asla karşılaştırılmaz. Ev sahibi yoksa (başka bir layout)
+    // hiçbir şey yapılmaz.
+    const ev = document.getElementById('sis-host')
 
-    // HEDEF GEÇ GELİR VE DEĞİŞEBİLİR. İki ayrı tuzak yaşandı:
-    //   1. Layout, sayfanın akışlı (streaming) içeriğinden ÖNCE hidrasyona
-    //      giriyor; ilk aramada #sis-logotype henüz DOM'da yok.
-    //   2. Tek seferlik arama başarılı olsa bile canvas, akış sırasındaki
-    //      GEÇİCİ kopyaya ekleniyor; React nihai içeriği yerleştirince o
-    //      kopya (ve canvas) yok oluyor. Belirti: hedefler doğru boyutta
-    //      ama içlerinde canvas yok, hata da yok.
-    // Bu yüzden gözlemci KAPANMIYOR: hedef kaybolursa yeniden kuruluyor.
-    // Ayrıca hedef GÖRÜNÜR ve gerçek boyutta olmadan kurulum yapılmıyor.
+    // HEDEF GEÇ GELİR, DEĞİŞİR VE GİDER. Layout, sayfanın akışlı içeriğinden
+    // önce hidrasyona girer (ilk aramada hedef henüz DOM'da yok); akış
+    // sırasında hedefin gizli, ölçülemez bir kopyası vardır; istemci
+    // gezinmesinde hedef DOM'dan çıkar ve geri gelir. Bu yüzden gözlemci
+    // KAPANMIYOR ve yalnızca canlı ağaçtaki, yerleşmiş elemana bağlanılıyor:
+    // gizli kopyanın rect'i 0x0, offsetParent'ı null'dur — ona oturulmaz.
     let temizle: (() => void) | null = null
     let bagliKutu: HTMLElement | null = null
 
-    // YALNIZCA CANLI AĞAÇTAKİ, YERLEŞMİŞ ELEMANA BAĞLAN.
-    //
-    // Bu koşul şart: React sayfayı AKIŞLA (streaming) gönderiyor ve içeriği
-    // önce gizli bir kutuda tutup sonra canlı ağaca taşıyor. Canvas'ı o
-    // taşınmadan önce oraya eklediğimde React'in takası bozuluyordu --
-    // hata FIRLAMIYOR, içerik sessizce hiç yerleşmiyor ve sayfa
-    // "yükleniyor..."da kalıyordu. Ana sayfa ve /kesfet kilitleniyordu.
-    // offsetParent + gerçek boyut, elemanın canlı ve yerleşmiş olduğunun
-    // yeterli göstergesi.
     const uygunHedef = (): HTMLElement | null => {
       for (const e of Array.from(document.querySelectorAll<HTMLElement>('#' + CSS.escape(hedefId)))) {
         const r = e.getBoundingClientRect()
@@ -156,58 +153,86 @@ export function SisKatmani({
 
     const esitle = () => {
       const k = uygunHedef()
-      if (!k) return
-      // Zaten doğru kutuya bağlıysak ve canvas hâlâ oradaysa dokunma.
-      if (bagliKutu === k && bagliKutu.querySelector('canvas')) return
+      if (!k) {
+        // HEDEF GİTTİ (rota değişti ya da ana sayfa üye dalına geçti). Tuval
+        // React dışı ev sahibinde durduğu için hedefle birlikte DÜŞMEZ; burada
+        // sökülmeli. Yoksa sis eski belge koordinatlarında yeni sayfanın
+        // üstünde kalır, rAF döngüsü ve pencere dinleyicileri yaşamaya devam
+        // eder.
+        if (bagliKutu) { temizle?.(); temizle = null; bagliKutu = null }
+        return
+      }
+      // Aynı hedefe zaten bağlıysak dokunma. DİKKAT: bekçi hedefin İÇİNDE
+      // canvas ARAMAZ. Eski bekçi öyle yapıyordu ve tuval #sis-host'a
+      // taşındığından beri hep boş dönüyordu: her mutasyonda yık-kur, yık-kur
+      // ev sahibinde yeni mutasyon, gözlemci kendini tetikliyor — sonsuz
+      // mikro-görev döngüsü, sekme donuyordu (CDP ile ölçüldü, 05.09.2026).
+      if (bagliKutu === k) return
       temizle?.()
       temizle = kur(k)
       bagliKutu = k
     }
 
-    // AKIŞ BİTMEDEN BAŞLAMA. window load'a kadar React hâlâ içerik
-    // taşıyor olabilir; o sırada ağaca dokunmak takası bozuyor.
     let denemeId = 0
-    let gozlemci: MutationObserver | null = null
     let bitti = false
 
     const dogrula = () => {
       if (bitti) return
       esitle()
-      // Hedef henüz yerleşmemiş olabilir; oturana kadar denemeyi sürdür.
-      denemeId = bagliKutu ? 0 : requestAnimationFrame(dogrula)
+      // Aday DOM'da var ama henüz ölçülemiyorsa (akıştaki gizli kopya) oturana
+      // dek kare kare dene. Aday HİÇ yoksa (hedefsiz rota, üye ana sayfası)
+      // döngü kurma — hedef sonradan gelirse gözlemci yakalar.
+      denemeId = !bagliKutu && document.getElementById(hedefId) ? requestAnimationFrame(dogrula) : 0
     }
 
-    const basla = () => {
-      if (bitti) return
-      dogrula()
-      // Gözlemci açık kalıyor: hedef sonradan değişirse yeniden bağlanır.
-      gozlemci = new MutationObserver(esitle)
-      gozlemci.observe(document.body, { childList: true, subtree: true })
-    }
+    // `load` BEKLENMİYOR. Eski gerekçe (React'in akış takasını bozmamak)
+    // tuval React ağacının dışına çıktığı için kalktı; sunucunun hero'su
+    // hidrasyondan önce de ölçülebilir, sis görseller inmeden biner.
+    dogrula()
 
-    if (document.readyState === 'complete') basla()
-    else window.addEventListener('load', basla, { once: true })
+    // Gözlemci açık kalıyor: hedef gelir/gider/değişirse yeniden bağlanır.
+    // Kendi ev sahibindeki hareket (tuval ekleme/silme) yeniden bağlanma
+    // sebebi DEĞİL — o kayıtlar yutulur; yoksa gözlemci kendini tetikler.
+    const gozlemci = new MutationObserver((kayitlar) => {
+      if (ev && kayitlar.every((r) => ev.contains(r.target))) return
+      if (!denemeId) dogrula()
+    })
+    gozlemci.observe(document.body, { childList: true, subtree: true })
 
     return () => {
       bitti = true
-      window.removeEventListener('load', basla)
       if (denemeId) cancelAnimationFrame(denemeId)
-      gozlemci?.disconnect()
+      gozlemci.disconnect()
       temizle?.()
     }
 
     function kur(kutu: HTMLElement): () => void {
+    if (!ev) return () => {}
     const cv = document.createElement('canvas')
     cv.setAttribute('aria-hidden', 'true')
     Object.assign(cv.style, {
-      position: 'absolute', inset: '0', width: '100%', height: '100%',
-      display: 'block', zIndex: '2',
+      position: 'absolute', display: 'block',
+      // Köşe hedefin köşesi: künye hücresi 4px (var(--r-md)), ızgara 0.
+      // Eskiden hedefin overflow:hidden'ı kırpıyordu; artık dışarıdayız.
+      borderRadius: getComputedStyle(kutu).borderRadius,
       // Altındaki bağlantılar tıklanabilir kalsın.
       pointerEvents: 'none',
     } as CSSStyleDeclaration)
-    kutu.appendChild(cv)
+    ev.appendChild(cv)
     const ctx = cv.getContext('2d')
     if (!ctx) { cv.remove(); return () => {} }
+
+    /** Tuvali hedefin üstüne BELGE koordinatlarıyla oturtur. Belgeye göre
+     *  absolute olduğu için kaydırmayla birlikte hareket eder. Kesir
+     *  YUVARLANMAZ: hücre kenarı .5px'e düşerse yuvarlanmış tuval hücrenin
+     *  dışına taşar ve kâğıt üstünde ince bir sis şeridi bırakır. */
+    function konumla(): void {
+      const r = kutu.getBoundingClientRect()
+      cv.style.top = `${r.top + window.scrollY}px`
+      cv.style.left = `${r.left + window.scrollX}px`
+      cv.style.width = `${r.width}px`
+      cv.style.height = `${r.height}px`
+    }
 
     const azMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -220,23 +245,24 @@ export function SisKatmani({
     let gorunurAlanda = true
     let x = 0
 
-    /** Ölçü geçerliyse kurar ve true döner; değilse DOKUNMAZ. */
-    function boyutla(): boolean {
-      // KONTEYNERİ ölç, canvas'ı DEĞİL. Canvas position:absolute + %100;
-      // layout'un effect'i sayfa yerleşmeden önce çalıştığı için canvas'ın
-      // kendi rect'i 0x0 çıkıyordu -> backing store 2x2 kalıyor ve 2x2'lik
-      // görüntü tüm alana geriliyordu. Ekranda "sis gibi" duruyordu ama
-      // bulut dokusu da, ortaya çıkarma da yoktu.
+    /** Ölçüm sonucu. 'gecersiz': hedef henüz yerleşmedi, DOKUNULMADI.
+     *  'ayni': boyut değişmedi, yalnız konum yenilendi; doku ve maske (yani
+     *  fare izi) korunur. 'yeni': boyut değişti, doku ve maske yeniden
+     *  kuruldu — tuval boş, çizilmeli. */
+    type Olcum = 'gecersiz' | 'ayni' | 'yeni'
+
+    function boyutla(): Olcum {
+      // KONTEYNERİ ölç, canvas'ı DEĞİL. Canvas'ın kendi rect'i yerleşim
+      // oturmadan 0x0 çıkıyordu -> backing store 2x2 kalıyor ve 2x2'lik
+      // görüntü tüm alana geriliyordu: ekranda "sis gibi" duran düz bir
+      // bulanıklık, bulut dokusu da ortaya çıkarma da yok. Ölçü oturana
+      // kadar beklenir.
       const r = kutu.getBoundingClientRect()
-      const gw = Math.round(r.width || kutu.offsetWidth || kutu.clientWidth)
-      const gy = Math.round(r.height || kutu.offsetHeight || kutu.clientHeight)
-      // GEÇERSİZ ÖLÇÜYE KURULUM YAPMA. Eskiden 0 ölçü 1x1'e yuvarlanıp
-      // 2x2'lik bir doku üretiyordu; o doku tüm alana gerilince ekranda
-      // "sis gibi" duran düz bir bulanıklık çıkıyor, bulut da ortaya
-      // çıkarma da olmuyordu. Artık ölçü oturana kadar bekleniyor.
-      if (gw < 8 || gy < 8) return false
-      g = gw
-      y = gy
+      if (r.width < 8 || r.height < 8) return 'gecersiz'
+      konumla()
+      if (r.width === g && r.height === y && mctx) return 'ayni'
+      g = r.width
+      y = r.height
       cv!.width = Math.round(g * dpr)
       cv!.height = Math.round(y * dpr)
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -249,7 +275,7 @@ export function SisKatmani({
       mctx = maske.getContext('2d')
       // getContext teoride null dönebilir; dönerse KURULUM BAŞARISIZ sayılır,
       // yoksa aşağıdaki her satır null'a yazmaya çalışır.
-      if (!mctx) { maske = null; return false }
+      if (!mctx) { maske = null; return 'gecersiz' }
       mctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       // Başlangıç: sis tam kapalı. Tavan zaten yoğunluğu sınırlıyor.
       mctx.fillStyle = 'rgba(0,0,0,1)'
@@ -263,7 +289,7 @@ export function SisKatmani({
         mctx.fillRect(0, 0, g, y)
         mctx.globalCompositeOperation = 'source-over'
       }
-      return true
+      return 'yeni'
     }
 
     function ciz() {
@@ -287,7 +313,7 @@ export function SisKatmani({
       // maske/mctx ancak boyutla() BAŞARILI olduğunda var oluyor; başarısız
       // olduğu sürece hiçbir çizim yapılmıyor.
       if (g < 8 || y < 8 || !mctx) {
-        if (!boyutla()) { rafId = requestAnimationFrame(kare); return }
+        if (boyutla() === 'gecersiz') { rafId = requestAnimationFrame(kare); return }
       }
       x = (x + 0.18) % g
       // Sis yavaşça geri kapanıyor
@@ -324,6 +350,32 @@ export function SisKatmani({
       sil(cx, cyy)
     }
 
+    /** Yerleşim izleyicileri — İKİ dalda da kurulur. Hedefin boyutunu
+     *  hedef belirler (boyutDegisti); hedefin boyutu değişmese de üstündeki
+     *  içerik akabilir (görsel iner, şerit eklenir) ve belge koordinatı
+     *  kayar — body'nin yüksekliği bunu ele verir (konumla). Eskiden CSS
+     *  inset:0 tuvali hücreye yapıştırıyordu; belge koordinatında bunu
+     *  kendimiz yaparız. */
+    function yerlesimIzle(boyutDegisti: () => void): () => void {
+      const ro = new ResizeObserver((girisler) => {
+        for (const gi of girisler) {
+          if (gi.target === kutu) boyutDegisti()
+          else konumla()
+        }
+      })
+      // BORDER-BOX izlenir: tuval hedefin kenar kutusunu örter. Varsayılan
+      // içerik kutusu, viewport değişirken vw dolgusu bir kare geç güncellenince
+      // ikinci değişimi bildirmiyordu — tuvalin arka tamponu eski boyda kalıyordu
+      // (ölçüldü: logotype 240px tampon, 194px hedef).
+      ro.observe(kutu, { box: 'border-box' })
+      ro.observe(document.body)
+      window.addEventListener('resize', konumla, { passive: true })
+      return () => {
+        ro.disconnect()
+        window.removeEventListener('resize', konumla)
+      }
+    }
+
     boyutla()
 
     if (azMotion) {
@@ -331,18 +383,26 @@ export function SisKatmani({
       // dinleyicisi yok. Ölçü henüz oturmadıysa yalnızca ölçü için birkaç
       // kare beklenir, sonra bir kez çizilip durulur.
       let sabitId = 0
-      const birKez = () => {
-        if (g < 8 || y < 8) {
-          if (!boyutla()) { sabitId = requestAnimationFrame(birKez); return }
-        }
+      const statikCiz = () => {
+        ctx.clearRect(0, 0, g, y)
         ctx.globalAlpha = yogunlukTavani * 0.6
         ctx.drawImage(doku!, 0, 0, g, y)
         ctx.globalAlpha = 1
+      }
+      const birKez = () => {
+        if (g < 8 || y < 8) {
+          if (boyutla() === 'gecersiz') { sabitId = requestAnimationFrame(birKez); return }
+        }
+        statikCiz()
         sabitId = 0
       }
       birKez()
+      // Animasyon yine yok; yalnızca yerleşim izlenir. boyutla() tuvali
+      // yeniden kurduysa (boş) statik kare yeniden çizilir.
+      const izlemeyiBirak = yerlesimIzle(() => { if (boyutla() === 'yeni') statikCiz() })
       return () => {
         if (sabitId) cancelAnimationFrame(sabitId)
+        izlemeyiBirak()
         cv.remove()
       }
     }
@@ -353,9 +413,7 @@ export function SisKatmani({
     }, { threshold: 0 })
     io.observe(cv)
 
-    // Konteyner izleniyor: boyutu o belirliyor.
-    const ro = new ResizeObserver(() => { boyutla() })
-    ro.observe(kutu)
+    const izlemeyiBirak = yerlesimIzle(() => { boyutla() })
 
     window.addEventListener('pointermove', isaretci as EventListener, { passive: true })
     window.addEventListener('touchmove', isaretci as EventListener, { passive: true })
@@ -364,7 +422,8 @@ export function SisKatmani({
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId)
-      io.disconnect(); ro.disconnect()
+      io.disconnect()
+      izlemeyiBirak()
       window.removeEventListener('pointermove', isaretci as EventListener)
       window.removeEventListener('touchmove', isaretci as EventListener)
       cv.remove()

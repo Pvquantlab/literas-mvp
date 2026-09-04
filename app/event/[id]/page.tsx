@@ -650,7 +650,8 @@ export default async function EventPage({
           .ed-grid { grid-template-columns: minmax(0, 1fr) 340px; }
         }
 
-        .ed-block { margin-top: var(--s-7); }
+        /* Bölümler PANEL: açıklama metni zemine değmez (4.28 → 5.00). */
+        .ed-block { margin-top: var(--s-7); background: var(--paper-cream); border-radius: var(--r-md); padding: var(--s-5); }
         .ed-main > .ed-block:first-child { margin-top: 0; }
 
         /* Bölüm başlığı = .h-section: 400 ağırlık, POZİTİF harf aralığı.

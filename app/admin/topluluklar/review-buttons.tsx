@@ -44,7 +44,7 @@ export default function ReviewButtons({ communityId, communityName }: { communit
           style={{
             padding: '8px 16px',
             borderRadius: '999px',
-            background: 'var(--lime, #D6FF3F)',
+            background: 'var(--lime)',
             color: 'var(--ink)',
             border: '1.5px solid var(--ink)',
             fontWeight: 600,

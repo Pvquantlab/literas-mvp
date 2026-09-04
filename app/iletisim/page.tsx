@@ -2,7 +2,7 @@ export const metadata = { title: "İletişim · literaslab" };
 
 export default function IletisimPage() {
   return (
-    <div style={pageStyle}>
+    <div className="sayfa-panel" style={pageStyle}>
       <div style={{ font: "500 12px 'IBM Plex Mono', monospace", letterSpacing: "0.08em", color: "var(--muted)", textTransform: "lowercase", marginBottom: 8 }}>
         destek
       </div>
@@ -65,6 +65,6 @@ function ContactCard({ title, desc, contact, href }: { title: string; desc: stri
   );
 }
 
-const pageStyle: React.CSSProperties = { maxWidth: 720, margin: "0 auto", padding: "40px 24px 80px" };
+const pageStyle: React.CSSProperties = { maxWidth: 720, margin: "8px auto 0", padding: "40px 24px 80px" };
 const h1Style: React.CSSProperties = { fontFamily: "var(--font-serif), Georgia, serif", fontSize: "clamp(32px, 4.5vw, 48px)", fontWeight: 400, lineHeight: 1.15, margin: "4px 0 18px", letterSpacing: "0.5px" };
 const leadStyle: React.CSSProperties = { fontSize: 16, lineHeight: 1.6, color: "var(--ink)", margin: 0, maxWidth: "58ch" };

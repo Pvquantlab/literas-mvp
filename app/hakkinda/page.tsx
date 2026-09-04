@@ -17,7 +17,7 @@ export const metadata = {
  */
 export default function HakkindaPage() {
   return (
-    <main id="content" className="container-narrow" style={{ paddingTop: 'var(--s-7)', paddingBottom: 'var(--s-8)' }}>
+    <main id="content" className="container-narrow sayfa-panel" style={{ marginTop: 8, paddingTop: 'var(--s-7)', paddingBottom: 'var(--s-8)' }}>
       <span className="bolum-no" style={{ display: 'block', marginBottom: 12 }}>literaslab · hakkında</span>
       <h1 className="bolum-baslik" style={{ fontSize: 24 }}>İnsanların kendi masalarını kurduğu yer</h1>
 
@@ -56,18 +56,18 @@ export default function HakkindaPage() {
         ))}
       </dl>
 
-      {/* bolum-koyu: koyu zeminde odak halkasi krem olsun (ana sayfa V ile ayni
-          kural); overflow clip: hidden kaydirma kabi olur, view() oraya baglanir. */}
-      <div className="bolum-koyu" style={{ position: 'relative', marginTop: 'var(--s-7)', padding: '28px 24px', background: 'var(--ink)', borderRadius: 'var(--r-md)', overflow: 'clip', minHeight: 220, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-        <span className="masa-ciz" aria-hidden="true" style={{ color: 'var(--paper-cream)', opacity: .26, height: '150%', top: '-24%', right: '-10%' }}>
+      {/* bolum-vurgu: referansın beyaz kilit paneli (ana sayfa V ile aynı kural);
+          overflow clip: hidden kaydirma kabi olur, view() oraya baglanir. */}
+      <div className="bolum-vurgu" style={{ position: 'relative', marginTop: 'var(--s-7)', padding: '28px 24px', background: 'var(--paper-white)', borderRadius: 'var(--r-md)', overflow: 'clip', minHeight: 220, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+        <span className="masa-ciz" aria-hidden="true" style={{ height: '150%', top: '-24%', right: '-10%' }}>
           <RolyefMasa asama={4} />
         </span>
-        <p className="bolum-alt" style={{ color: 'var(--paper-cream)', margin: 0, position: 'relative', maxWidth: '40ch' }}>
+        <p className="bolum-alt" style={{ margin: 0, position: 'relative', maxWidth: '40ch' }}>
           Masa kuruldu. Oturmak ya da kendininkini kurmak sana kalmış.
         </p>
         <div className="bolum-eylemler" style={{ position: 'relative' }}>
-          <Link href="/kesfet" className="bolum-eylem dugme" style={{ background: 'var(--paper-cream)', color: 'var(--ink)' }}>Toplulukları gör →</Link>
-          <Link href="/community/new" className="bolum-eylem" style={{ color: 'color-mix(in srgb, var(--paper-cream) 81%, transparent)' }}>Topluluk kur →</Link>
+          <Link href="/kesfet" className="bolum-eylem dugme">Toplulukları gör →</Link>
+          <Link href="/community/new" className="bolum-eylem ikincil">Topluluk kur →</Link>
         </div>
       </div>
     </main>

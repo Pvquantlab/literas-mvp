@@ -24,6 +24,8 @@ const plexMono = readFileSync(
  * burada yaşamaya devam ediyordu. Artık tek ses: sıcak greige zemin,
  * mürekkep metin.
  */
+// ImageResponse CSS değişkeni okuyamaz: bu değerler globals.css'teki --paper-cream
+// (panel greige) ve --ink ile ELLE senkron tutulur. Kart bir panel; metin 5.00:1.
 const ZEMIN = '#DCDBD5'
 const MUREKKEP = '#0755BB'
 

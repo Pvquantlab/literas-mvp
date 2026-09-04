@@ -85,8 +85,8 @@ export default function EventCard({ event, showCommunityName = true, seriKalan, 
   })}`
   const weekday = trLower(fmt(event.event_date, { weekday: 'long' }))
 
-  const c1 = cat?.colors[0] ?? '#5E93DA'
-  const c2 = cat?.colors[1] ?? '#0755BB'
+  const c1 = cat?.colors[0] ?? 'var(--ink-hover)'
+  const c2 = cat?.colors[1] ?? 'var(--ink)'
 
   return (
     <Link href={`/event/${event.id}`} className="ec-link">

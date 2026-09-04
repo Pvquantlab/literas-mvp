@@ -166,5 +166,63 @@
     "neden_tavanlar_farkli": "Maske birkaç saniyede tavana doluyor. Logotype hücresinde 0.9 olsaydı fare hiç oynamadığında marka adı kalıcı olarak sisin altında kalırdı.",
     "tariften_sapma": "Doküman §6 gürültüyü her kare üretmeyi söylüyor; 1400x400'de bu kare başına ~105 bin hesap. Doku bir kez üretilip her kare yalnızca kaydırılıyor. Görsel sonuç aynı, maliyet iki drawImage.",
     "dev_sunucusu_uyarisi": "Turbopack dev sunucusunda 'Element type is invalid. Received a promise that resolves to: undefined' hatası çıkıyor ve HİDRASYONU TAMAMEN ÖLDÜRÜYOR (hiçbir istemci bileşeni çalışmıyor). Kodla ilgisi yok: üretim derlemesi sorunsuz. Doğrulama için ~/.claude/launch.json içindeki 'literas-uretim' (npm run start) kullanılmalı."
+  },
+  "_ucuncu_olcum": {
+    "tarih": "2026-09-05",
+    "neden": "Kullanıcı 'o sitenin renklerini kullan' dedi; referans yeniden ölçüldü ve literas ile alan ağırlıklı karşılaştırıldı. Seçim: tonlar + kullanım.",
+    "yontem": "Headless Chrome + DevTools Protocol; body altındaki her elemanın getComputedStyle backgroundColor/color'ı getBoundingClientRect alanıyla ağırlıklandırıldı (1280px, tam sayfa 6020px). Panel bu oturumda güvenilmezdi.",
+    "referans_paylari": {
+      "zemin #CBCBCB": "%47.9",
+      "panel #DCDBD5": "%38.0 (15 eleman)",
+      "beyaz #FFFFFF": "%5.6 (2 kilit paneli: THE FACTS + FAQ)",
+      "ic_panel #E8E8E8": "%2.2 (19 eleman)",
+      "duz_murekkep_dolgu #0755BB": "%1.2 (54 küçük eleman)",
+      "metin": "%90.8 mürekkep, %6.8 mürekkep a=.32, %2.4 beyaz (mürekkep dolgu üstünde)"
+    },
+    "literas_oncesi": {
+      "zemin": "#DCDBD5 (sıcak, referansın PANEL değeri)",
+      "panel #F1F0EA": "%59.3",
+      "duz_murekkep_dolgu": "%26.6 (davet hücresi, V. bölüm, footer)",
+      "ic_panel #E9E7E0": "%13.4"
+    },
+    "karar": "Zemin/panel hexleri referanstan bire bir; mavi yalnız metin, çizgi ve düğme ölçeğinde dolgu; vurgu yüzeyi mavi değil BEYAZ (referansın THE FACTS paneli). Yazı karakteri, yerleşim, mürekkep tonu, köşe/gölge kuralları dokunulmadı.",
+    "geri_alinan_sapmalar": [
+      "panel_rengi_sicaklastirildi: #E9E7E0 → ölçülen #E8E8E8",
+      "panel_yonu_ters / fazladan kart katmanı: katman sırası artık referansla aynı — zemin < panel < iç panel < beyaz",
+      "sıcak krem zemin ve panel: #DCDBD5/#F1F0EA → #CBCBCB/#DCDBD5"
+    ],
+    "token_eslemesi": {
+      "--paper": "#CBCBCB",
+      "--paper-cream": "#DCDBD5",
+      "--paper-soft": "#D4D4D1 (ara ton; mürekkep üstü metin 4.67)",
+      "--panel": "#E8E8E8",
+      "--paper-white": "#FFFFFF (YENİ: davet hücresi, V, /hakkinda kapanış, giriş kartı, eylem zemini)",
+      "--lime / -soft / -press": "#FFFFFF / #E8E8E8 / #DCDBD5 — açık mavi referansta yok",
+      "--muted-light": "%58 → %66: 58 yeni zeminlerde 3.8–4.4 veriyordu (AA altı), 66 zeminde 4.69",
+      "::selection": "mürekkep zemin + beyaz metin (eylem zemini beyaz olunca beyaz panelde görünmezdi)"
+    },
+    "aa_kurali": "Mürekkep metin #CBCBCB zeminde 4.28 (AA 4.5 altı), #DCDBD5 panelde 5.00. KURAL: küçük mürekkep metin zemine değmez. Panele alınanlar: metin sayfaları ve giriş/kayıt (.sayfa-panel), Lejant şeridi, topluluk kimliği ve blokları (.cp-head, .cp-block; satırlar --panel), etkinlik blokları (.ed-block). Zemine değen küçük etiketler --muted (6.63). Referans bu kurala uymuyor (vazo bölümü: zeminde 14px mürekkep); biz okunan ürünüz.",
+    "kontrast": {
+      "murekkep/zemin": 4.28,
+      "murekkep/panel": 5.0,
+      "murekkep/ic_panel": 5.66,
+      "murekkep/beyaz": 6.94,
+      "beyaz/murekkep_dolgu": 6.94,
+      "muted/zemin": 6.63,
+      "muted-light66/zemin": 4.69,
+      "paper-soft_metin/murekkep": 4.67,
+      "kirmizi/panel": 5.06,
+      "yuzey_ayrimi panel/zemin": 1.17,
+      "yuzey_ayrimi beyaz/panel": 1.39
+    },
+    "literas_sonrasi_ana_sayfa": {
+      "zemin": "#CBCBCB",
+      "panel #DCDBD5": "%70.4",
+      "beyaz": "%15.6 (davet hücresi, V, arama düğmesi)",
+      "ic_panel #E8E8E8": "%13.1",
+      "duz_murekkep_dolgu": "%0.3 (yalnız düğmeler)",
+      "metin": "%76.8 mürekkep, %21.5 --muted"
+    },
+    "dogrulama": "CDP ekran görüntüleri: /, /kesfet, /hakkinda, /login, /sss, /community/[id], /event/[id]; OG görseli render edildi (panel #DCDBD5 üstünde mürekkep, değer değişmedi). Sabit hex sızıntıları token'a alındı (community-card, event-map, event-card, lime fallback'leri). typecheck temiz, lint 87/0, build geçti. GÖZLE BAKILMALI: sis dokusu beyaz davet hücresinde, mobil kırılımlar."
   }
 }

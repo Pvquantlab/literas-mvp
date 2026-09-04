@@ -411,7 +411,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                           <b className="cp-ev-title">{ev.title}</b>
                           {ev.location && <i className="cp-ev-loc">{ev.location}</i>}
                         </span>
-                        <span className="cp-ev-thumb" style={{ background: hasCoverThumb(ev) ? undefined : 'var(--panel)' }}>
+                        <span className="cp-ev-thumb" style={{ background: hasCoverThumb(ev) ? undefined : 'var(--paper-soft)' }}>
                           {hasCoverThumb(ev) ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={ev.cover_image_url} alt="" />
@@ -442,7 +442,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                               <b className="cp-ev-title">{ev.title}</b>
                               {ev.location && <i className="cp-ev-loc">{ev.location}</i>}
                             </span>
-                            <span className="cp-ev-thumb" style={{ background: hasCoverThumb(ev) ? undefined : 'var(--panel)' }}>
+                            <span className="cp-ev-thumb" style={{ background: hasCoverThumb(ev) ? undefined : 'var(--paper-soft)' }}>
                               {hasCoverThumb(ev) ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={ev.cover_image_url} alt="" />
@@ -571,7 +571,9 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         .cp-idrow-spacer { flex: 1; }
 
         /* ---------- Kimlik ---------- */
-        .cp-head { padding: var(--s-4) var(--s-5) 0; }
+        /* Kimlik ve bölümler PANEL: mürekkep metin zemine değmez (4.28 → 5.00);
+           içlerindeki satırlar iç panel (--panel). Referansın hücre grameri. */
+        .cp-head { padding: var(--s-4) var(--s-5) var(--s-5); background: var(--paper-cream); border-radius: var(--r-md); }
         .cp-name {
           font-family: var(--font-serif), Georgia, serif;
           font-weight: 400;
@@ -625,6 +627,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           .cp-grid { grid-template-columns: minmax(0, 1fr) 300px; }
         }
 
+        .cp-block { background: var(--paper-cream); border-radius: var(--r-md); padding: var(--s-5); }
         .cp-block + .cp-block { margin-top: var(--s-7); }
         .cp-h2 {
           font-family: var(--font-serif), Georgia, serif;
@@ -662,7 +665,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         .cp-day-dot {
           position: absolute; left: 0; top: 5px;
           width: 12px; height: 12px; border-radius: 50%;
-          background: var(--paper);
+          background: var(--paper-cream);
           border: 2.5px solid var(--ink);
         }
         .cp-day-past .cp-day-dot { border-color: var(--border-mid); }
@@ -672,7 +675,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         .cp-day-items { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-3); }
         .cp-ev {
           display: flex; align-items: center; gap: var(--s-4);
-          background: var(--paper-cream);
+          background: var(--panel);
           border-radius: var(--r-md);
           padding: var(--s-3) var(--s-4);
           text-decoration: none;
@@ -680,7 +683,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         }
         .cp-ev:hover {
           transform: translateY(-1px);
-          background: var(--panel);
+          background: var(--paper-white);   /* satır iç panel oldu; hover bir kademe yukarı */
         }
         .cp-ev-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
         .cp-ev-time { font-style: normal; font-family: var(--font-mono), monospace; font-size: var(--t-xs); color: var(--muted); }
@@ -702,7 +705,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         .cp-empty {
           border: 1px dashed var(--border-mid);
           border-radius: var(--r-md);
-          background: var(--paper-cream);
+          background: var(--panel);
           padding: var(--s-6) var(--s-5);
           text-align: center;
           display: flex; flex-direction: column; align-items: center; gap: var(--s-4);
@@ -715,7 +718,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           display: flex; justify-content: space-between; align-items: center;
           gap: var(--s-3); flex-wrap: wrap;
           padding: var(--s-3) var(--s-4);
-          background: var(--paper-cream);
+          background: var(--panel);
           border-radius: var(--r-md);
         }
         .cp-member-id { display: flex; align-items: center; gap: var(--s-3); flex: 1; min-width: 0; }
@@ -731,7 +734,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           font-size: 14px; font-weight: 400;
         }
         .cp-role {
-          background: var(--panel);
+          background: var(--paper-white);
           color: var(--ink);
           font-family: var(--font-mono), monospace;
           font-size: var(--t-2xs); font-weight: 400; letter-spacing: .1em;
@@ -807,7 +810,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           .cp-banner { aspect-ratio: 21 / 9; }
           .cp-idrow { padding: 0 var(--s-3); margin-top: -28px; }
           .cp-emblem { width: 68px; height: 68px; }
-          .cp-head { padding: var(--s-3) var(--s-3) 0; }
+          .cp-head { padding: var(--s-3) var(--s-3) var(--s-4); }
           .cp-grid { padding: 0 var(--s-3); }
           .cp-ev-thumb { width: 52px; height: 52px; }
         }
