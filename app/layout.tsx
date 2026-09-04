@@ -139,8 +139,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             üretiyordu (portal diff'i: `- <canvas>`), React ağacı çöpe atıp
             istemcide yeniden üretiyordu; `load` beklemek ve offsetParent
             kontrolü bunu ENGELLEMİYORDU (ölçüldü, 01.09.2026).
-            Konumlandırma belge koordinatlarında: div body'nin ilk çocuğu
-            olarak sol-üstte sıfır boyutlu durur, tuvaller absolute olarak
+            Konumlandırma belge koordinatlarında: div body'nin çocuğu olarak
+            (Footer'dan sonra) sol-üstte sıfır boyutlu durur, tuvaller absolute olarak
             hedef hücrenin rect'ine oturur ve kaydırmayla birlikte hareket
             eder. z-index 2 (header 40'ın altında), pointer-events none. */}
         <div
@@ -149,7 +149,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           style={{ position: 'absolute', top: 0, left: 0, width: 0, height: 0, overflow: 'visible', zIndex: 2, pointerEvents: 'none' }}
         />
         {/* Sis: katmanlar hedeflerine id ile tutunur (#sis-logotype,
-            #sis-hero). Ana sayfa dışındaki rotalarda hiçbir şey yapmaz. */}
+            #sis-hero). Hedef yoksa tuval de yok; hedef giderse (rota geçişi)
+            tuval sökülür. */}
         <SisMotoru />
         <RegisterSW />
       </body>
