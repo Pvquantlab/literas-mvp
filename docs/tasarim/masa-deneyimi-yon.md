@@ -94,12 +94,19 @@ klavye odağı · dokunma listesindeki rotalara yapısal dokunuş yok.
 
 ## Bulunan, bu turda dokunulmayan
 
-- **Hydration uyumsuzluğu `main`'de var** (bayat önbellek DEĞİL: 23 Turbopack
-  parçası, 0 webpack, SW yok). Sebep `components/sis.tsx`: `SisKatmani`
-  `#sis-hero`'ya `<canvas>`'ı hydration bitmeden ekliyor, React kendi
-  çizmediği çocuğu buluyor. Dosya bu akış tuzağını uzun uzun belgeliyor ve
-  "dikkatli" kapsamda; bu turun işi değil. Yeni bölüm hücreleri sis hedefi
-  değil (id ile bağlanıyor), etkilenmiyor.
+- ~~Hydration uyumsuzluğu `main`'de var~~ → **KAPATILDI (sis turu,
+  01.09.2026, `bakim/sis-hydration`).** Sebep `sis.tsx`'in tuvali React'in
+  yönettiği hücrelerin İÇİNE eklemesiydi; `load` beklemek ve `offsetParent`
+  kontrolü engellemiyordu. Fix: layout kabuğunda React'in çocuksuz render
+  ettiği `#sis-host`; tuval oraya eklenir ve hedefin üstüne belge
+  koordinatlarıyla oturur (kaydırmayla birlikte hareket eder, `border-radius`
+  4px hücre köşesini korur). KANIT: taze yüklemede konsol tamponu dolu
+  (instrumentation/DevTools/HMR satırları var) ve **"Hydration failed" yok** —
+  fix öncesi her yüklemede 1–3 kez düşüyordu; SSR'de `#sis-host` çocuksuz ve
+  `<canvas>` yok; sunucu logları temiz; kodda `kutu.appendChild` kalmadı.
+  ÖLÇÜLEMEYEN: tuvalin hücre rect'iyle piksel eşleşmesi ve fare-sil
+  tepkisi tarayıcıda okunamadı (gizli pane'de renderer betik çalıştırmıyor);
+  mantık aynı `getBoundingClientRect` yolunu kullanıyor, gözle bakılmalı.
 - **Mobilde kabuk iki satır** (logo+düğmeler, hap arama): içerikten önce
   ~190px krom. Header her rotada; bu turda yalnızca token düzeyi.
 - **Künye 1. hücresinde sis, rölyefi çamurlaştırıyor** (mobil). Sis imza
